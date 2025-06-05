@@ -11,3 +11,4 @@ lazydocker
 kubectl
 argocd
 bitwarden
+kubeseal

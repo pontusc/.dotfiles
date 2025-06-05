@@ -15,3 +15,5 @@ silversearcher-ag
 bash-completion
 gh
 glab
+incus
+qemu-system
