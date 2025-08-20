@@ -5,3 +5,5 @@ source <(tailscale completion bash)
 source <(cmctl completion bash)
 source <(kubectl completion bash)
 source <(argocd completion bash)
+source <(hcloud completion bash)
+terraform -install-autocomplete

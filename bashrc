@@ -67,3 +67,5 @@ grep -v '^#' ~/notes/TODO | cat
 
 # Prompt
 eval "$(starship init bash)"
+
+complete -C /usr/bin/terraform terraform
