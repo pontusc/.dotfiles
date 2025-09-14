@@ -3,4 +3,4 @@ export PATH="$PATH:$HOME/go/bin/"
 
 # -- Program settings
 export KUBECONFIG=$HOME/.kube/config
-export ANSIBLE_COLLECTIONS_PATH="$HOME/.ansible/collections:/usr/share/ansible/collections"
+export ANSIBLE_COLLECTIONS_PATH="${HOME}/.local/share/pipx/venvs/ansible/lib/python3.12/site-packages:${HOME}/.ansible/collections:/usr/share/ansible/collections"
