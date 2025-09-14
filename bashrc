@@ -1,5 +1,6 @@
 #!/bin/bash
 # .bashrc
+[[ $- == *i* ]] || return
 
 # Source global definitions
 if [ -f /etc/bashrc ]; then
@@ -67,5 +68,3 @@ grep -v '^#' ~/notes/TODO | cat
 
 # Prompt
 eval "$(starship init bash)"
-
-complete -C /usr/bin/terraform terraform

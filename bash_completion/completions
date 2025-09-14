@@ -6,4 +6,5 @@ source <(cmctl completion bash)
 source <(kubectl completion bash)
 source <(argocd completion bash)
 source <(hcloud completion bash)
-terraform -install-autocomplete
+complete -C /usr/bin/terraform terraform
+complete -C /home/pontusc/.local/share/nvim/mason/packages/terraform/terraform terraform
