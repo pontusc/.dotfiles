@@ -1,5 +1,0 @@
-# -- Paths
-export PATH=~/.npm-global/bin:$PATH
-
-# -- Program settings
-. "$HOME/.cargo/env"
