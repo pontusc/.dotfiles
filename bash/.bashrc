@@ -12,7 +12,7 @@ alias da="deactivate"
 alias kube="kubectl"
 alias mkube="minikube"
 
-# Neovim
+# Configfiles
 alias nconf="nvim ~/.config/nvim/"
 alias bconf="nvim ~/.bashrc"
 alias hconf="nvim ~/.config/hypr/"
