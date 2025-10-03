@@ -9,11 +9,11 @@ alias va="source ./venv/bin/activate"
 alias da="deactivate"
 
 # Kubernetes
-alias kube="kubectl"
+alias k="kubectl"
 alias mkube="minikube"
 
 # Configfiles
-alias nconf="nvim ~/.config/nvim/"
+alias nconf="nvim -c \"cd ~/.config/nvim/\""
 alias bconf="nvim ~/.bashrc"
 alias hconf="nvim ~/.config/hypr/"
 
@@ -22,4 +22,13 @@ alias lgt="lazygit"
 alias ldk="lazydocker"
 
 # --- exports
+# Editor
+export EDITOR="/usr/bin/nvim"
+export SUDO_EDITOR="$EDITOR"
+
+# Kubernetes
 export KUBECONFIG=$HOME/.kube/config
+
+# --- completions
+source <(kubectl completion bash)
+complete -o default -F __start_kubectl k
