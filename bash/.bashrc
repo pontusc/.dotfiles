@@ -11,6 +11,7 @@ alias da="deactivate"
 # Kubernetes
 alias k="kubectl"
 alias mkube="minikube"
+alias kubeseal="kubeseal --controller-name sealed-secrets --controller-namespace utils"
 
 # Configfiles
 alias nconf="nvim -c \"cd ~/.config/nvim/\""
