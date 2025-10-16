@@ -8,8 +8,13 @@ Structure: "name-of-package"/path-to/destination
 stow "package-to-install" to set up symlinks  
 stow -D "packate-to-uninstall" to remove symlinks
 
-## Required packages
+## Required tools
 
+alacritty
+tmux  
+starship  
+lazygit  
+lazydocker
 fzf  
 ripgrep
 
