@@ -17,6 +17,7 @@ alias kubeseal="kubeseal --controller-name sealed-secrets --controller-namespace
 alias nconf="nvim -c \"cd ~/.config/nvim/\""
 alias bconf="nvim ~/.bashrc"
 alias hconf="nvim ~/.config/hypr/"
+alias tconf="nvim ~/.config/tmux/tmux.conf"
 
 # Lazy
 alias lgt="lazygit"
