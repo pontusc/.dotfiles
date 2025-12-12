@@ -1,3 +1,3 @@
 # Emulate Hyprland binds for launching applications
-cmd - b : open -na "Vivaldi"
-cmd - return : open -na "Alacritty"
+cmd + shift - b : open -na "Vivaldi"
+cmd + shift - return : open -na "ghostty"
