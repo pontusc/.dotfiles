@@ -4,9 +4,9 @@ source ~/.local/share/omarchy/default/bash/rc
 
 # --- aliases
 # python
-alias ve="python3 -m venv ./venv"
-alias va="source ./venv/bin/activate"
-alias da="deactivate"
+alias ve="python3 -m venv ./venv && echo 'venv created'"
+alias va="source ./venv/bin/activate && echo 'sourced venv'"
+alias da="deactivate && echo 'deactivated venv'"
 
 # Kubernetes
 alias k="kubectl"
@@ -34,11 +34,11 @@ export KUBECONFIG=$HOME/.kube/config
 # --- helpers
 #  Launch tmux in default session if exists, make if not
 tmux() {
-    if [ $# -eq 0 ]; then
-        command tmux attach -t default || command tmux new -s default
-    else
-        command tmux "$@"
-    fi
+  if [ $# -eq 0 ]; then
+    command tmux attach -t default || command tmux new -s default
+  else
+    command tmux "$@"
+  fi
 }
 
 # --- completions
