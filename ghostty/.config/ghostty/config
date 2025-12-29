@@ -3,6 +3,7 @@ theme = TokyoNight
 
 # Settings
 confirm-close-surface = false
+app-notifications = no-clipboard-copy
 
 # Font
 font-family = "CaskaydiaMono Nerd Font"
