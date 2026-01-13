@@ -3,41 +3,34 @@
   "theme": "system",
   "autoupdate": true,
   "share": "disabled",
-
   "permission": {
     "edit": "ask",
     "bash": {
+      "*": "ask",
+      "ls *": "allow",
+      "cat *": "allow",
+      "grep *": "allow",
+      "find *": "allow",
       "git status": "allow",
+      "git status *": "allow",
       "git diff *": "allow",
       "git log *": "allow",
       "git show *": "allow",
       "git branch *": "allow",
       "git stash list": "allow",
+      "git checkout *": "ask",
       "git commit *": "deny",
       "git push *": "deny",
       "git merge *": "deny",
       "git rebase *": "deny",
       "git reset *": "deny",
-      "git checkout *": "ask",
-      "git *": "ask",
-      "ls *": "allow",
-      "cat *": "allow",
-      "grep *": "allow",
-      "find *": "allow",
       "rm *": "deny",
-      "sudo *": "deny",
-      "curl *": "ask",
-      "wget *": "ask",
-      "*": "ask"
+      "sudo *": "deny"
     },
+    "read": "ask",
     "webfetch": "ask",
     "doom_loop": "deny",
     "external_directory": "deny"
   },
-
-  "tools": {
-    "webfetch": false
-  },
-
   "mcp": {}
 }
