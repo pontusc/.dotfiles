@@ -1,4 +1,4 @@
-# Dotfiles for Omarchy
+# Dotfiles
 
 Managed using GNU Stow
 
@@ -10,14 +10,14 @@ stow -D "packate-to-uninstall" to remove symlinks
 
 ## Required tools
 
-alacritty
+alacritty  
+ghostty  
 tmux  
+sesh  
 starship  
 lazygit  
 lazydocker
 fzf  
-ripgrep
-
-## Nice to have packages
-
-zoxide
+ripgrep  
+zoxide  
+eza
