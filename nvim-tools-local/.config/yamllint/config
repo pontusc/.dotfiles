@@ -18,6 +18,7 @@ rules:
 
   truthy:
     allowed-values: ['true', 'false', 'yes', 'no']
+    check-keys: false
 
   key-duplicates: enable
 
