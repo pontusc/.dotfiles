@@ -1,9 +1,7 @@
 # Set the directory where your modules live
 export ZSH_CONFIG_DIR="$HOME/.config/zsh"
 
-# Setup plugin manager
-source /opt/homebrew/opt/antidote/share/antidote/antidote.zsh
-antidote load ~/.config/zsh_plugins/zsh_plugins.txt
+source "$ZSH_CONFIG_DIR"/00-antidote.zsh
 
 # Source all .zsh files in the directory
 if [[ -d "$ZSH_CONFIG_DIR" ]]; then
