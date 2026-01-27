@@ -1,0 +1,26 @@
+blacklist = ["scratch", "temp", "default"]
+
+sort_order = ["config", "tmux", "zoxide"]
+
+[[session]]
+name = "work"
+path = "~/work/Alchemy"
+startup_command = "nvim"
+windows = ["testing", "infra", "terminal"]
+
+[[window]]
+name = "testing"
+path = "~/work/testing"
+startup_script = "nvim"
+
+[[window]]
+name = "infra"
+path = "~/work/gcp-infrastructure"
+startup_script = "nvim"
+
+[[window]]
+name = "code"
+startup_script = "nvim"
+
+[[window]]
+name = "terminal"
