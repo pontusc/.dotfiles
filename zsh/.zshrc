@@ -12,7 +12,6 @@ if [[ -d "$ZSH_CONFIG_DIR" ]]; then
   done
 fi
 
-echo "zsh"
 unset config_file
 
 eval "$(starship init zsh)"
