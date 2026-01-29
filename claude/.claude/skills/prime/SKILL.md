@@ -4,6 +4,7 @@ description: Bootstrap session context by reading READMEs, listing files, and bu
 user-invocable: true
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Bash
+agent: planner
 ---
 
 Prime your context for this session. Do the following in parallel where possible:
