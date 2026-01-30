@@ -8,6 +8,7 @@ fi
 
 source <(sesh completion zsh)
 source <(kubectl completion zsh)
+source <(docker completion zsh)
 # Allows 'k' to complete like 'kubectl'
 compdef k=kubectl
 
