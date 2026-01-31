@@ -1,4 +1,5 @@
-export EDITOR="/opt/homebrew/bin/nvim"
+export EDITOR="/usr/bin/nvim"
+export GIT_EDITOR="/usr/bin/nvim"
 export SUDO_EDITOR="$EDITOR"
 
 # History Configuration
