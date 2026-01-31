@@ -1,5 +1,6 @@
 # Shorthands
 alias bsource="source ~/.bashrc"
+alias vi='nvim'
 
 # Python virtual environment
 alias ve="python3 -m venv ./venv"
@@ -9,7 +10,6 @@ alias da="deactivate"
 # Kubernetes
 alias k="kubectl"
 alias mkube="minikube"
-alias kubeseal="kubeseal --controller-name sealed-secrets --controller-namespace utils"
 
 # Config files
 alias nconf="nvim -c \"cd ~/.config/nvim/\""
