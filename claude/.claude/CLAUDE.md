@@ -41,9 +41,9 @@
 
 ## Working Guidelines
 - **Ask before changing** files/configs (especially system-critical dotfiles)
+- **NEVER run state-changing commands**: Never execute deployment commands (`make send`, `docker compose up`), git state changes (`git commit`, `git push`, `git rebase`), or any command that modifies remote/production systems. Only modify local files. User handles all deployments and git operations.
 - **Avoid**: Unsolicited refactoring, adding unrequested features, assumptions
-- **Git**: Clear commits, conventional format when appropriate
-- **Cross-platform**: Verify commands work on target environment (macOS vs Linux)
+- **Default to simplicity**: When user emphasizes "simple/basic/barebones", propose the most direct solution first, then ask if they want more sophistication
 
 ## Plan Mode Workflow
 
@@ -83,6 +83,19 @@
 
 **Corrective actions**: Added Plan Mode Workflow section, Pattern Recognition Signals
 
+### 2026-02-03: VPS Monitoring - cAdvisor Integration
+**Issues identified**:
+- Didn't validate Alloy's built-in exporter capabilities before implementing (assumed it would expose same labels as standalone cAdvisor)
+- Over-engineered solution twice - user had to guide toward simpler approach:
+  - First: Proposed standalone cAdvisor when Alloy had built-in
+  - Second: Routed through Alloy middleware when Prometheus direct scraping was simpler
+- Violated state-change rule: Attempted to run deployment commands without user instruction
+
+**Corrective actions**:
+- Added "NEVER run state-changing commands" to Working Guidelines
+- Added "Default to simplicity" guideline
+- Lesson: When simplicity is emphasized, propose most direct path first (e.g., "Prometheus scrapes cAdvisor directly")
+
 ---
 
-*Last updated: 2026-02-01*
+*Last updated: 2026-02-03*

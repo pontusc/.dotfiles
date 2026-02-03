@@ -6,7 +6,12 @@ sort_order = ["config", "tmux", "zoxide"]
 name = "work"
 path = "~/work/Alchemy"
 startup_command = "nvim"
-windows = ["testing", "infra", "terminal"]
+windows = ["review", "testing", "infra", "terminal"]
+
+[[window]]
+name = "review"
+path = "~/work/alchemy-review/"
+startup_script = "nvim"
 
 [[window]]
 name = "testing"
