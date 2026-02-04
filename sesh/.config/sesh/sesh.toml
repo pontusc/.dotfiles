@@ -3,10 +3,39 @@ blacklist = ["scratch", "temp", "default"]
 sort_order = ["config", "tmux", "zoxide"]
 
 [[session]]
-name = "work"
+name = "Alchemy"
 path = "~/work/Alchemy"
 startup_command = "nvim"
-windows = ["review", "testing", "infra", "terminal"]
+windows = ["review", "testing", "terminal"]
+
+[[session]]
+name = "Deployment"
+path = "~/work/vps"
+startup_command = "nvim"
+windows = ["terminal"]
+
+[[session]]
+name = "Infrastructure"
+path = "~/work/gcp-infrastructure"
+startup_command = "nvim"
+windows = ["terminal"]
+
+[[session]]
+name = "Monitoring"
+path = "~/work/monitoring"
+startup_command = "nvim"
+windows = ["terminal"]
+
+[[session]]
+name = "Talos"
+path = "~/work/talos"
+startup_command = "nvim"
+windows = ["terminal"]
+
+[[window]]
+name = "alchemy"
+path = "~/work/Alchemy"
+startup_script = "nvim"
 
 [[window]]
 name = "review"
@@ -21,6 +50,16 @@ startup_script = "nvim"
 [[window]]
 name = "infra"
 path = "~/work/gcp-infrastructure"
+startup_script = "nvim"
+
+[[window]]
+name = "deploy"
+path = "~/work/vps"
+startup_script = "nvim"
+
+[[window]]
+name = "monitoring"
+path = "~/work/monitoring"
 startup_script = "nvim"
 
 [[window]]
