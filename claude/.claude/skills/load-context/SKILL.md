@@ -5,7 +5,8 @@ user-invocable: true
 disable-model-invocation: true
 allowed-tools: Read, Glob, Bash
 argument-hint: <path> [path2] [path3...]
-agent: planner
+agent: scout
+model: haiku
 ---
 
 Read the specified files and add their contents to the conversation context.
