@@ -3,7 +3,44 @@
   "theme": "system",
   "autoupdate": true,
   "share": "disabled",
-  "instructions": ["~/.claude/CLAUDE.md"],
+  "instructions": [
+    "~/.claude/CLAUDE.md"
+  ],
+  "default_agent": "base",
+  "agent": {
+    "base": {
+      "description": "Low-cost general agent for lightweight prompts and setup",
+      "mode": "primary",
+      "model": "opencode/minimax-m2.1",
+      "temperature": 0.2
+    },
+    "plan": {
+      "description": "Planning: propose approach, diagrams/docs, spawn subagents for docs",
+      "mode": "primary",
+      "model": "opencode/gpt-5.2-codex",
+      "temperature": 0.1
+    },
+    "execute": {
+      "description": "Implement approved plan with minimal discretion",
+      "mode": "primary",
+      "model": "opencode/gpt-5.1-codex",
+      "temperature": 0.2
+    },
+    "docs": {
+      "description": "Research docs quickly and report back with citations",
+      "mode": "subagent",
+      "model": "opencode/minimax-m2.1",
+      "temperature": 0.2
+    }
+  },
+  "command": {
+    "prime": {
+      "template": "Load the prime skill and perform a quick context scan: read README(s), list files at top level, identify project markers, and summarize in 5-8 bullets.",
+      "description": "Run prime skill to gather project context",
+      "agent": "base",
+      "subtask": true
+    }
+  },
   "permission": {
     "read": "allow",
     "edit": "ask",
@@ -26,7 +63,17 @@
       "docker ps*": "allow",
       "docker logs*": "allow",
       "docker images*": "allow",
-      "docker inspect*": "allow"
+      "docker inspect*": "allow",
+      "ls*": "allow",
+      "pwd": "allow",
+      "cat*": "allow",
+      "grep*": "allow",
+      "rg*": "allow",
+      "find*": "allow",
+      "stat*": "allow",
+      "tree*": "allow",
+      "less*": "allow",
+      "more*": "allow"
     },
     "webfetch": "ask",
     "doom_loop": "deny",
