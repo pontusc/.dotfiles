@@ -38,6 +38,7 @@ alias da="deactivate"
 # Kubernetes
 alias k="kubectl"
 alias mkube="minikube"
+alias t="talosctl"
 
 # Config files (note: no hconf for macOS)
 alias nconf="nvim -c \"cd ~/.config/nvim/\""
