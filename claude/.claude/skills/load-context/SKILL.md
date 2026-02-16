@@ -2,6 +2,7 @@
 name: load-context
 description: Read one or more files from any path and pull their contents into the conversation for reference.
 user-invocable: true
+disable-model-invocation: true
 allowed-tools: Read, Glob, Bash
 argument-hint: <path> [path2] [path3...]
 agent: scout

@@ -72,7 +72,6 @@
     ],
     "defaultMode": "default"
   },
-  "model": "sonnet",
   "syntaxHighlightingDisabled": false,
   "preferences": {
     "verboseMode": false
