@@ -37,6 +37,7 @@ alias da="deactivate"
 
 # Kubernetes
 alias k="kubectl"
+alias kns="kubectl config set-context --current --namespace"
 alias mkube="minikube"
 alias t="talosctl"
 
