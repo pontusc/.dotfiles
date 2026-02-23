@@ -2,7 +2,6 @@
 name: prime
 description: Bootstrap session context by reading READMEs, listing files, and building a mental model of the current project.
 user-invocable: true
-disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Bash
 agent: scout
 model: haiku
@@ -19,6 +18,7 @@ Prime your context for this session. Do the following in parallel where possible
 4. If this is a git repo, run `git log --oneline -10` to see recent activity.
 
 After gathering context, provide a concise summary:
+
 - What this project is and what it does
 - Key directories and their purpose
 - Language/framework/tooling in use

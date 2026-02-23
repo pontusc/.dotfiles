@@ -1,7 +1,6 @@
 ---
 name: session-retrospective
 description: Use when the user asks to "review the session", "evaluate our conversation", "improve the workflow", "analyze what went wrong", or mentions session quality/efficiency
-disable-model-invocation: true
 version: 1.0.0
 ---
 
@@ -12,6 +11,7 @@ Evaluate the current session and optimize CLAUDE.md/skills for future interactio
 ## Process
 
 ### 1. Gather Context
+
 - Read `~/.claude/CLAUDE.md`
 - Check existing skills in `~/.claude/skills/`
 - Review project `CLAUDE.md` if exists
@@ -19,6 +19,7 @@ Evaluate the current session and optimize CLAUDE.md/skills for future interactio
 ### 2. Analyze Pain Points
 
 Review conversation for:
+
 - **Repeated corrections** - Same issue corrected 2+ times
 - **Ignored constraints** - User said "simple" 3+ times, I over-engineered
 - **Wasted work** - Discarded implementations, wrong approach
@@ -41,20 +42,25 @@ For each issue:
 
 ```markdown
 ## Pain Points
+
 1. [Issue] - [Impact]
 
 ## Root Cause
+
 [What guidance was missing/ignored]
 
 ## Proposed Changes
 
 ### CLAUDE.md
+
 [Specific edits]
 
 ### Skills
+
 [Create/update what]
 
 ### Removals
+
 [What's redundant/outdated]
 
 Token Impact: -/+ [delta]
@@ -67,6 +73,7 @@ Edit files, update timestamps, verify changes.
 ## Guidelines
 
 **Be ruthless**:
+
 - Every token costs money
 - Principles > Examples
 - Merge similar learnings
@@ -74,6 +81,7 @@ Edit files, update timestamps, verify changes.
 - CLAUDE.md readable in <60s
 
 **Focus**:
+
 - Prevent repeated corrections
 - Recognition signals that save back-and-forth
 - High-impact patterns only
