@@ -14,3 +14,6 @@ unset config_file
 
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
+
+autoload -U +X bashcompinit && bashcompinit
+complete -o nospace -C /opt/homebrew/bin/terragrunt terragrunt

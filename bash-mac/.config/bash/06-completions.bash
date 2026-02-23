@@ -3,7 +3,7 @@ if command -v sesh &> /dev/null; then
   source <(sesh completion bash)
 fi
 
-# Sesh completions
+# Talosctl completions
 if command -v talosctl &> /dev/null; then
   source <(talosctl completion bash)
   complete -o default -F __start_talosctl t
@@ -13,4 +13,9 @@ fi
 if command -v kubectl &> /dev/null; then
   source <(kubectl completion bash)
   complete -o default -F __start_kubectl k
+fi
+
+# Terraform completions
+if command -v terraform &> /dev/null; then
+  complete -o nospace -C terraform tf
 fi
