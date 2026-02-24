@@ -2,6 +2,7 @@
 name: prime
 description: Bootstrap session context by reading READMEs, listing files, and building a mental model of the current project.
 user-invocable: true
+model-invocable: true
 allowed-tools: Read, Glob, Grep, Bash
 agent: scout
 model: haiku
