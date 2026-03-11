@@ -7,9 +7,15 @@ alias ve="python3 -m venv ./venv"
 alias va="source ./venv/bin/activate"
 alias da="deactivate"
 
+# Terraform
+alias tf="terraform"
+alias tg="terragrunt"
+
 # Kubernetes
 alias k="kubectl"
+alias kns="kubectl config set-context --current --namespace"
 alias mkube="minikube"
+alias t="talosctl"
 
 # Config files
 alias nconf="nvim -c \"cd ~/.config/nvim/\""
