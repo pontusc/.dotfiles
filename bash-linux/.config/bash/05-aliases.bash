@@ -1,6 +1,7 @@
 # Shorthands
 alias bsource="source ~/.bashrc"
 alias vi='nvim'
+alias unstow='stow --delete'
 
 # Python virtual environment
 alias ve="python3 -m venv ./venv"
