@@ -2,73 +2,30 @@
   "permissions": {
     "allow": [
       "Read(*)",
+      "Edit(*)",
+      "Write(*)",
       "Glob(*)",
       "Grep(*)",
-      "Bash(git status:*)",
-      "Bash(git diff:*)",
-      "Bash(git log:*)",
-      "Bash(git show:*)",
-      "Bash(git blame:*)",
-      "Bash(git branch:*)",
-      "Bash(git remote:*)",
-      "Bash(git tag:*)",
-      "Bash(git config:*)",
-      "Bash(git ls-files:*)",
-      "Bash(git ls-tree:*)",
-      "Bash(git stash list:*)",
-      "Bash(git stash show:*)",
-      "Bash(cat:*)",
-      "Bash(head:*)",
-      "Bash(tail:*)",
-      "Bash(less:*)",
-      "Bash(more:*)",
-      "Bash(grep:*)",
-      "Bash(rg:*)",
-      "Bash(find:*)",
-      "Bash(tree:*)",
-      "Bash(ls:*)",
-      "Bash(pwd:*)",
-      "Bash(stat:*)",
-      "Bash(file:*)",
-      "Bash(wc:*)",
-      "Bash(du:*)",
-      "Bash(df:*)",
-      "Bash(which:*)",
-      "Bash(type:*)",
-      "Bash(man:*)",
-      "Bash(env:*)",
-      "Bash(ps:*)",
-      "Bash(top:*)",
-      "Bash(uname:*)",
-      "Bash(hostname:*)",
-      "Bash(whoami:*)",
-      "Bash(docker ps:*)",
-      "Bash(docker logs:*)",
-      "Bash(docker images:*)",
-      "Bash(docker inspect:*)",
-      "Bash(echo:*)"
+      "Bash(*)"
     ],
     "deny": [
       "Bash(sudo:*)",
-      "Bash(rm:*)",
-      "Bash(terraform:*)",
-      "Bash(terragrunt:*)",
-      "Bash(make:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(git pull:*)",
       "Bash(git fetch:*)",
+      "Bash(git tag:*)",
       "Bash(git checkout:*)",
       "Bash(git switch:*)",
       "Bash(git merge:*)",
       "Bash(git rebase:*)",
       "Bash(git reset:*)",
       "Bash(git clean:*)",
-      "Bash(git stash save:*)",
-      "Bash(git stash push:*)",
-      "Bash(git stash pop:*)",
-      "Bash(git stash apply:*)"
+      "Bash(git stash:*)",
+      "Bash(git remote:*)",
+      "Bash(git branch -d:*)",
+      "Bash(git branch -D:*)"
     ],
     "defaultMode": "default"
   },
@@ -93,6 +50,15 @@
             "command": "/home/pontusc/.local/bin/dcg"
           }
         ]
+      },
+      {
+        "matcher": "Read|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/pontusc/.claude/hooks/block-secrets.sh"
+          }
+        ]
       }
     ]
   },
@@ -107,9 +73,11 @@
       }
     }
   },
+  "sandbox": {
+    "enabled": true
+  },
   "syntaxHighlightingDisabled": false,
   "preferences": {
     "verboseMode": false
-  },
-  "model": "opus"
+  }
 }
