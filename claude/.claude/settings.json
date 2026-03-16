@@ -72,8 +72,44 @@
     ],
     "defaultMode": "default"
   },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/pontusc/.claude/hooks/format-and-lint.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/pontusc/.local/bin/dcg"
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "claude@cc-marketplace": true
+  },
+  "extraKnownMarketplaces": {
+    "cc-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "alek-ellegard/cc-marketplace"
+      }
+    }
+  },
   "syntaxHighlightingDisabled": false,
   "preferences": {
     "verboseMode": false
-  }
+  },
+  "model": "opus"
 }
