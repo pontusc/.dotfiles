@@ -47,6 +47,8 @@
 #                │                    │              │ ~/.config/yamllint/
 # .tf .tfvars    │ terraform fmt      │ tflint       │ .tflint.hcl
 # .hcl           │ terraform fmt      │ tflint       │ (includes terragrunt)
+# .toml          │ taplo fmt          │ taplo lint   │ taplo.toml / .taplo.toml
+# .json          │ prettier --write   │ jsonlint     │ —
 # ──────────────────────────────────────────────────────────────────────────────
 
 set -euo pipefail
@@ -136,6 +138,14 @@ case "$EXT" in
     TF_DIR=$(dirname "$FILE")
     run_fmt terraform fmt "$FILE" 2>/dev/null || true
     LINT_OUTPUT=$(run_lint tflint --chdir="$TF_DIR") || LINT_RC=$?
+    ;;
+  toml)
+    run_fmt taplo fmt "$FILE" 2>/dev/null || true
+    LINT_OUTPUT=$(run_lint taplo lint "$FILE") || LINT_RC=$?
+    ;;
+  json)
+    run_fmt prettier --write "$FILE" 2>/dev/null || true
+    LINT_OUTPUT=$(run_lint jsonlint "$FILE") || LINT_RC=$?
     ;;
   *)
     exit 0

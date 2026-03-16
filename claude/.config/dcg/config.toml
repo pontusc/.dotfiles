@@ -1,0 +1,29 @@
+[packs]
+enabled = [
+  "core.filesystem",
+  "core.git",
+
+  # Databases
+  "database.postgresql",
+
+  # Containers and orchestration
+  "containers.docker",
+  "containers.compose",
+  "kubernetes",         # Enables all kubernetes sub-packs
+
+  # Cloud providers
+  "cloud.gcp",
+
+  # Infra
+  "infrastructure.ansible",
+  "infrastructure.terraform",
+
+  # CI/CD
+  "cicd.github_actions",
+  "platform.github",
+
+  # System
+  "system.disk",
+  "system.services",
+  "system.permissions",
+]
