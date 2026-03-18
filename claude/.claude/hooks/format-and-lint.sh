@@ -42,13 +42,17 @@
 # Extension(s)   │ Formatter          │ Linter       │ Config
 # ───────────────┼────────────────────┼──────────────┼──────────────────────
 # .py            │ ruff format        │ ruff check   │ pyproject.toml
-# .sh .bash .zsh │ shfmt -w           │ shellcheck   │ —
+# .sh .bash .zsh │ shfmt -sr -w       │ shellcheck   │ —
 # .yml .yaml     │ yamlfmt            │ yamllint     │ ~/.config/yamlfmt/
 #                │                    │              │ ~/.config/yamllint/
-# .tf .tfvars    │ terraform fmt      │ tflint       │ .tflint.hcl
-# .hcl           │ terraform fmt      │ tflint       │ (includes terragrunt)
+# .tf .tfvars    │ terraform fmt      │ —            │ —
+# .hcl           │ terraform fmt      │ —            │ —
 # .toml          │ taplo fmt          │ taplo lint   │ taplo.toml / .taplo.toml
 # .json          │ prettier --write   │ jsonlint     │ —
+# .js .ts .jsx   │ prettier --write   │ eslint_d     │ —
+#   .tsx .mjs .cjs│                   │              │
+# .md            │ prettier --write   │ —            │ —
+# .lua           │ stylua             │ —            │ stylua.toml
 # ──────────────────────────────────────────────────────────────────────────────
 
 set -euo pipefail
@@ -127,7 +131,7 @@ case "$EXT" in
     LINT_OUTPUT=$(run_lint ruff check "$FILE") || LINT_RC=$?
     ;;
   sh | bash | zsh)
-    run_fmt shfmt -w "$FILE" 2>/dev/null || true
+    run_fmt shfmt -sr -w "$FILE" 2>/dev/null || true
     LINT_OUTPUT=$(run_lint shellcheck "$FILE") || LINT_RC=$?
     ;;
   yml | yaml)
@@ -135,9 +139,17 @@ case "$EXT" in
     LINT_OUTPUT=$(run_lint yamllint -c "$HOME/.config/yamllint/config" "$FILE") || LINT_RC=$?
     ;;
   tf | tfvars | hcl)
-    TF_DIR=$(dirname "$FILE")
     run_fmt terraform fmt "$FILE" 2>/dev/null || true
-    LINT_OUTPUT=$(run_lint tflint --chdir="$TF_DIR") || LINT_RC=$?
+    ;;
+  js | ts | jsx | tsx | mjs | cjs)
+    run_fmt prettier --write "$FILE" 2>/dev/null || true
+    LINT_OUTPUT=$(run_lint eslint_d "$FILE") || LINT_RC=$?
+    ;;
+  md)
+    run_fmt prettier --write "$FILE" 2>/dev/null || true
+    ;;
+  lua)
+    run_fmt stylua "$FILE" 2>/dev/null || true
     ;;
   toml)
     run_fmt taplo fmt "$FILE" 2>/dev/null || true
@@ -154,6 +166,9 @@ esac
 
 # ── Result ───────────────────────────────────────────────────────────────────
 if [[ "$LINT_RC" -ne 0 ]]; then
+  notify-send -u normal -a "Claude Code" \
+    "format-and-lint: FAILED" \
+    "$FILE\nLint errors found" 2>/dev/null || true
   echo "format-and-lint: lint failed for $FILE" >&2
   echo "$LINT_OUTPUT" >&2
   echo ""

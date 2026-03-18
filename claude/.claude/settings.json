@@ -2,11 +2,12 @@
   "permissions": {
     "allow": [
       "Read(*)",
-      "Edit(*)",
-      "Write(*)",
       "Glob(*)",
       "Grep(*)",
-      "Bash(*)"
+      "Bash(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "Agent(*)"
     ],
     "deny": [
       "Bash(sudo:*)",
@@ -52,11 +53,11 @@
         ]
       },
       {
-        "matcher": "Read|Bash",
+        "matcher": "Read|Bash|Grep|Glob",
         "hooks": [
           {
             "type": "command",
-            "command": "/home/pontusc/.claude/hooks/block-secrets.sh"
+            "command": "/home/pontusc/.claude/hooks/guard-sensitive.sh"
           }
         ]
       }
@@ -74,10 +75,11 @@
     }
   },
   "sandbox": {
-    "enabled": true
+    "enabled": false
   },
   "syntaxHighlightingDisabled": false,
   "preferences": {
-    "verboseMode": false
-  }
+    "verboseMode": true
+  },
+  "model": "opus[1m]"
 }

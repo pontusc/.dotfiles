@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# block-secrets — Claude Code PreToolUse hook (matcher: Read|Bash)
+# guard-sensitive — Claude Code PreToolUse hook (matcher: Read|Bash|Grep|Glob)
 #
 # ── Purpose ────────────────────────────────────────────────────────────────────
 #
-# Prevents the agent from reading files that may contain secrets, keys, or
-# credentials. Intercepts Read tool calls and Bash commands (cat, head, tail,
+# Prevents the agent from accessing files that may contain secrets, keys, or
+# credentials. Intercepts Read, Grep, Glob, and Bash commands (cat, head, tail,
 # less, more) before execution, checks the target file path against a set of
 # blocked patterns, and exits 2 to block if matched.
 #
@@ -12,15 +12,20 @@
 #
 # Files:
 #   .env, .env.*, .env.local, etc.
-#   *.pem, *.key, *.pfx, *.p12
+#   *.pem, *.key, *.pfx, *.p12, *.gpg, *.age
 #   *credentials*, *secret*
-#   id_rsa, id_ed25519, id_ecdsa, id_dsa
+#   id_rsa, id_ed25519, id_ecdsa, id_dsa (+ .pub variants)
+#   authorized_keys
+#   *.tfstate, *.tfstate.backup
+#   *kubeconfig*
 #
 # Directories (any file inside):
 #   .secret/    — project-level secret stores
 #   .ssh/       — SSH keys and config
 #   .kube/      — Kubernetes credentials
 #   .talos/     — Talos machine configs
+#   .gnupg/     — GPG keyrings
+#   .terragrunt-cache/ — generated files (never edit)
 #
 # ── Exit codes ────────────────────────────────────────────────────────────────
 #
@@ -30,7 +35,7 @@
 # ── Registration ──────────────────────────────────────────────────────────────
 #
 # Registered in ~/.claude/settings.json under hooks.PreToolUse with
-# matcher "Read|Bash".
+# matcher "Read|Bash|Grep|Glob".
 
 set -euo pipefail
 
@@ -43,6 +48,19 @@ FILE=""
 case "$TOOL" in
   Read)
     FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
+    ;;
+  Grep)
+    FILE=$(echo "$INPUT" | jq -r '.tool_input.path // empty')
+    ;;
+  Glob)
+    # Glob passes a path (directory to search in) — block discovery in sensitive dirs
+    FILE=$(echo "$INPUT" | jq -r '.tool_input.path // empty')
+    # Also check the pattern itself for sensitive directory references
+    if [[ -z "$FILE" ]]; then
+      PATTERN=$(echo "$INPUT" | jq -r '.tool_input.pattern // empty')
+      # Extract directory prefix from glob patterns like /home/user/.ssh/**/*
+      FILE=$(echo "$PATTERN" | sed -n 's|\(/[^*?{}\[]*\).*|\1|p')
+    fi
     ;;
   Bash)
     CMD=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
@@ -76,7 +94,12 @@ DIRPATH="$FILE"
 # Check if file is inside a blocked directory
 is_blocked_dir() {
   case "$DIRPATH" in
-    */.secret/* | */.ssh/* | */.kube/* | */.talos/*) return 0 ;;
+    */.secret | */.secret/*) echo "directory rule: .secret/"; return 0 ;;
+    */.ssh | */.ssh/*) echo "directory rule: .ssh/"; return 0 ;;
+    */.kube | */.kube/*) echo "directory rule: .kube/"; return 0 ;;
+    */.talos | */.talos/*) echo "directory rule: .talos/"; return 0 ;;
+    */.gnupg | */.gnupg/*) echo "directory rule: .gnupg/"; return 0 ;;
+    */.terragrunt-cache | */.terragrunt-cache/*) echo "directory rule: .terragrunt-cache/ (generated)"; return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -84,20 +107,32 @@ is_blocked_dir() {
 # Check if filename matches a blocked pattern
 is_blocked_file() {
   case "$BASENAME" in
-    .env | .env.*) return 0 ;;
-    *.pem | *.key | *.pfx | *.p12) return 0 ;;
-    *credentials* | *secret*) return 0 ;;
-    id_rsa | id_ed25519 | id_ecdsa | id_dsa) return 0 ;;
-    id_rsa.pub | id_ed25519.pub | id_ecdsa.pub | id_dsa.pub) return 0 ;;
+    .env | .env.*) echo "file rule: .env*"; return 0 ;;
+    *.pem | *.key | *.pfx | *.p12) echo "file rule: certificate/key extension"; return 0 ;;
+    *.gpg | *.age) echo "file rule: encrypted file"; return 0 ;;
+    *credentials* | *secret*) echo "file rule: credentials/secret in name"; return 0 ;;
+    *kubeconfig*) echo "file rule: kubeconfig"; return 0 ;;
+    *.tfstate | *.tfstate.backup) echo "file rule: Terraform state (contains secrets)"; return 0 ;;
+    authorized_keys) echo "file rule: SSH authorized_keys"; return 0 ;;
+    id_rsa | id_ed25519 | id_ecdsa | id_dsa) echo "file rule: SSH private key"; return 0 ;;
+    id_rsa.pub | id_ed25519.pub | id_ecdsa.pub | id_dsa.pub) echo "file rule: SSH public key"; return 0 ;;
     *) return 1 ;;
   esac
 }
 
 # ── Decision ──────────────────────────────────────────────────────────────────
-if is_blocked_dir || is_blocked_file; then
-  echo "block-secrets: blocked read of $FILE" >&2
+MATCH=""
+MATCH=$(is_blocked_dir) || MATCH=$(is_blocked_file) || true
+
+if [[ -n "$MATCH" ]]; then
+  notify-send -u critical -a "Claude Code" \
+    "guard-sensitive: BLOCKED $TOOL" \
+    "$FILE\nRule: $MATCH" 2>/dev/null || true
+  echo "guard-sensitive [$TOOL]: BLOCKED $FILE" >&2
+  echo "  matched: $MATCH" >&2
   echo ""
   echo "Access denied: this file may contain secrets and cannot be read."
+  echo "Tool: $TOOL | File: $FILE | Rule: $MATCH"
   exit 2
 fi
 

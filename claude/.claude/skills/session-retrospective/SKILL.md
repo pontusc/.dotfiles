@@ -1,7 +1,9 @@
 ---
 name: session-retrospective
 description: Use when the user asks to "review the session", "evaluate our conversation", "improve the workflow", "analyze what went wrong", or mentions session quality/efficiency
-version: 1.0.0
+user-invocable: true
+model-invocable: false
+model: sonnet
 ---
 
 # Session Retrospective
