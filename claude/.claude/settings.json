@@ -63,6 +63,10 @@
       }
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "bash /home/pontusc/.claude/statusline-command.sh"
+  },
   "enabledPlugins": {
     "claude@cc-marketplace": true
   },
@@ -81,5 +85,5 @@
   "preferences": {
     "verboseMode": true
   },
-  "model": "opus[1m]"
+  "model": "claude-sonnet-4-6"
 }

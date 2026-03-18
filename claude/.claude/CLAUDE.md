@@ -33,10 +33,9 @@
 
 - **Security first**: OWASP, no injection/XSS vulnerabilities
 - **Minimal dependencies**: Standard tools, containerized implementations
-- **IaC best practices**: Modular, reusable, proper state management
-- **Shell scripting**: `set -euo pipefail`, ShellCheck compliant, POSIX when possible
 - **Simplicity**: Don't over-engineer. Most direct solution first.
 - **Validate before proposing**: Confirm tool/service capabilities before suggesting solutions. Don't assume features exist.
+- **Language conventions**: Handled by model-invocable skills (bash, makefile, terraform, github-ci, kubernetes, helm)
 
 ## Security Model
 
