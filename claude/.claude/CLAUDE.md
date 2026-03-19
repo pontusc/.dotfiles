@@ -36,6 +36,7 @@
 - **Simplicity**: Don't over-engineer. Most direct solution first.
 - **Validate before proposing**: Confirm tool/service capabilities before suggesting solutions. Don't assume features exist.
 - **Language conventions**: Handled by model-invocable skills (bash, makefile, terraform, github-ci, kubernetes, helm)
+- **Version checks**: Always fetch live from the web (GitHub releases page or docs). Never trust training data for versioning — it goes stale.
 
 ## Security Model
 
@@ -75,4 +76,4 @@ Hook design docs: `~/.claude/hooks/HOOKS.md`
 
 **Avoid in plans**: Full file contents, step-by-step for obvious tasks, over-engineering.
 
-_Last updated: 2026-03-17_
+_Last updated: 2026-03-18_

@@ -31,6 +31,16 @@
     "defaultMode": "default"
   },
   "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/pontusc/.claude/hooks/notify.sh"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
@@ -85,5 +95,5 @@
   "preferences": {
     "verboseMode": true
   },
-  "model": "claude-sonnet-4-6"
+  "model": "opus[1m]"
 }
