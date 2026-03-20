@@ -45,6 +45,8 @@
 # .sh .bash .zsh │ shfmt -sr -w       │ shellcheck   │ —
 # .yml .yaml     │ yamlfmt            │ yamllint     │ ~/.config/yamlfmt/
 #                │                    │              │ ~/.config/yamllint/
+# .yml .yaml     │ yamlfmt            │ yamllint +   │ (only .github/workflows/)
+#  (GH Actions)  │                    │ actionlint   │
 # .tf .tfvars    │ terraform fmt      │ —            │ —
 # .hcl           │ terraform fmt      │ —            │ —
 # .toml          │ taplo fmt          │ taplo lint   │ taplo.toml / .taplo.toml
@@ -119,6 +121,13 @@ run_lint() {
 	fi
 }
 
+# ── Path-based overrides ─────────────────────────────────────────────────────
+# Some filetypes share an extension but need different linters based on path.
+IS_GHACTION=false
+if [[ "$FILE" == */.github/workflows/*.yml || "$FILE" == */.github/workflows/*.yaml ]]; then
+	IS_GHACTION=true
+fi
+
 # ── Per-language dispatch ────────────────────────────────────────────────────
 # Each branch: format in-place first, then lint the result.
 # Formatter errors are swallowed (|| true) — we only block on lint failures.
@@ -137,9 +146,14 @@ sh | bash | zsh)
 yml | yaml)
 	run_fmt yamlfmt -conf "$HOME/.config/yamlfmt/yamlfmt.yml" "$FILE" 2> /dev/null || true
 	LINT_OUTPUT=$(run_lint yamllint -c "$HOME/.config/yamllint/config" "$FILE") || LINT_RC=$?
+	if [[ "$IS_GHACTION" == true && "$LINT_RC" -eq 0 ]]; then
+		LINT_OUTPUT=$(run_lint actionlint "$FILE") || LINT_RC=$?
+	fi
 	;;
 tf | tfvars | hcl)
-	run_fmt terraform fmt "$FILE" 2> /dev/null || true
+	if formatted=$(terraform fmt - < "$FILE" 2> /dev/null); then
+		printf '%s' "$formatted" > "$FILE"
+	fi
 	;;
 js | ts | jsx | tsx | mjs | cjs)
 	run_fmt prettier --write "$FILE" 2> /dev/null || true

@@ -60,3 +60,22 @@ concurrency:
 - Define shared env vars at workflow level, job-specific at job level.
 - Use `$GITHUB_OUTPUT` for passing values between steps (not deprecated `::set-output`).
 - Use `$GITHUB_ENV` sparingly — prefer explicit step outputs.
+
+## Script Paths with `working-directory`
+
+When a job sets `working-directory` to a subdirectory, scripts outside that dir must use `$GITHUB_WORKSPACE` for absolute resolution:
+
+```yaml
+run: $GITHUB_WORKSPACE/tools/scripts/my-script.sh
+```
+
+Do NOT use `./` (resolves relative to the working dir) or quote the variable (causes YAML syntax error).
+
+## `vars.*` vs `secrets.*` — Distinct Channels
+
+GHA variables and secrets flow through separate channels in reusable workflows:
+
+- `vars.FOO` → pass via `with:` as a workflow `inputs:` (type: string)
+- `secrets.FOO` → pass via `secrets:` as a workflow `secrets:`
+
+Mixing them causes silent failures or lint errors. When a value moves from a secret to a variable, update both the caller (`with:` instead of `secrets:`) and the called workflow (`inputs:` instead of `secrets:`).

@@ -47,8 +47,9 @@ set -euo pipefail
 
 ## Best Practices
 
-- **ShellCheck compliant**: All scripts must pass `shellcheck` without warnings. If a directive is needed, add `# shellcheck disable=SCXXXX` with a comment explaining why.
+- **ShellCheck compliant**: All scripts must pass `shellcheck`. Satisfy the rule rather than disabling it — e.g., for SC2155, separate declaration and assignment instead of adding a disable directive.
+- **printf needs `\n`**: `printf` does not append a newline like `echo`. Always include `\n` in the format string: `printf 'message\n'`.
 - **No useless cat**: Use `< file` instead of `cat file |`.
 - **Prefer builtins**: Use `[[ -f file ]]` not `test -f file`, `${var%pattern}` not `sed` for simple string ops.
 - **Temp files**: Use `mktemp` and clean up via trap.
-- **Readonly**: Mark constants with `readonly` or `declare -r`.
+- **Readonly**: Only use `readonly` when the variable genuinely needs protection from reassignment. Don't apply it by default to every variable.
