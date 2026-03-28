@@ -54,6 +54,7 @@
 # .js .ts .jsx   │ prettier --write   │ eslint_d     │ —
 #   .tsx .mjs .cjs│                   │              │
 # .md            │ prettier --write   │ —            │ —
+# .go            │ gofmt              │ golangci-lint│ —
 # .lua           │ stylua             │ —            │ stylua.toml
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -161,6 +162,12 @@ js | ts | jsx | tsx | mjs | cjs)
 	;;
 md)
 	run_fmt prettier --write "$FILE" 2> /dev/null || true
+	;;
+go)
+	if formatted=$(gofmt "$FILE" 2> /dev/null); then
+		printf '%s' "$formatted" > "$FILE"
+	fi
+	LINT_OUTPUT=$(run_lint golangci-lint run "$FILE") || LINT_RC=$?
 	;;
 lua)
 	run_fmt stylua "$FILE" 2> /dev/null || true
