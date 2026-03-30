@@ -18,6 +18,7 @@
 ## Communication
 
 - Ask questions rather than assume. Provide context when helpful, but stay concise.
+- **Ask OR act, never both**: If a clarifying question is needed, ask it and stop. Do not implement in the same response.
 - After completing tasks, offer session retrospective (`/session-retrospective`)
 - After iterative work with many corrections, offer to document learnings in this file
 - Two course corrections in same session → stop and ask what's wrong
@@ -76,4 +77,4 @@ Hook design docs: `~/.claude/hooks/HOOKS.md`
 
 **Avoid in plans**: Full file contents, step-by-step for obvious tasks, over-engineering.
 
-_Last updated: 2026-03-18_
+_Last updated: 2026-03-30_

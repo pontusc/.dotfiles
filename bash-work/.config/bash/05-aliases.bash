@@ -17,6 +17,7 @@ alias k="kubectl"
 alias kns="kubectl config set-context --current --namespace"
 alias mkube="minikube"
 alias t="talosctl"
+alias hubble="kubectl exec -it -n gke-managed-dpv2-observability deployment/hubble-relay -c hubble-cli -- hubble"
 
 # Config files
 alias nconf="nvim -c \"cd ~/.config/nvim/\""
