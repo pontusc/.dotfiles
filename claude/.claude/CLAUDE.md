@@ -32,6 +32,7 @@
 
 ## Coding Principles
 
+- **Indentation**: Always use spaces, never tabs. 2-space indent for most languages (matches Neovim/LazyVim defaults).
 - **Security first**: OWASP, no injection/XSS vulnerabilities
 - **Minimal dependencies**: Standard tools, containerized implementations
 - **Simplicity**: Don't over-engineer. Most direct solution first.
