@@ -61,7 +61,7 @@ Hook design docs: `~/.claude/hooks/HOOKS.md`
 
 ## Working Guidelines
 
-- **Ask before changing** files/configs (especially system-critical dotfiles)
+- **Confirm before every edit**: After proposing changes in conversation, always wait for explicit user approval before touching any file. Proposals and implementations are separate steps.
 - **NEVER run state-changing commands**: No deployment commands, no git state changes, no remote/production modifications. Only modify local files. Enforced by dcg hook + deny list.
 - **Avoid**: Unsolicited refactoring, unrequested features, assumptions
 - **"simple/basic/barebones" signals** → user wants MINIMAL scope, propose the most direct solution
@@ -78,4 +78,4 @@ Hook design docs: `~/.claude/hooks/HOOKS.md`
 
 **Avoid in plans**: Full file contents, step-by-step for obvious tasks, over-engineering.
 
-_Last updated: 2026-03-30_
+_Last updated: 2026-04-15_
