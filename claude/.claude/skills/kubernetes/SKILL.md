@@ -14,10 +14,6 @@ Apply these conventions when writing or editing Kubernetes resource manifests (D
 
 - **API version**: Use the latest stable API version for each resource kind. Avoid deprecated/beta APIs unless required.
 - **Namespaces**: Always specify `metadata.namespace`. Never deploy to `default` namespace.
-- **Labels**: Every resource must have at minimum:
-  - `app.kubernetes.io/name`
-  - `app.kubernetes.io/instance`
-  - `app.kubernetes.io/managed-by`
 
 ## Images
 
