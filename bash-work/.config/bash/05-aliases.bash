@@ -24,6 +24,7 @@ alias nconf="nvim -c \"cd ~/.config/nvim/\""
 alias bconf="nvim ~/.config/bash"
 alias hconf="nvim ~/.config/hypr/"
 alias tconf="nvim ~/.config/tmux/tmux.conf"
+alias sconf="nvim ~/.ssh/config"
 
 # Lazy tools
 alias lgt="lazygit"
