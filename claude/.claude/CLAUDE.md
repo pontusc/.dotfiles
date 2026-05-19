@@ -38,6 +38,20 @@
 - **executor** (sonnet) — Surgical implementation from a precise spec: file edits, multi-file refactors, mechanical changes. Trigger once design is settled and you have a concrete change list. Absorbs read/edit token cost so the Opus main thread stays focused on reasoning.
 - **validator** (sonnet) — Runs validation/lint/plan commands and reports a structured verdict. Trigger after edits to `.tf`/`.hcl`, Kubernetes manifests, Helm charts, or any file with a defined lint/validate command. Absorbs noisy command output so the main thread sees a clean pass/fail report.
 
+### Routing Rules (MUST follow)
+
+| Task                                             | Route to                       |
+| ------------------------------------------------ | ------------------------------ |
+| >2 file reads OR any web lookup                  | scout (haiku)                  |
+| Write/Edit after design approved                 | executor (sonnet)              |
+| Edits to .tf/.hcl, k8s/helm manifests, Makefiles | validator (sonnet, after edit) |
+| Single trivial read or single obvious edit       | inline OK                      |
+
+- Main thread MUST route to executor for Write/Edit operations on approved work. No inline implementation.
+- Main thread MUST route to scout before any multi-file read or web search.
+- Main thread MUST route to validator after any edit to validated config files.
+- Inline action is allowed only for a single trivial file or a single obvious read.
+
 ## Working Guidelines
 
 - **Confirm before every edit**: After proposing changes in conversation, always wait for explicit user approval before touching any file. Proposals and implementations are separate steps.
@@ -59,4 +73,4 @@ Weak criteria ("make it work") require constant clarification. Strong criteria l
 
 **Avoid in plans**: Full file contents, step-by-step for obvious tasks, over-engineering.
 
-_Last updated: 2026-05-19 (added executor agent for Opus/Sonnet delegation pattern)_
+_Last updated: 2026-05-19 (replaced delegation check bullet with imperative Routing Rules table + MUST language)_
