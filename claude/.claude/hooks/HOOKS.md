@@ -14,12 +14,12 @@ Security is enforced via hooks rather than sandbox — the sandbox is disabled.
 
 ### Active Hooks
 
-| Hook                 | Event        | Matcher                  | Purpose                                          |
-| -------------------- | ------------ | ------------------------ | ------------------------------------------------ |
-| `notify.sh`          | Notification | —                        | Single entry point for all desktop notifications |
-| `guard-sensitive.sh` | PreToolUse   | `Read\|Bash\|Grep\|Glob` | Blocks access to sensitive files/dirs            |
-| `format-and-lint.sh` | PostToolUse  | `Write\|Edit`            | Formats then lints written files                 |
-| `dcg` (binary)       | PreToolUse   | `Bash`                   | Blocks destructive shell commands                |
+| Hook                 | Event              | Matcher                  | Purpose                                          |
+| -------------------- | ------------------ | ------------------------ | ------------------------------------------------ |
+| `notify.sh`          | Notification, Stop | —                        | Single entry point for all desktop notifications |
+| `guard-sensitive.sh` | PreToolUse         | `Read\|Bash\|Grep\|Glob` | Blocks access to sensitive files/dirs            |
+| `format-and-lint.sh` | PostToolUse        | `Write\|Edit`            | Formats then lints written files                 |
+| `dcg` (binary)       | PreToolUse         | `Bash`                   | Blocks destructive shell commands                |
 
 ## Design Rules
 

@@ -19,7 +19,6 @@
 
 - Ask questions rather than assume. Provide context when helpful, but stay concise.
 - **Ask OR act, never both**: If a clarifying question is needed, ask it and stop. Do not implement in the same response.
-- After completing tasks, offer session retrospective (`/session-retrospective`)
 - After iterative work with many corrections, offer to document learnings in this file
 - Two course corrections in same session → stop and ask what's wrong
 
@@ -54,10 +53,8 @@ Hook design docs: `~/.claude/hooks/HOOKS.md`
 
 ## Agents
 
-- **expert** (opus) — deep implementations, debugging, architecture decisions
-- **scout** (haiku) — fast information gathering, web searches, file reads
-- **infra** (sonnet) — Terraform/IaC review, Kubernetes validation, CI/CD analysis
-- **cc-config** (sonnet) — Claude Code configuration (settings, hooks, skills, agents, plugins)
+- **scout** (haiku) — Token-saving delegation for read-heavy work: docs lookups, web searches, file/grep queries, multi-file reads. Trigger when a task needs more than 2 reads or any web lookup, to keep the main thread's context lean.
+- **validator** (sonnet) — Runs validation/lint/plan commands and reports a structured verdict. Trigger after edits to `.tf`/`.hcl`, Kubernetes manifests, Helm charts, or any file with a defined lint/validate command. Absorbs noisy command output so the main thread sees a clean pass/fail report.
 
 ## Working Guidelines
 
@@ -78,4 +75,4 @@ Hook design docs: `~/.claude/hooks/HOOKS.md`
 
 **Avoid in plans**: Full file contents, step-by-step for obvious tasks, over-engineering.
 
-_Last updated: 2026-04-15_
+_Last updated: 2026-05-19_

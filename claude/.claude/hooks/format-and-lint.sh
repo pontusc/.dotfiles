@@ -167,7 +167,15 @@ go)
   if formatted=$(gofmt "$FILE" 2> /dev/null); then
     printf '%s' "$formatted" > "$FILE"
   fi
-  LINT_OUTPUT=$(run_lint golangci-lint run "$FILE") || LINT_RC=$?
+  # golangci-lint operates on packages, not single files — run from the file's dir
+  GOLANGCI=$(mason_bin golangci-lint)
+  if [[ -n "$GOLANGCI" ]]; then
+    if ! LINT_OUTPUT=$(cd "$(dirname "$FILE")" && "$GOLANGCI" run ./... 2>&1); then
+      LINT_RC=$?
+    fi
+  else
+    echo "format-and-lint: linter 'golangci-lint' not found (Mason or PATH)" >&2
+  fi
   ;;
 lua)
   run_fmt stylua "$FILE" 2> /dev/null || true

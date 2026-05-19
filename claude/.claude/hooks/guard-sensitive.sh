@@ -18,6 +18,7 @@
 #   authorized_keys
 #   *.tfstate, *.tfstate.backup
 #   *kubeconfig*
+#   .npmrc, .netrc — auth tokens / FTP-HTTP credentials
 #
 # Directories (any file inside):
 #   .secret/    — project-level secret stores
@@ -25,6 +26,7 @@
 #   .kube/      — Kubernetes credentials
 #   .talos/     — Talos machine configs
 #   .gnupg/     — GPG keyrings
+#   .aws/       — AWS credentials and config
 #   .terragrunt-cache/ — generated files (never edit)
 #
 # ── Exit codes ────────────────────────────────────────────────────────────────
@@ -114,6 +116,10 @@ is_blocked_dir() {
     echo "directory rule: .gnupg/"
     return 0
     ;;
+  */.aws | */.aws/*)
+    echo "directory rule: .aws/"
+    return 0
+    ;;
   */.terragrunt-cache | */.terragrunt-cache/*)
     echo "directory rule: .terragrunt-cache/ (generated)"
     return 0
@@ -151,6 +157,14 @@ is_blocked_file() {
     ;;
   authorized_keys)
     echo "file rule: SSH authorized_keys"
+    return 0
+    ;;
+  .npmrc)
+    echo "file rule: .npmrc (auth tokens)"
+    return 0
+    ;;
+  .netrc)
+    echo "file rule: .netrc (HTTP/FTP credentials)"
     return 0
     ;;
   id_rsa | id_ed25519 | id_ecdsa | id_dsa)

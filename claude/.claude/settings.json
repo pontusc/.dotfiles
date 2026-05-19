@@ -37,7 +37,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "notify-send 'Claude done ❇️'"
+            "command": "/home/pontusc/.claude/hooks/notify.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/pontusc/.claude/hooks/notify.sh"
           }
         ]
       }
