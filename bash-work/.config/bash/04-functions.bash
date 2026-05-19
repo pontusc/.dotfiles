@@ -20,3 +20,7 @@ kds() {
 
   kubectl get secret "$secret_name" "$@" -o json | jq '.data | map_values(@base64d)'
 }
+
+kcs() {
+  kubectl config use-context "$(kubectl config get-contexts -o name | fzf)"
+}
