@@ -195,12 +195,6 @@ esac
 
 # ── Result ───────────────────────────────────────────────────────────────────
 if [[ "$LINT_RC" -ne 0 ]]; then
-  jq -n \
-    --arg type "hook_failure" \
-    --arg title "format-and-lint: FAILED" \
-    --arg message "$FILE\nLint errors found" \
-    '{notification_type: $type, title: $title, message: $message}' |
-    /home/pontusc/.claude/hooks/notify.sh || true
   echo "format-and-lint: lint failed for $FILE" >&2
   echo "$LINT_OUTPUT" >&2
   echo ""

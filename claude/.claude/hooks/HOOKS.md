@@ -36,29 +36,15 @@ Parse with `jq`. Always guard with `// empty` to handle missing fields.
 
 ### Notifications
 
-All notifications flow through `notify.sh` — never call `notify-send` directly in hooks.
-Pipe a JSON payload to `notify.sh` using the `notification_type` field to control urgency:
+`notify.sh` is registered for Claude Code `Notification` and `Stop` events only.
+It surfaces attention-required events: permission prompts and task completion.
 
-```bash
-# hook_block → critical urgency (PreToolUse block)
-jq -n \
-  --arg type "hook_block" \
-  --arg title "hook-name: BLOCKED $TOOL" \
-  --arg message "$FILE\nRule: $MATCH" \
-  '{notification_type: $type, title: $title, message: $message}' \
-  | /home/pontusc/.claude/hooks/notify.sh || true
+PreToolUse blocks (guard-sensitive, dcg) and PostToolUse lint failures do NOT
+notify — they return `exit 2` with details on stderr, and the agent fixes and
+retries on its own. Surfacing them would be noise.
 
-# hook_failure → normal urgency (PostToolUse lint/format failure)
-jq -n \
-  --arg type "hook_failure" \
-  --arg title "hook-name: FAILED" \
-  --arg message "$FILE\nDetails" \
-  '{notification_type: $type, title: $title, message: $message}' \
-  | /home/pontusc/.claude/hooks/notify.sh || true
-```
-
-`notify.sh` is also registered as a `Notification` hook so Claude Code system events
-(permission prompts, idle, etc.) flow through the same script automatically.
+Never call `notify-send` directly from a hook. If you need to add a new
+attention event, route it through `notify.sh` and add a case branch there.
 
 ### Tool Resolution
 

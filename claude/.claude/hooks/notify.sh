@@ -3,82 +3,61 @@
 #
 # ── Purpose ───────────────────────────────────────────────────────────────────
 #
-# Single relay for all desktop notifications. Receives JSON on stdin and
-# dispatches to notify-send with appropriate urgency and icon based on the
-# event source.
+# Single relay for desktop notifications. Surfaces ONLY events that need the
+# user's attention — permission prompts and task completion. Hook blocks
+# (PreToolUse) and lint failures (PostToolUse) deliberately do not notify;
+# they go back to the agent which fixes and retries on its own.
 #
-# ── Input shapes ──────────────────────────────────────────────────────────────
+# ── Input ─────────────────────────────────────────────────────────────────────
 #
-# 1) Claude Code native event (registered as Notification / Stop hook):
-#      { "hook_event_name": "Notification", "message": "...", ... }
-#      { "hook_event_name": "Stop", ... }
-#
-# 2) Custom call piped from another hook (PreToolUse block, PostToolUse fail):
-#      { "notification_type": "hook_block|hook_failure",
-#        "title": "...", "message": "..." }
+# Claude Code native event JSON on stdin:
+#   { "hook_event_name": "Notification", "message": "...", ... }
+#   { "hook_event_name": "Stop", ... }
 #
 # ── Event routing ─────────────────────────────────────────────────────────────
 #
-#   Source              │ Urgency  │ Icon              │ Message
-#   ────────────────────┼──────────┼───────────────────┼──────────────────────
-#   Notification        │ normal   │ dialog-question   │ event.message
-#   Stop                │ low      │ dialog-information│ "Task complete ❇️"
-#   SubagentStop        │ (skipped — too noisy)
-#   hook_block          │ critical │ dialog-error      │ payload.message
-#   hook_failure        │ normal   │ dialog-warning    │ payload.message
+#   Event         │ Urgency  │ Icon              │ Message
+#   ──────────────┼──────────┼───────────────────┼──────────────────────────
+#   Notification  │ normal   │ dialog-question   │ event.message
+#   Stop          │ low      │ dialog-information│ "Task complete ❇️"
+#   SubagentStop  │ (skipped — too noisy)
 #
-# ── Exit codes ────────────────────────────────────────────────────────────────
+# ── Exit ──────────────────────────────────────────────────────────────────────
 #
-# Always exits 0. Notifications are best-effort and must never block the agent.
+# Always 0. Notifications are best-effort and must never block the agent.
 
 set -uo pipefail
 
 INPUT=$(cat)
 
 EVENT=$(echo "$INPUT" | jq -r '.hook_event_name // empty')
-TYPE=$(echo "$INPUT" | jq -r '.notification_type // empty')
+[[ -n "$EVENT" ]] || exit 0
 
 URGENCY="normal"
 ICON="dialog-information"
 TITLE="Claude Code"
 MESSAGE=""
 
-if [[ -n "$EVENT" ]]; then
-  case "$EVENT" in
-  Notification)
-    MESSAGE=$(echo "$INPUT" | jq -r '.message // "Attention needed"')
-    URGENCY="normal"
-    ICON="dialog-question"
-    ;;
-  Stop)
-    MESSAGE="Task complete ❇️"
-    URGENCY="low"
-    ;;
-  SubagentStop)
-    # Subagent completions are too frequent to surface
-    exit 0
-    ;;
-  *)
-    TITLE="Claude Code: $EVENT"
-    MESSAGE=$(echo "$INPUT" | jq -r '.message // empty')
-    ;;
-  esac
-elif [[ -n "$TYPE" ]]; then
-  TITLE=$(echo "$INPUT" | jq -r '.title // "Claude Code"')
-  MESSAGE=$(echo "$INPUT" | jq -r '.message // empty')
-  case "$TYPE" in
-  hook_block)
-    URGENCY="critical"
-    ICON="dialog-error"
-    ;;
-  hook_failure)
-    URGENCY="normal"
-    ICON="dialog-warning"
-    ;;
-  esac
-else
+case "$EVENT" in
+Notification)
+  MESSAGE=$(echo "$INPUT" | jq -r '.message // "Attention needed"')
+  URGENCY="normal"
+  ICON="dialog-question"
+  ;;
+Stop)
+  MESSAGE="Task complete ❇️"
+  URGENCY="low"
+  ;;
+SubagentStop)
+  # Subagent completions are too frequent to surface
   exit 0
-fi
+  ;;
+*)
+  # Unknown event — best-effort relay
+  TITLE="Claude Code: $EVENT"
+  MESSAGE=$(echo "$INPUT" | jq -r '.message // empty')
+  ;;
+esac
 
 [[ -n "$MESSAGE" ]] || exit 0
 

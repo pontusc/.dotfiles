@@ -66,16 +66,82 @@ Glob)
   ;;
 Bash)
   CMD=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
-  # Match common read commands and extract the last argument as file path.
-  # Handles: cat FILE, head FILE, tail FILE, less FILE, more FILE
-  # Also handles flags: cat -n FILE, head -20 FILE, tail -f FILE
-  if [[ "$CMD" =~ ^(cat|head|tail|less|more)([[:space:]]|$) ]]; then
-    # Extract last non-flag argument (simple heuristic: last word not starting with -)
-    FILE=$(echo "$CMD" | awk '{for(i=NF;i>1;i--) if($i !~ /^-/) {print $i; exit}}')
+  [[ -n "$CMD" ]] || exit 0
+
+  # Scan the FULL command string for any reference to a forbidden path or
+  # filename. Catches reads via any tool: sed, awk, cp, python, tar,
+  # redirection (`< .env`), heredocs, etc. — not just the cat/head/tail
+  # family that the old whitelist covered.
+  #
+  # Boundary classes (L = before, R = after) ensure 'process.env.FOO' is NOT
+  # matched (preceded by 's' — alphanumeric, not a boundary), while
+  # 'cat .env', '/etc/.env', '--file=.env' ARE.
+  # Boundary chars: start/end of string, whitespace, < > | & ; = , ( ) " ' / \
+  # (Square brackets are intentionally excluded — Rust regex rejects POSIX's
+  # "first ] is literal" trick, and shell rarely places tokens adjacent to [].)
+  # Backslash is included to catch escape-quoted paths like .env\" inside
+  # nested strings (e.g. python -c "open(\"/etc/.env\")").
+  L='(^|[[:space:]<>|&;=,(/\\"'\''])'
+  R='($|[[:space:]<>|&;=,)/\\"'\''])'
+
+  PATTERNS=(
+    "${L}\.ssh/"
+    "${L}\.kube/"
+    "${L}\.talos/"
+    "${L}\.gnupg/"
+    "${L}\.aws/"
+    "${L}\.secret/"
+    "${L}\.terragrunt-cache/"
+    "${L}\.env(\.[A-Za-z0-9_-]+)?${R}"
+    "${L}\.npmrc${R}"
+    "${L}\.netrc${R}"
+    "${L}id_(rsa|ed25519|ecdsa|dsa)(\.pub)?${R}"
+    "${L}authorized_keys${R}"
+    "${L}[^[:space:]]*\.tfstate(\.backup)?${R}"
+    "${L}[^[:space:]]*kubeconfig[^[:space:]]*${R}"
+    "${L}[^[:space:]]*credentials[^[:space:]]*${R}"
+    "${L}[^[:space:]]*\.(pem|key|pfx|p12|gpg|age)${R}"
+  )
+  LABELS=(
+    ".ssh/ directory"
+    ".kube/ directory"
+    ".talos/ directory"
+    ".gnupg/ directory"
+    ".aws/ directory"
+    ".secret/ directory"
+    ".terragrunt-cache/ (generated)"
+    ".env file"
+    ".npmrc"
+    ".netrc"
+    "SSH key"
+    "authorized_keys"
+    "Terraform state"
+    "kubeconfig"
+    "credentials token"
+    "certificate/key extension"
+  )
+
+  # ripgrep if present (faster, consistent regex), else grep -E.
+  if command -v rg > /dev/null 2>&1; then
+    SCAN=(rg -q -e)
   else
-    # Not a read command — allow
-    exit 0
+    SCAN=(grep -Eq -e)
   fi
+
+  for i in "${!PATTERNS[@]}"; do
+    if printf '%s' "$CMD" | "${SCAN[@]}" "${PATTERNS[$i]}"; then
+      LABEL="${LABELS[$i]}"
+      echo "guard-sensitive [Bash]: BLOCKED command" >&2
+      echo "  matched: $LABEL" >&2
+      echo ""
+      echo "Access denied: this command references a path that may contain secrets."
+      echo "Command: $CMD"
+      echo "Rule: $LABEL"
+      exit 2
+    fi
+  done
+
+  exit 0
   ;;
 *)
   exit 0
@@ -184,12 +250,6 @@ MATCH=""
 MATCH=$(is_blocked_dir) || MATCH=$(is_blocked_file) || true
 
 if [[ -n "$MATCH" ]]; then
-  jq -n \
-    --arg type "hook_block" \
-    --arg title "guard-sensitive: BLOCKED $TOOL" \
-    --arg message "$FILE\nRule: $MATCH" \
-    '{notification_type: $type, title: $title, message: $message}' |
-    /home/pontusc/.claude/hooks/notify.sh || true
   echo "guard-sensitive [$TOOL]: BLOCKED $FILE" >&2
   echo "  matched: $MATCH" >&2
   echo ""
