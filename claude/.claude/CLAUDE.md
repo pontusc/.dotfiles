@@ -35,6 +35,7 @@
 ## Agents
 
 - **scout** (haiku) — Token-saving delegation for read-heavy work: docs lookups, web searches, file/grep queries, multi-file reads. Trigger when a task needs more than 2 reads or any web lookup, to keep the main thread's context lean.
+- **executor** (sonnet) — Surgical implementation from a precise spec: file edits, multi-file refactors, mechanical changes. Trigger once design is settled and you have a concrete change list. Absorbs read/edit token cost so the Opus main thread stays focused on reasoning.
 - **validator** (sonnet) — Runs validation/lint/plan commands and reports a structured verdict. Trigger after edits to `.tf`/`.hcl`, Kubernetes manifests, Helm charts, or any file with a defined lint/validate command. Absorbs noisy command output so the main thread sees a clean pass/fail report.
 
 ## Working Guidelines
@@ -58,4 +59,4 @@ Weak criteria ("make it work") require constant clarification. Strong criteria l
 
 **Avoid in plans**: Full file contents, step-by-step for obvious tasks, over-engineering.
 
-_Last updated: 2026-05-19_
+_Last updated: 2026-05-19 (added executor agent for Opus/Sonnet delegation pattern)_
