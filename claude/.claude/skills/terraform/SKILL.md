@@ -49,6 +49,7 @@ Standard module layout:
 
 ## State Changes
 
+- **Additive by default**: Never remove existing resources unless explicitly instructed. Removing a managed resource triggers a destroy. New resources go alongside existing ones.
 - **Addressing changes**: When converting `count` → `for_each`, renaming a resource, or moving it between modules, ALWAYS emit a `moved {}` block in the same change. Without it, Terraform destroys and recreates.
 - **Stateful + `prevent_destroy`**: `prevent_destroy` is evaluated at plan time and cannot be programmatically bypassed. If a change requires destruction of a `prevent_destroy` resource, stop and flag it — don't propose removing the lifecycle block as a workaround.
 - **Coupled resources**: When a resource's existence depends on another (e.g., a DNS record pointing to an external IP, a firewall rule scoped to a target tag), check both sides before proposing an edit. Flag the dependency explicitly.

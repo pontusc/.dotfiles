@@ -28,7 +28,7 @@
 - **Security first**: OWASP, no injection/XSS vulnerabilities
 - **Minimal dependencies**: Standard tools, containerized implementations
 - **Simplicity**: Don't over-engineer. Most direct solution first.
-- **Validate before proposing**: Confirm tool/service capabilities before suggesting solutions. Don't assume features exist.
+- **Validate before proposing**: Confirm tool/service capabilities before suggesting solutions. For metric/query work, verify label names and metric existence via live API before writing queries.
 - **Language conventions**: Handled by model-invocable skills (bash, makefile, terraform, github-ci, kubernetes, helm)
 - **Version checks**: Always fetch live from the web (GitHub releases page or docs). Never trust training data for versioning — it goes stale.
 
@@ -45,6 +45,7 @@
 | >2 file reads OR any web lookup                  | scout (haiku)                  |
 | Write/Edit after design approved                 | executor (sonnet)              |
 | Edits to .tf/.hcl, k8s/helm manifests, Makefiles | validator (sonnet, after edit) |
+| API exploration / curl with auth tokens          | general-purpose (sonnet)       |
 | Single trivial read or single obvious edit       | inline OK                      |
 
 - Main thread MUST route to executor for Write/Edit operations on approved work. No inline implementation.
@@ -73,4 +74,4 @@ Weak criteria ("make it work") require constant clarification. Strong criteria l
 
 **Avoid in plans**: Full file contents, step-by-step for obvious tasks, over-engineering.
 
-_Last updated: 2026-05-19 (replaced delegation check bullet with imperative Routing Rules table + MUST language)_
+_Last updated: 2026-05-20 (added API exploration routing rule, sharpened validate-before-proposing for metric work)_
