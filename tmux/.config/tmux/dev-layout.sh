@@ -7,8 +7,10 @@ fi
 
 dir=$(tmux display-message -p "#{pane_current_path}")
 
-tmux split-window -h -l 30% -c "$dir"
+# Claude split
+tmux split-window -h -l 34% -c "$dir"
 tmux select-pane -L
+# Terminal split
 tmux split-window -v -l 30% -c "$dir"
 tmux select-pane -U
 tmux send-keys "nvim" Enter
