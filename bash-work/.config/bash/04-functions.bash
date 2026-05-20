@@ -24,3 +24,7 @@ kds() {
 kcs() {
   kubectl config use-context "$(kubectl config get-contexts -o name | fzf)"
 }
+
+kns() {
+  kubectl config set-context --current --namespace "$(kubectl get namespaces -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | fzf)"
+}
