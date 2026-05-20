@@ -113,6 +113,7 @@
     "enabled": false
   },
   "syntaxHighlightingDisabled": false,
+  "awaySummaryEnabled": false,
   "tui": "fullscreen",
   "preferences": {
     "verboseMode": true
