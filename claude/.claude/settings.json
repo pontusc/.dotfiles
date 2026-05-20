@@ -8,6 +8,8 @@
       "WebFetch(*)",
       "WebSearch(*)",
       "Agent(*)",
+      "Edit(*)",
+      "Write(*)",
       "Skill(*)"
     ],
     "deny": [

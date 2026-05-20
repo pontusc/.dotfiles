@@ -24,3 +24,6 @@ bindings = [
 
 [terminal]
 osc52 = "CopyPaste"
+
+[mouse]
+bindings = [{ mouse = "Middle", action = "ReceiveChar" }]
