@@ -34,7 +34,8 @@
 
 ## Agents
 
-- **scout** (haiku) — Token-saving delegation for read-heavy work: docs lookups, web searches, file/grep queries, multi-file reads. Trigger when a task needs more than 2 reads or any web lookup, to keep the main thread's context lean.
+- **scout** (haiku) — Token-saving delegation for exploratory read-heavy work: docs lookups, web searches, multi-file reads. Not for correctness validation. Trigger when a task needs more than 2 reads or any web lookup, to keep the main thread's context lean.
+  - **Code files**: instruct "return verbatim, no summarization". If scout summarizes code anyway, do not relay the summary -- read the file inline or provide the path + grep command.
 - **executor** (sonnet) — Surgical implementation from a precise spec: file edits, multi-file refactors, mechanical changes. Trigger once design is settled and you have a concrete change list. Absorbs read/edit token cost so the Opus main thread stays focused on reasoning.
 - **validator** (sonnet) — Runs validation/lint/plan commands and reports a structured verdict. Trigger after edits to `.tf`/`.hcl`, Kubernetes manifests, Helm charts, or any file with a defined lint/validate command. Absorbs noisy command output so the main thread sees a clean pass/fail report.
 
@@ -46,12 +47,15 @@
 | Write/Edit after design approved                 | executor (sonnet)              |
 | Edits to .tf/.hcl, k8s/helm manifests, Makefiles | validator (sonnet, after edit) |
 | API exploration / curl with auth tokens          | general-purpose (sonnet)       |
+| Correctness checks (stale refs, path validation) | validator (sonnet)             |
 | Single trivial read or single obvious edit       | inline OK                      |
 
 - Main thread MUST route to executor for Write/Edit operations on approved work. No inline implementation.
 - Main thread MUST route to scout before any multi-file read or web search.
 - Main thread MUST route to validator after any edit to validated config files.
 - Inline action is allowed only for a single trivial file or a single obvious read.
+- **Iterative loops are not an exception**: Rapid edit-preview-tweak cycles (diagrams, configs, templates) still route edits to executor. The main thread reasons and decides; subagents execute. No "it's just a small tweak" bypass.
+- Treat subagent output as a draft -- flag surprising claims before relaying to user.
 
 ## Working Guidelines
 
@@ -74,4 +78,4 @@ Weak criteria ("make it work") require constant clarification. Strong criteria l
 
 **Avoid in plans**: Full file contents, step-by-step for obvious tasks, over-engineering.
 
-_Last updated: 2026-05-20 (added API exploration routing rule, sharpened validate-before-proposing for metric work)_
+_Last updated: 2026-05-22 (scout: never summarize code files, return verbatim or provide path only)_
