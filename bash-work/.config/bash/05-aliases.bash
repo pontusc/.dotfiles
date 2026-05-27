@@ -3,6 +3,9 @@ alias bsource="source ~/.bashrc"
 alias vi='nvim'
 alias unstow='stow --delete'
 
+# Fix watch command and aliases
+alias watch='watch ' # the trailing space forces bash to expand next word apparently
+
 # Python virtual environment
 alias ve="python3 -m venv ./venv"
 alias va="source ./venv/bin/activate"
