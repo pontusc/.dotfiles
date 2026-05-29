@@ -24,8 +24,8 @@ read or a single obvious edit. Everything else routes out.
   subagent executes.
 - **Validate → validator (sonnet).** After any edit with a lint/validate/plan path, or any
   correctness check (stale refs, path validation). Absorbs noisy output, returns a verdict.
-- **Authenticated / live API work → general-purpose (sonnet).** curl with tokens, live
-  queries against services.
+- **Authenticated / live API work → investigator (sonnet).** curl with tokens, live queries
+  against services. Read-only; resolves context (IDs, labels) first, absorbs noisy output.
 
 Treat subagent output as a draft. Flag surprising claims before relaying to the user.
 

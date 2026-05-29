@@ -96,7 +96,6 @@ These rules are mandatory for all generated CLAUDE.md content:
 - **No full file trees**: Describe structure patterns, not every file
 - **Dense formatting**: Use bold, short bullets, tables where they compress information
 - **Imperative tone**: "Run `make test`" not "You can run `make test`"
-- **No em dashes**: Use commas, semicolons, or parentheses instead
 - **Under 150 lines**: If exceeding, split into supplementary docs and reference them
 - **Present tense**: "The API validates input at the controller layer"
 - **No hedging**: State facts. If uncertain, investigate first or omit.

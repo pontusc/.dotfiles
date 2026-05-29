@@ -70,7 +70,8 @@ Token Impact: -/+ [delta]
 
 ### 5. Implement (After Approval)
 
-Edit files, update timestamps, verify changes.
+Delegate file edits to the `executor` agent, one spec per file. Verify each returned diff
+matches intent before reporting done.
 
 ## Guidelines
 
