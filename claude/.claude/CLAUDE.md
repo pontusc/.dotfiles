@@ -29,6 +29,29 @@ read or a single obvious edit. Everything else routes out.
 
 Treat subagent output as a draft. Flag surprising claims before relaying to the user.
 
+### Model routing (quality over budget)
+
+Usage limits are not the constraint — context and correctness are. Match model to the
+cognitive difficulty of the task. Frontmatter sets the default; override per-call via the
+Agent `model` parameter when warranted.
+
+- scout → haiku, always. Locating is not reasoning.
+- executor → sonnet default; override to opus when the change needs judgment not mechanics:
+  cross-file refactors with shared invariants, concurrency/security-sensitive logic, or when
+  _how_ to implement is itself the hard part.
+- validator → sonnet, always. Lint/fmt/plan parsing doesn't need Opus.
+- reviewer → opus, always.
+- planning → use the built-in Plan agent, routed to opus.
+
+When unsure whether a task is mechanical or judgment-heavy, treat it as judgment-heavy. A
+wasted Opus call now costs less than a shipped defect.
+
+### Review gate (non-trivial changes)
+
+After executor finishes and validator passes, route the diff to reviewer (opus) before
+relaying to the user. Skip only for trivial single-file mechanical edits. Validator proves it
+parses; reviewer proves it's right.
+
 ## Communication
 
 - Ask rather than assume. Concise over complete.
