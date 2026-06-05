@@ -69,10 +69,21 @@ if [ ! -d "$wt_path" ]; then
   fi
 fi
 
-wname="${repo_name}/${safe}"
-# Find an existing window with this exact name across ALL sessions (we run several),
-# so we focus it instead of creating a duplicate.
-match=$(tmux list-windows -a -f "#{==:#{window_name},${wname}}" \
+# Short window name: ticket number + truncated tail (the path stays full & unique).
+#   ALC-679/oauth-login-iat -> 679:oauth-log
+#   add-grafana-md-service  -> add-grafa
+tail_max=9
+if [[ $branch =~ ^[A-Za-z]+-([0-9]+)/(.+)$ ]]; then
+  num="${BASH_REMATCH[1]}"
+  tail="${BASH_REMATCH[2]//\//-}"
+  wname="${num}:${tail:0:tail_max}"
+else
+  wname="${safe:0:tail_max}"
+fi
+
+# De-dupe by worktree PATH (short names may collide), across ALL sessions, via the
+# @worktree window option set when the window is created.
+match=$(tmux list-windows -a -f "#{==:#{@worktree},${wt_path}}" \
   -F '#{window_id} #{session_name}' | head -n1)
 if [ -n "$match" ]; then
   win_id=${match%% *}
@@ -81,5 +92,6 @@ if [ -n "$match" ]; then
   tmux select-window -t "$win_id" # focus the existing worktree window
 else
   win=$(tmux new-window -P -F '#{window_id}' -n "$wname" -c "$wt_path")
-  ~/.config/tmux/dev-layout.sh "$win" # build the dev layout in it
+  tmux set-option -w -t "$win" @worktree "$wt_path" # tag for path-based de-dupe
+  ~/.config/tmux/dev-layout.sh "$win"               # build the dev layout in it
 fi
