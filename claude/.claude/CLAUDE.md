@@ -19,6 +19,9 @@ read or a single obvious edit. Everything else routes out.
   docs/code exploration. Keeps raw content out of your context.
   - Code files: instruct "return verbatim, no summarization." If scout summarizes code
     anyway, don't relay it — read inline or get the path + a grep command.
+  - Web research: instruct scout to ALWAYS find the official docs/source first. A
+    blog/third-party hit must be verified against official sources; if no official docs cover
+    the ask, third-party is acceptable but must be flagged as unverified/untrustworthy.
 - **Implement → executor (sonnet).** All Write/Edit once the design is settled. No inline
   implementation. No "small tweak" or iterative-loop exception — the thread decides, the
   subagent executes.
