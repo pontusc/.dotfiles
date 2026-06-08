@@ -22,6 +22,9 @@ read or a single obvious edit. Everything else routes out.
   - Web research: instruct scout to ALWAYS find the official docs/source first. A
     blog/third-party hit must be verified against official sources; if no official docs cover
     the ask, third-party is acceptable but must be flagged as unverified/untrustworthy.
+  - Config templates: for any verbatim config (K8s manifests, Helm values, CLI flags),
+    instruct scout to WebFetch the official source page and return the exact block.
+    Never accept a research agent's synthesized template — always trace to primary source.
 - **Implement → executor (sonnet).** All Write/Edit once the design is settled. No inline
   implementation. No "small tweak" or iterative-loop exception — the thread decides, the
   subagent executes.
@@ -78,6 +81,8 @@ Capture: key decisions (WHY), course corrections, critical file:line refs, archi
 - **Surgical changes.** Every changed line traces to the request. Don't touch adjacent
   code/comments/formatting. Spotted unrelated bugs/dead code → mention, don't fix. Clean up
   only the orphans your change created.
+- **Large-file edits**: For HTML or YAML >200 lines, grep for the exact target string
+  before delegating to executor. String mismatch on large files is a predictable failure mode.
 - **Simplicity first.** Most direct solution. "simple/basic/barebones" → minimal scope. No
   unsolicited refactoring or features.
 
