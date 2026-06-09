@@ -1,22 +1,27 @@
-# Always-on local plan site — install/config helper
-# Serves ~/plans over http://plans.claude (127.0.0.2:80) via a Caddy systemd service.
+# Always-on local plan site — install/config helper.
+# Serves ~/plans over http://plans.claude (127.0.0.2:80) via a Caddy systemd service,
+# and auto-renders ~/plans/src/*.md to themed HTML via a per-user render watcher.
 
 SHELL := /bin/bash
 .ONESHELL:
 .DEFAULT_GOAL := help
-.PHONY: help install caddy hosts service restart reload status logs uninstall
+.PHONY: help install caddy hosts service render-deps render-unit render \
+        restart reload status logs render-status render-logs uninstall
 
-CONFIG_DIR := $(HOME)/.config/plans-server
-PLANS_DIR  := $(HOME)/plans
-UNIT_SRC   := $(CONFIG_DIR)/plans.service
-UNIT_DST   := /etc/systemd/system/plans.service
+CONFIG_DIR    := $(HOME)/.config/plans-server
+PLANS_DIR     := $(HOME)/plans
+PLANS_SRC     := $(PLANS_DIR)/src
+UNIT_SRC      := $(CONFIG_DIR)/plans.service
+UNIT_DST      := /etc/systemd/system/plans.service
+USER_UNIT_DIR := $(HOME)/.config/systemd/user
+RENDER_UNIT   := plans-render.service
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
-		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
+		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
 
-install: caddy hosts service ## Full setup (caddy + /etc/hosts + service)
-	@echo "Done. Open http://plans.claude"
+install: caddy hosts service render-deps render-unit ## Full setup (site + render watcher)
+	@echo "Done. Open http://plans.claude; write plans to $(PLANS_SRC)/<slug>.md"
 
 caddy: ## Install Caddy if missing (pacman)
 	@command -v caddy >/dev/null 2>&1 || sudo pacman -S --needed caddy
@@ -30,12 +35,26 @@ hosts: ## Ensure '127.0.0.2 plans.claude' in /etc/hosts (idempotent, migrates ol
 		echo "added '127.0.0.2 plans.claude' to /etc/hosts"; \
 	fi
 
-service: ## Install + enable the systemd service
+service: ## Install + enable the Caddy site service (system)
 	@mkdir -p $(PLANS_DIR)
 	sudo cp $(UNIT_SRC) $(UNIT_DST)
 	sudo systemctl daemon-reload
 	sudo systemctl enable --now plans
 	@echo "service enabled; status: systemctl status plans"
+
+render-deps: ## Install pandoc + inotify-tools if missing (pacman)
+	@command -v pandoc >/dev/null 2>&1 || sudo pacman -S --needed pandoc-cli
+	@command -v inotifywait >/dev/null 2>&1 || sudo pacman -S --needed inotify-tools
+
+render-unit: ## Install + enable the per-user render watcher
+	@mkdir -p $(PLANS_SRC) $(USER_UNIT_DIR)
+	cp $(CONFIG_DIR)/$(RENDER_UNIT) $(USER_UNIT_DIR)/$(RENDER_UNIT)
+	systemctl --user daemon-reload
+	systemctl --user enable --now plans-render
+	@echo "render watcher enabled; logs: journalctl --user -u plans-render -f"
+
+render: ## One-off render of all sources
+	@$(CONFIG_DIR)/render.sh --all
 
 restart: ## Restart the plan site service
 	sudo systemctl restart plans
@@ -43,15 +62,24 @@ restart: ## Restart the plan site service
 reload: ## Reload Caddy config (falls back to restart if needed)
 	sudo systemctl reload plans || sudo systemctl restart plans
 
-status: ## Show service status
+status: ## Show site service status
 	systemctl status plans --no-pager
 
-logs: ## Follow service logs
+logs: ## Follow site service logs
 	journalctl -u plans -f
 
-uninstall: ## Stop + remove service and /etc/hosts entry
+render-status: ## Show render watcher status
+	systemctl --user status plans-render --no-pager
+
+render-logs: ## Follow render watcher logs
+	journalctl --user -u plans-render -f
+
+uninstall: ## Stop + remove services and /etc/hosts entry
+	-systemctl --user disable --now plans-render
+	-rm -f $(USER_UNIT_DIR)/$(RENDER_UNIT)
+	systemctl --user daemon-reload
 	-sudo systemctl disable --now plans
 	-sudo rm -f $(UNIT_DST)
 	sudo systemctl daemon-reload
 	-sudo sed -i -E '/^127\.0\.0\.2[[:space:]]+plans(\.claude)?$$/d' /etc/hosts
-	@echo "uninstalled (note: ~/plans, $(CONFIG_DIR), and caddy package are left intact)"
+	@echo "uninstalled (note: ~/plans, $(CONFIG_DIR), and packages are left intact)"

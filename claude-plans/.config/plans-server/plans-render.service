@@ -1,0 +1,11 @@
+[Unit]
+Description=Render ~/plans/src/*.md to themed HTML on change
+
+[Service]
+Type=simple
+ExecStart=%h/.config/plans-server/render.sh --watch
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target
