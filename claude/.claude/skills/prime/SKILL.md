@@ -1,36 +1,28 @@
 ---
 name: prime
-description: Bootstrap session context by reading READMEs, listing files, and building a mental model of the current project.
+description: Bootstrap session context by reading and summarizing a source. No argument primes from the local project (READMEs, file listings, config markers, git log); a plan name primes from a saved document in ~/plans/src. Delegates the reading to a Haiku agent.
 user-invocable: true
 model-invocable: true
-allowed-tools: Agent
+allowed-tools: Bash, Agent
 model: haiku
 ---
 
-Delegate the priming work to a Haiku agent. Do not run the reads/listings in the main thread.
+Load context by delegating the reads to a Haiku agent — never read large files in the main thread. Pick the source from the argument.
 
-Spawn one `Agent` with:
+## Local project (no argument, `.`, or `here`)
 
-- `subagent_type: "general-purpose"`
-- `model: "haiku"`
-- A self-contained prompt instructing the agent to gather the context below and return a concise summary.
+Spawn one `Agent` (`general-purpose`, `haiku`) to gather and summarize:
 
-The agent's prompt should cover:
+1. List files in cwd (non-recursive, then one level deep).
+2. Read any README / CONTRIBUTING / similar.
+3. Read present markers: `package.json`, `Cargo.toml`, `pyproject.toml`, `go.mod`, `Makefile`, `justfile`, `flake.nix`; `.claude/CLAUDE.md`, `CLAUDE.md`; `.envrc`, `.tool-versions`, `mise.toml`.
+4. If a git repo: `git log --oneline -10`.
 
-1. List files in the current working directory (non-recursively first, then one level deep).
-2. Find and read any README, README.md, CONTRIBUTING.md, or similar documentation files in the current directory.
-3. Check for and read common project markers if present:
-   - package.json, Cargo.toml, pyproject.toml, go.mod, Makefile, justfile, flake.nix, shell.nix
-   - .claude/settings.json, .claude/CLAUDE.md, CLAUDE.md
-   - .envrc, .tool-versions, mise.toml
-4. If this is a git repo, run `git log --oneline -10` to see recent activity.
+Return a dense summary: what the project is, key directories, language/framework/tooling, visible conventions, recent git activity.
 
-Ask the agent to return a concise summary covering:
+## Saved plan / document (a slug, or `plan <name>`)
 
-- What this project is and what it does
-- Key directories and their purpose
-- Language/framework/tooling in use
-- Any conventions or patterns visible from the config files
-- Recent git activity
+- Match the name against `~/plans/src/*.md`. No clear single match → `ls ~/plans/src/*.md` and ask. Don't guess.
+- Spawn one `Agent` (`general-purpose`, `haiku`) to read `~/plans/src/<slug>.md` and return a DENSE briefing: title/subtitle/scope/date; section list (level-1 `#`) in order; locked decisions (`[…]{.pill .ok}`); open gaps/caveats (`.pill .gap`/`.partial`, `::: {.callout .warn}`/`.bad`); verbatim config/commands/paths/version pins.
 
-Relay the agent's summary to the user. Keep it dense and useful. Skip anything that adds no value.
+Either way, relay the result as restored context and continue.
