@@ -1,8 +1,8 @@
 # Intent
 
-This package is used to install two systemd services that:
+This package installs a local plan site at http://plans.claude:
 
-- Serve HTML content
-- Automatically convert .md files to HTML
+- A per-user MkDocs (Material) dev server renders `~/plans/src/*.md` with live-reload on save.
+- A Caddy system service binds 127.0.0.2:80 and reverse-proxies to the MkDocs server.
 
-It watches for files at ~/plans/src/
+Authoring vocabulary for documents lives in `AUTHORING.md`. Setup via `make install`.

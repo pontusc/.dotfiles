@@ -23,6 +23,6 @@ Return a dense summary: what the project is, key directories, language/framework
 ## Saved plan / document (a slug, or `plan <name>`)
 
 - Match the name against `~/plans/src/*.md`. No clear single match → `ls ~/plans/src/*.md` and ask. Don't guess.
-- Spawn one `Agent` (`general-purpose`, `haiku`) to read `~/plans/src/<slug>.md` and return a DENSE briefing: title/subtitle/scope/date; section list (level-1 `#`) in order; locked decisions (`[…]{.pill .ok}`); open gaps/caveats (`.pill .gap`/`.partial`, `::: {.callout .warn}`/`.bad`); verbatim config/commands/paths/version pins.
+- Spawn one `Agent` (`general-purpose`, `haiku`) to read `~/plans/src/<slug>.md` and return a DENSE briefing: title + intro; section list (level-2 `##`) in order; locked decisions (`<span class="pill ok">`); open gaps/caveats (`pill gap`/`pill partial` spans, `!!! warning`/`!!! danger` admonitions); verbatim config/commands/paths/version pins.
 
 Either way, relay the result as restored context and continue.

@@ -4,6 +4,5 @@
 
 http://plans.claude {
 	bind 127.0.0.2
-	root * /home/pontusc/plans
-	file_server browse
+	reverse_proxy 127.0.0.2:8001
 }

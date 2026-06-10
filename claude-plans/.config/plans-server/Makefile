@@ -1,11 +1,11 @@
 # Always-on local plan site — install/config helper.
-# Serves ~/plans over http://plans.claude (127.0.0.2:80) via a Caddy systemd service,
-# and auto-renders ~/plans/src/*.md to themed HTML via a per-user render watcher.
+# Serves http://plans.claude (127.0.0.2:80) via a Caddy systemd service reverse-proxying
+# a per-user MkDocs dev server (live-reload) that renders ~/plans/src/*.md.
 
 SHELL := /bin/bash
 .ONESHELL:
 .DEFAULT_GOAL := help
-.PHONY: help install caddy hosts service render-deps render-unit render \
+.PHONY: help install caddy hosts service venv render-unit build \
         restart reload status logs render-status render-logs uninstall
 
 CONFIG_DIR    := $(HOME)/.config/plans-server
@@ -20,7 +20,7 @@ help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
 
-install: caddy hosts service render-deps render-unit ## Full setup (site + render watcher)
+install: caddy hosts service venv render-unit ## Full setup (site + render watcher)
 	@echo "Done. Open http://plans.claude; write plans to $(PLANS_SRC)/<slug>.md"
 
 caddy: ## Install Caddy if missing (pacman)
@@ -42,19 +42,19 @@ service: ## Install + enable the Caddy site service (system)
 	sudo systemctl enable --now plans
 	@echo "service enabled; status: systemctl status plans"
 
-render-deps: ## Install pandoc + inotify-tools if missing (pacman)
-	@command -v pandoc >/dev/null 2>&1 || sudo pacman -S --needed pandoc-cli
-	@command -v inotifywait >/dev/null 2>&1 || sudo pacman -S --needed inotify-tools
+venv: ## Create the MkDocs venv + install pinned deps
+	@python3 -m venv $(CONFIG_DIR)/venv
+	$(CONFIG_DIR)/venv/bin/pip install --upgrade -r $(CONFIG_DIR)/requirements.txt
 
-render-unit: ## Install + enable the per-user render watcher
+render-unit: ## Install + enable the per-user MkDocs serve unit
 	@mkdir -p $(PLANS_SRC) $(USER_UNIT_DIR)
 	cp $(CONFIG_DIR)/$(RENDER_UNIT) $(USER_UNIT_DIR)/$(RENDER_UNIT)
 	systemctl --user daemon-reload
 	systemctl --user enable --now plans-render
-	@echo "render watcher enabled; logs: journalctl --user -u plans-render -f"
+	@echo "mkdocs serve unit enabled; logs: journalctl --user -u plans-render -f"
 
-render: ## One-off render of all sources
-	@$(CONFIG_DIR)/render.sh --all
+build: ## One-off static build of the site to ~/plans/site
+	@$(CONFIG_DIR)/venv/bin/mkdocs build -f $(CONFIG_DIR)/mkdocs.yml
 
 restart: ## Restart the plan site service
 	sudo systemctl restart plans

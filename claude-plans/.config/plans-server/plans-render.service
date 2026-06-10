@@ -1,9 +1,10 @@
 [Unit]
-Description=Render ~/plans/src/*.md to themed HTML on change
+Description=MkDocs dev server for ~/plans (live-reload)
 
 [Service]
 Type=simple
-ExecStart=%h/.config/plans-server/render.sh --watch
+WorkingDirectory=%h/.config/plans-server
+ExecStart=%h/.config/plans-server/venv/bin/mkdocs serve --dev-addr 127.0.0.2:8001 -f %h/.config/plans-server/mkdocs.yml
 Restart=on-failure
 RestartSec=2
 

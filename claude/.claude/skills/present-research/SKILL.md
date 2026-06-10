@@ -20,10 +20,10 @@ Spawn `general-purpose` agents (`model: haiku`) to do the reading and web lookup
 
 Author `~/plans/src/<slug>.md`:
 
-- `# Executive summary` answering the question up front.
+- `## Executive summary` answering the question up front.
 - A section per sub-topic; pipe tables for option comparisons.
-- Cite inline: `[official docs](url)`, `[…]{.src}` for provenance.
-- Mark every unverified / third-party claim: `[unverified]{.tag}` and/or `::: {.callout .warn}`.
+- Cite inline: `[official docs](url)`, `<span class="src">…</span>` for provenance.
+- Mark every unverified / third-party claim: `<span class="tag">unverified</span>` and/or a `!!! warning` admonition.
 - Close with a recommendation and open questions.
 
 ## 3 — Hand off (optional)

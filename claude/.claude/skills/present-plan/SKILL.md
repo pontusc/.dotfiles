@@ -17,8 +17,8 @@ Expect to iterate: the user reviews and discusses while the plan is constructed.
 
 ## Make it actionable
 
-- Lead with `# Executive summary` answering the user's explicit questions, each linking to its detail via `[§](#slug)`.
+- Lead with `## Executive summary` answering the user's explicit questions, each linking to its detail section via a descriptive anchor link (`[Networking](#networking)`).
 - Order the work: an implementation roadmap with the exact commands, config, file paths, and version pins to apply.
-- Mark decision status inline: `[decided]{.pill .ok}` · `[gap]{.pill .gap}` · `[partial]{.pill .partial}`; close with a gap/decision checklist.
-- Flag unverified or risky claims with `::: {.callout .warn}` / `.bad`.
+- Mark decision status inline: `<span class="pill ok">decided</span>` · `<span class="pill gap">gap</span>` · `<span class="pill partial">partial</span>`; close with a gap/decision checklist.
+- Flag unverified or risky claims with `!!! warning` / `!!! danger` admonitions.
 - Link back to the source research (`http://plans.claude/<research-slug>.html`) for background rather than duplicating it.
