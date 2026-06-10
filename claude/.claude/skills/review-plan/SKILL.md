@@ -3,7 +3,7 @@ name: review-plan
 description: Reconcile a saved plan in ~/plans/src against reality — verify which gaps and decisions were actually implemented, report the drift, and on approval revise the document in place. Takes a plan slug. Closes the loop after implementation.
 user-invocable: true
 model-invocable: false
-allowed-tools: Bash, Agent
+allowed-tools: Bash, Agent, Read, Edit
 ---
 
 Audit a plan document against the current state of the world, then bring the document back in sync. This closes the lifecycle loop: `present-research` → `present-plan` → implement → **review-plan** → revised plan → `prime`.
@@ -37,7 +37,6 @@ Present the drift as a pipe table (claim · plan said · reality · verdict) and
 
 On approval, revise `~/plans/src/<slug>.md` **in place** per `~/.config/plans-server/AUTHORING.md` — never spawn a `-v2` document:
 
-- Edit mechanism: only `Bash` is available (no `Write`/`Edit` — deliberate, see AUTHORING.md). Make targeted in-place substitutions with `sed -i` / `perl -i`; for larger rewrites, regenerate the whole file via heredoc. Verify each substitution landed (`grep`) before moving on.
 - Flip pills for **done** items: `pill gap` / `pill partial` → `pill ok`; check off completed checklist items. **drifted** / **still open** items keep their pill.
 - Where reality diverged from the plan, update the prose to match reality and mark it: `!!! note "Revised YYYY-MM-DD"` (ISO date).
 - Append a dated entry to a `## Review log {#review-log}` section — create it if absent, placed after the closing checklist as the document's final section: what was verified, what changed, what remains open.

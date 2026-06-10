@@ -5,7 +5,6 @@ How to write Markdown that the plans site (MkDocs + Material) renders at **http:
 ## Save & render
 
 - Write to `~/plans/src/<kebab-slug>.md`. The slug is the document's identity — revise in place, never spawn `-v2`. Never write into a project repo or the cwd.
-- Author via Bash (heredoc / `tee`), not the `Write`/`Edit` tools. The markdown formatter hook fires on `Write`/`Edit` and re-indents list continuations to 2 spaces, which breaks python-markdown structures (card grids, nested lists). The `present-*` and `review-plan` skills omit `Write`/`Edit` from `allowed-tools` deliberately — keep it that way. For in-place revisions of an existing document, use targeted `sed -i` / `perl -i` substitutions, or regenerate the whole file via heredoc.
 - The `plans-render` MkDocs dev server live-rebuilds on every save → served at **http://plans.claude/<slug>.html**.
 - When creating a NEW document, also add its card to the landing page `~/plans/src/index.md`.
 - Manual build check: `~/.config/plans-server/venv/bin/mkdocs build -f ~/.config/plans-server/mkdocs.yml`.
@@ -45,7 +44,7 @@ title: actions-runner-controller on the IAT Talos cluster
 
 ## Card grids
 
-Use this raw-HTML block verbatim (one `<li>` per card; `href` targets the rendered `.html`; no blank lines inside the div). Do NOT use Material's list-based `markdown` grid syntax — the markdown formatter hook re-indents lists and breaks the cards.
+Use this raw-HTML block verbatim (one `<li>` per card; `href` targets the rendered `.html`; no blank lines inside the div). Do NOT use Material's list-based `markdown` grid syntax — it is whitespace-fragile (4-space continuation indents; a `---`/`***` divider inside an item closes the list). The raw-HTML block is stable.
 
 ```html
 <div class="grid cards">

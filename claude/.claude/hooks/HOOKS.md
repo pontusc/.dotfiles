@@ -18,7 +18,7 @@ Security is enforced via hooks rather than sandbox — the sandbox is disabled.
 | -------------------- | ------------------ | ------------------------ | ------------------------------------------------ |
 | `notify.sh`          | Notification, Stop | —                        | Single entry point for all desktop notifications |
 | `guard-sensitive.sh` | PreToolUse         | `Read\|Bash\|Grep\|Glob` | Blocks access to sensitive files/dirs            |
-| `format-and-lint.sh` | PostToolUse        | `Write\|Edit`            | Formats then lints written files                 |
+| `format-and-lint.sh` | PostToolUse        | `Write\|Edit`            | Lints written files                              |
 | `dcg` (binary)       | PreToolUse         | `Bash`                   | Blocks destructive shell commands                |
 
 ## Design Rules
@@ -48,8 +48,8 @@ attention event, route it through `notify.sh` and add a case branch there.
 
 ### Tool Resolution
 
-Prefer Mason-installed binaries (`~/.local/share/nvim/mason/bin/`) for formatters
-and linters to stay in sync with Neovim. Fall back to PATH. Missing tools should
+Prefer Mason-installed binaries (`~/.local/share/nvim/mason/bin/`) for linters
+to stay in sync with Neovim. Fall back to PATH. Missing tools should
 soft-fail (warn, don't block) unless the tool is the linter itself.
 
 ### Self-Protection

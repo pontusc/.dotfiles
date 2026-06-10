@@ -40,8 +40,7 @@
     ],
     "defaultMode": "default"
   },
-  "model": "opus",
-  "disableWorkflows": true,
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "Notification": [
       {
@@ -95,6 +94,7 @@
       }
     ]
   },
+  "disableWorkflows": true,
   "statusLine": {
     "type": "command",
     "command": "bash /home/pontusc/.claude/statusline-command.sh"

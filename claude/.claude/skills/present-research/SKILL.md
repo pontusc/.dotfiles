@@ -3,7 +3,7 @@ name: present-research
 description: Research a topic and present the findings as a Markdown document in ~/plans/src that auto-renders to a dark-themed HTML view at http://plans.claude. Use to investigate a question, compare options, or gather and cite sources into a browsable deliverable.
 user-invocable: true
 model-invocable: false
-allowed-tools: Bash, Agent
+allowed-tools: Bash, Agent, Read, Write, Edit
 ---
 
 Gather material on a topic, then present it as a **Markdown** findings document authored per `~/.config/plans-server/AUTHORING.md` — never write HTML, never touch the theme. This is the reference half of the pipeline: it captures _what's possible_ (options, docs, links) for `present-plan` to turn into action.

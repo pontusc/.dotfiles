@@ -14,48 +14,39 @@
 #                the agent must fix the issue and retry)
 #   1  → ignored by Claude Code (does NOT block), avoid using
 #
-# Flow: formatter runs in-place on the written file → linter validates →
-#       exit 0 on success, exit 2 with lint errors on failure so the
-#       agent sees them and can self-correct.
+# LINT-ONLY: this hook never rewrites files. Formatting belongs to the
+# author/editor; the hook only validates and blocks (exit 2) on lint
+# errors so the agent can self-correct.
 #
 # ── Tool resolution: Mason vs PATH ───────────────────────────────────────────
 #
-# Neovim's Mason package manager installs LSP servers, formatters, and
-# linters into ~/.local/share/nvim/mason/bin/. This gives us a single
-# managed toolchain shared between the editor and this hook — no version
-# drift between what Neovim formats and what this hook checks.
+# Neovim's Mason package manager installs linters into
+# ~/.local/share/nvim/mason/bin/ — a single managed toolchain shared
+# between the editor and this hook, no version drift.
 #
 # Resolution order:  Mason bin → system PATH → skip (soft fail)
-# Missing formatter: warn on stderr, continue (formatting is best-effort)
 # Missing linter:    warn on stderr, exit 0 (cannot block without a tool)
 #
 # ── Adding a new language ─────────────────────────────────────────────────────
 #
 # 1. Add a case branch matching the file extension(s)
-# 2. Call run_fmt with the formatter name and flags (in-place write mode)
-# 3. Call run_lint with the linter name and flags, capture into LINT_OUTPUT
-# 4. If the linter needs a config file, pass it explicitly (see yml example)
-# 5. Ensure both tools are installed via Mason (:MasonInstall <name>)
+# 2. Call run_lint with the linter name and flags, capture into LINT_OUTPUT
+# 3. If the linter needs a config file, pass it explicitly (see yml example)
+# 4. Ensure the tool is installed via Mason (:MasonInstall <name>)
 #
 # ── Supported languages ──────────────────────────────────────────────────────
 #
-# Extension(s)   │ Formatter          │ Linter       │ Config
-# ───────────────┼────────────────────┼──────────────┼──────────────────────
-# .py            │ ruff format        │ ruff check   │ pyproject.toml
-# .sh .bash .zsh │ shfmt -sr -w       │ shellcheck   │ —
-# .yml .yaml     │ yamlfmt            │ yamllint     │ ~/.config/yamlfmt/
-#                │                    │              │ ~/.config/yamllint/
-# .yml .yaml     │ yamlfmt            │ yamllint +   │ (only .github/workflows/)
-#  (GH Actions)  │                    │ actionlint   │
-# .tf .tfvars    │ terraform fmt      │ —            │ —
-# .hcl           │ terraform fmt      │ —            │ —
-# .toml          │ taplo fmt          │ taplo lint   │ taplo.toml / .taplo.toml
-# .json          │ prettier --write   │ jsonlint     │ —
-# .js .ts .jsx   │ prettier --write   │ eslint_d     │ —
-#   .tsx .mjs .cjs│                   │              │
-# .md            │ prettier --write   │ —            │ —
-# .go            │ gofmt              │ golangci-lint│ —
-# .lua           │ stylua             │ —            │ stylua.toml
+# Extension(s)     │ Linter         │ Config
+# ─────────────────┼────────────────┼──────────────────────
+# .py              │ ruff check     │ pyproject.toml
+# .sh .bash .zsh   │ shellcheck     │ —
+# .yml .yaml       │ yamllint       │ ~/.config/yamllint/config
+#  (GH Actions)    │ + actionlint   │ (only .github/workflows/)
+# .js .ts .jsx     │ eslint_d       │ —
+#   .tsx .mjs .cjs │                │
+# .go              │ golangci-lint  │ —
+# .toml            │ taplo lint     │ taplo.toml / .taplo.toml
+# .json            │ jsonlint       │ —
 # ──────────────────────────────────────────────────────────────────────────────
 
 set -euo pipefail
@@ -73,8 +64,8 @@ EXT="${FILE##*.}"
 
 # ── Tool resolution ──────────────────────────────────────────────────────────
 # Returns the absolute path to the tool binary, preferring Mason-installed
-# versions to keep parity with Neovim's formatting. Returns empty string
-# if the tool is not available anywhere.
+# versions to keep parity with Neovim. Returns empty string if the tool is
+# not available anywhere.
 mason_bin() {
   local name="$1"
   local mason="$HOME/.local/share/nvim/mason/bin/$name"
@@ -85,20 +76,6 @@ mason_bin() {
   else
     echo ""
   fi
-}
-
-# Run a formatter in-place. Failure is non-fatal — formatting is best-effort
-# so a missing formatter never blocks the agent.
-run_fmt() {
-  local fmt="$1"
-  shift
-  local tool
-  tool=$(mason_bin "$fmt")
-  if [[ -z "$tool" ]]; then
-    echo "format-and-lint: formatter '$fmt' not found (Mason or PATH), skipping format" >&2
-    return 0
-  fi
-  "$tool" "$@"
 }
 
 # Run a linter and capture output. Returns the linter's exit code so the
@@ -130,62 +107,38 @@ if [[ "$FILE" == */.github/workflows/*.yml || "$FILE" == */.github/workflows/*.y
 fi
 
 # ── Per-language dispatch ────────────────────────────────────────────────────
-# Each branch: format in-place first, then lint the result.
-# Formatter errors are swallowed (|| true) — we only block on lint failures.
 LINT_OUTPUT=""
 LINT_RC=0
 
 case "$EXT" in
 py)
-  run_fmt ruff format "$FILE" 2> /dev/null || true
   LINT_OUTPUT=$(run_lint ruff check "$FILE") || LINT_RC=$?
   ;;
 sh | bash | zsh)
-  run_fmt shfmt -i 2 -sr -w "$FILE" 2> /dev/null || true
   LINT_OUTPUT=$(run_lint shellcheck "$FILE") || LINT_RC=$?
   ;;
 yml | yaml)
-  run_fmt yamlfmt -conf "$HOME/.config/yamlfmt/yamlfmt.yml" "$FILE" 2> /dev/null || true
   LINT_OUTPUT=$(run_lint yamllint -c "$HOME/.config/yamllint/config" "$FILE") || LINT_RC=$?
   if [[ "$IS_GHACTION" == true && "$LINT_RC" -eq 0 ]]; then
     LINT_OUTPUT=$(run_lint actionlint "$FILE") || LINT_RC=$?
   fi
   ;;
-tf | tfvars | hcl)
-  if formatted=$(terraform fmt - < "$FILE" 2> /dev/null); then
-    printf '%s' "$formatted" > "$FILE"
-  fi
-  ;;
 js | ts | jsx | tsx | mjs | cjs)
-  run_fmt prettier --write "$FILE" 2> /dev/null || true
   LINT_OUTPUT=$(run_lint eslint_d "$FILE") || LINT_RC=$?
   ;;
-md)
-  run_fmt prettier --write "$FILE" 2> /dev/null || true
-  ;;
 go)
-  if formatted=$(gofmt "$FILE" 2> /dev/null); then
-    printf '%s' "$formatted" > "$FILE"
-  fi
   # golangci-lint operates on packages, not single files — run from the file's dir
   GOLANGCI=$(mason_bin golangci-lint)
   if [[ -n "$GOLANGCI" ]]; then
-    if ! LINT_OUTPUT=$(cd "$(dirname "$FILE")" && "$GOLANGCI" run ./... 2>&1); then
-      LINT_RC=$?
-    fi
+    LINT_OUTPUT=$(cd "$(dirname "$FILE")" && "$GOLANGCI" run ./... 2>&1) || LINT_RC=$?
   else
     echo "format-and-lint: linter 'golangci-lint' not found (Mason or PATH)" >&2
   fi
   ;;
-lua)
-  run_fmt stylua "$FILE" 2> /dev/null || true
-  ;;
 toml)
-  run_fmt taplo fmt "$FILE" 2> /dev/null || true
   LINT_OUTPUT=$(run_lint taplo lint "$FILE") || LINT_RC=$?
   ;;
 json)
-  run_fmt prettier --write "$FILE" 2> /dev/null || true
   LINT_OUTPUT=$(run_lint jsonlint "$FILE") || LINT_RC=$?
   ;;
 *)
@@ -202,5 +155,5 @@ if [[ "$LINT_RC" -ne 0 ]]; then
   exit 2
 fi
 
-echo "format-and-lint: $FILE passed (formatted + linted)"
+echo "format-and-lint: $FILE passed (lint)"
 exit 0

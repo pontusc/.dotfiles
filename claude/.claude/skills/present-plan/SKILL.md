@@ -3,7 +3,7 @@ name: present-plan
 description: Author an actionable implementation plan as Markdown in ~/plans/src; it auto-renders to a navigable dark-themed HTML view at http://plans.claude. Turns a discussion — or an existing present-research document — into ordered, concrete implementation steps with decisions and details.
 user-invocable: true
 model-invocable: false
-allowed-tools: Bash, Agent
+allowed-tools: Bash, Agent, Read, Write, Edit
 ---
 
 Produce an **actionable** implementation plan, authored as Markdown per `~/.config/plans-server/AUTHORING.md` — never write HTML, never touch the theme. This is the action-oriented half of the pipeline: where `present-research` gathers _what's possible_ (options, docs, links), `present-plan` decides _what to do_ and _how_.
