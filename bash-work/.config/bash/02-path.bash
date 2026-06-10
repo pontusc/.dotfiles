@@ -2,6 +2,9 @@
 export PATH="$HOME/.opencode/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
+# Mason-managed tools (LSPs, formatters, linters) — appended so system packages win
+export PATH="$PATH:$HOME/.local/share/nvim/mason/bin"
+
 # Krew
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
