@@ -6,12 +6,13 @@ model-invocable: false
 allowed-tools: Bash, Agent, Read, Write, Edit
 ---
 
-Produce an **actionable** implementation plan, authored as Markdown per `~/.config/plans-server/AUTHORING.md` — never write HTML, never touch the theme. This is the action-oriented half of the pipeline: where `present-research` gathers _what's possible_ (options, docs, links), `present-plan` decides _what to do_ and _how_.
+Produce an **actionable** implementation plan, authored as Markdown per `~/.config/plans-server/AUTHORING.md` — never write HTML, never touch the theme. Author the file with the `Write`/`Edit` tools, never `cat >` heredocs — the guard-sensitive hook scans Bash command content and will false-positive on document text. This is the action-oriented half of the pipeline: where `present-research` gathers _what's possible_ (options, docs, links), `present-plan` decides _what to do_ and _how_.
 
 ## Input — where the plan comes from
 
 - **From the conversation:** structure the plan we've worked out.
 - **From a research doc:** given a slug (e.g. `present-plan arc-research`), delegate a Haiku `Agent` to read `~/plans/src/<slug>.md` and return its options, recommendations, links, and constraints. Convert that into decisions and steps — don't just restate it.
+- **From the repo:** any codebase context-gathering goes to `scout` agents — never `Explore` or `general-purpose` defaults.
 
 Expect to iterate: the user reviews and discusses while the plan is constructed.
 

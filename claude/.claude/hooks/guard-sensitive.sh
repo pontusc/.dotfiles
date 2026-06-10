@@ -99,7 +99,7 @@ Bash)
     "${L}authorized_keys${R}"
     "${L}[^[:space:]]*\.tfstate(\.backup)?${R}"
     "${L}[^[:space:]]*kubeconfig[^[:space:]]*${R}"
-    "${L}[^[:space:]]*credentials[^[:space:]]*${R}"
+    "${L}[^[:space:]]*credentials[^[:space:]]*\.[A-Za-z0-9_-]{1,12}${R}"
     "${L}[^[:space:]]*\.(pem|key|pfx|p12|gpg|age)${R}"
   )
   LABELS=(
@@ -117,7 +117,7 @@ Bash)
     "authorized_keys"
     "Terraform state"
     "kubeconfig"
-    "credentials token"
+    "credentials file"
     "certificate/key extension"
   )
 
