@@ -23,6 +23,9 @@ theme:
 plugins:
   - search
 
+hooks:
+  - gen_index.py
+
 markdown_extensions:
   - attr_list
   - md_in_html

@@ -40,4 +40,4 @@ On approval, revise `~/plans/src/<slug>.md` **in place** per `~/.config/plans-se
 - Flip pills for **done** items: `pill gap` / `pill partial` → `pill ok`; check off completed checklist items. **drifted** / **still open** items keep their pill.
 - Where reality diverged from the plan, update the prose to match reality and mark it: `!!! note "Revised YYYY-MM-DD"` (ISO date).
 - Append a dated entry to a `## Review log {#review-log}` section — create it if absent, placed after the closing checklist as the document's final section: what was verified, what changed, what remains open.
-- Update the document's card date in `~/plans/src/index.md`.
+- Bump the `date:` field in the document's own frontmatter — the landing-page card date is generated from it.
