@@ -1,13 +1,13 @@
 ---
 name: prime
-description: Bootstrap session context by reading and summarizing a source. No argument primes from the local project (READMEs, file listings, config markers, git log); a plan name primes from a saved document in ~/plans/src. Delegates the reading to a Haiku agent.
+description: Bootstrap session context from the local project (READMEs, file listings, config markers, git log) via a Haiku agent.
 user-invocable: true
 model-invocable: true
 allowed-tools: Bash, Agent
 model: haiku
 ---
 
-Load context by delegating the reads to a Haiku agent — never read large files in the main thread. Pick the source from the argument.
+Load context by delegating the reads to a Haiku agent — never read large files in the main thread.
 
 ## Local project (no argument, `.`, or `here`)
 
@@ -20,9 +20,4 @@ Spawn one `Agent` (`general-purpose`, `haiku`) to gather and summarize:
 
 Return a dense summary: what the project is, key directories, language/framework/tooling, visible conventions, recent git activity.
 
-## Saved plan / document (a slug, or `plan <name>`)
-
-- Match the name against `~/plans/src/*.md`. No clear single match → `ls ~/plans/src/*.md` and ask. Don't guess.
-- Spawn one `Agent` (`general-purpose`, `haiku`) to read `~/plans/src/<slug>.md` and return a DENSE briefing: title + intro; section list (level-2 `##`) in order; locked decisions (`<span class="pill ok">`); open gaps/caveats (`pill gap`/`pill partial` spans, `!!! warning`/`!!! danger` admonitions); verbatim config/commands/paths/version pins.
-
-Either way, relay the result as restored context and continue.
+Relay the result as restored context and continue.

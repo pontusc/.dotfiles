@@ -39,7 +39,7 @@
     ],
     "defaultMode": "default"
   },
-  "model": "claude-fable-5[1m]",
+  "model": "opus",
   "hooks": {
     "Notification": [
       {
@@ -99,13 +99,20 @@
     "command": "bash /home/pontusc/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
-    "claude@cc-marketplace": true
+    "claude@cc-marketplace": true,
+    "plan@plans": true
   },
   "extraKnownMarketplaces": {
     "cc-marketplace": {
       "source": {
         "source": "github",
         "repo": "alek-ellegard/cc-marketplace"
+      }
+    },
+    "plans": {
+      "source": {
+        "source": "github",
+        "repo": "pontusc-alchemy/host-plans"
       }
     }
   },

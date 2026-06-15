@@ -91,9 +91,7 @@ Capture: key decisions (WHY), course corrections, critical file:line refs, archi
 - **Persist before /clear.** On plan-driven work, write state back before context is wiped:
   `/handoff` or update the plan doc. `/compact` summaries do not survive `/clear`.
 - **Plan lifecycle.** After completing an implementation phase of a saved plan, suggest
-  `/review-plan <slug>` to sync the doc — don't let plans drift until the end.
-- **Plans infra boundary.** Only SKILL.md lives in the skill dir; render infra (Makefile,
-  services, templates) belongs in dotfiles `claude-plans` → `~/.config/plans-server/`.
+  `/plan:review <slug>` to sync the doc — don't let plans drift until the end.
 
 ## Coding Principles
 
