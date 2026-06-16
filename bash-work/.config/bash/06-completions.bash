@@ -27,3 +27,10 @@ fi
 if command -v netbird &> /dev/null; then
   source <(netbird completion bash)
 fi
+
+# kgl: complete pod names in the current namespace
+_kgl_completions() {
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  mapfile -t COMPREPLY < <(compgen -W "$(kubectl get pods -o jsonpath='{.items[*].metadata.name}' 2>/dev/null)" -- "$cur")
+}
+complete -F _kgl_completions kgl
