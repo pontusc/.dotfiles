@@ -10,17 +10,6 @@ allowed-tools: Read, Glob, Grep
 
 Apply these conventions when writing or editing `Makefile` or `*.mk` files.
 
-## Shell Configuration
-
-Always set at the top of the Makefile:
-
-```makefile
-SHELL := /bin/bash
-.SHELLFLAGS := -euo pipefail -c
-```
-
-This ensures recipe lines follow the same error handling as standalone scripts.
-
 ## Targets
 
 - **`.PHONY`**: Declare all non-file targets as `.PHONY`. Group the declaration above the target, or use a single block at the top.
