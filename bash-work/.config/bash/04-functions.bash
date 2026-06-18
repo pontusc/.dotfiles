@@ -46,6 +46,75 @@ kgl() {
   fi
 }
 
+kpvc() {
+  local pvc_rows usage_rows
+
+  if [[ "$1" != "-A" && "$1" != "--all-namespaces" && -n "$1" ]]; then
+    # Single PVC in the current namespace
+    local pvc=$1
+    pvc_rows=$(kubectl get pvc "$pvc" -o json |
+      jq -r '"\(.metadata.namespace)\t\(.metadata.name)\t\(.status.phase)\t\(.status.capacity.storage // "?")"') || return 1
+    # kubectl's NotFound goes to stderr but the pipe exits 0 via jq; bail on empty
+    [[ -z "$pvc_rows" ]] && return 1
+
+    # Find the node hosting the pod that mounts this PVC, then query only that node
+    local node
+    node=$(kubectl get pod -o json |
+      jq -r --arg pvc "$pvc" 'first(.items[] |
+        select(.spec.volumes[]?.persistentVolumeClaim.claimName == $pvc) | .spec.nodeName)')
+
+    if [[ -n "$node" && "$node" != "null" ]]; then
+      usage_rows=$(kubectl get --raw "/api/v1/nodes/${node}/proxy/stats/summary" 2> /dev/null |
+        jq -r --arg pvc "$pvc" '.pods[].volume[]? | select(.pvcRef.name == $pvc) |
+          "\(.pvcRef.namespace)\t\(.pvcRef.name)\t\(.usedBytes)\t\(.capacityBytes)"')
+    fi
+  else
+    # List mode: current namespace (default), or all namespaces with -A
+    local scope=()
+    [[ "$1" == "-A" || "$1" == "--all-namespaces" ]] && scope=(-A)
+    pvc_rows=$(kubectl get pvc "${scope[@]}" -o json |
+      jq -r '.items[] | "\(.metadata.namespace)\t\(.metadata.name)\t\(.status.phase)\t\(.status.capacity.storage // "?")"') || return 1
+
+    # Bail before the node scan if there are no PVCs to report on
+    if [[ -z "$pvc_rows" ]]; then
+      echo "No PVCs found"
+      return 0
+    fi
+
+    # Pull every node's kubelet summary once
+    usage_rows=$(
+      for node in $(kubectl get nodes -o jsonpath='{.items[*].metadata.name}'); do
+        kubectl get --raw "/api/v1/nodes/${node}/proxy/stats/summary" 2> /dev/null
+      done | jq -r '.pods[].volume[]? | select(.pvcRef != null) |
+        "\(.pvcRef.namespace)\t\(.pvcRef.name)\t\(.usedBytes)\t\(.capacityBytes)"'
+    )
+  fi
+
+  {
+    printf 'NAMESPACE\tPVC\tSTATUS\tUSED\tCAPACITY\tUSE%%\n'
+    awk -F'\t' '
+      function human(b,   s, i, units) {
+        if (b == "" || b == "null") return "-"
+        split("Ki Mi Gi Ti Pi", units, " ")
+        if (b + 0 < 1024) return b "B"
+        s = b + 0; i = 0
+        while (s >= 1024 && i < 5) { s = s / 1024; i++ }
+        return sprintf("%.1f%s", s, units[i])
+      }
+      NR == FNR { u[$1"/"$2] = $3; c[$1"/"$2] = $4; next }
+      {
+        key = $1"/"$2
+        if (key in u && c[key] + 0 > 0) {
+          printf "%s\t%s\t%s\t%s\t%s\t%.0f%%\n", \
+            $1, $2, $3, human(u[key]), human(c[key]), u[key] / c[key] * 100
+        } else {
+          printf "%s\t%s\t%s\t%s\t%s\t%s\n", $1, $2, $3, "-", $4, "-"
+        }
+      }
+    ' <(echo "$usage_rows") <(echo "$pvc_rows" | sort -t$'\t' -k1,1 -k2,2)
+  } | column -t -s $'\t'
+}
+
 kcs() {
   kubectl config use-context "$(kubectl config get-contexts -o name | fzf)"
 }

@@ -1,3 +1,5 @@
+# shellcheck disable=SC1090,SC1091
+
 # Sesh completions
 if command -v sesh &> /dev/null; then
   source <(sesh completion bash)
@@ -41,3 +43,10 @@ _kds_completions() {
   mapfile -t COMPREPLY < <(compgen -W "$(kubectl get secrets -o jsonpath='{.items[*].metadata.name}' 2>/dev/null)" -- "$cur")
 }
 complete -F _kds_completions kds
+
+# kpvc: complete PVC names in the current namespace
+_kpvc_completions() {
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  mapfile -t COMPREPLY < <(compgen -W "$(kubectl get pvc -o jsonpath='{.items[*].metadata.name}' 2>/dev/null)" -- "$cur")
+}
+complete -F _kpvc_completions kpvc
