@@ -123,5 +123,6 @@
   "tui": "fullscreen",
   "preferences": {
     "verboseMode": true
-  }
+  },
+  "model": "claude-opus-4-8"
 }
