@@ -1,11 +1,11 @@
 ---
 name: create-claude-md
-description: This skill MUST be used whenever Claude is asked to create, write, edit, update, or generate a CLAUDE.md file for any project. Also invocable directly. Triggers on any request involving CLAUDE.md content generation or modification.
+description: Generate or edit a project's CLAUDE.md memory file. Use whenever asked to create, write, edit, update, or generate a CLAUDE.md for any project.
 ---
 
 # Create CLAUDE.md
 
-Generate or edit a CLAUDE.md file that gives Claude effective project context. The output must be concise, navigational, and general-purpose -- useful across sessions without going stale.
+The output must be concise, navigational, and general-purpose — useful across sessions without going stale.
 
 ## Discovery Phase
 
@@ -21,13 +21,13 @@ Before writing anything, gather project context. Run these in parallel where pos
 
 ## Output Structure
 
-The generated CLAUDE.md MUST follow this section order. Omit sections that don't apply. Every section should be 2-8 lines unless complexity demands more.
+The generated CLAUDE.md MUST follow this section order. Omit sections that don't apply. Every section should be 2-8 lines.
 
-### 1. Project Overview (WHAT + WHY)
+### 1. Project Overview
 
 One paragraph: what this project is, what problem it solves, who it serves. No marketing language.
 
-### 2. Architecture (WHAT)
+### 2. Architecture
 
 Describe the **meta-structure**, not individual files:
 
@@ -37,7 +37,7 @@ Describe the **meta-structure**, not individual files:
 
 State the key boundaries: what talks to what, where the entry points are, how data flows if non-obvious.
 
-### 3. Tech Stack (WHAT)
+### 3. Tech Stack
 
 List language, framework, and major dependencies. For versions:
 
@@ -45,7 +45,7 @@ List language, framework, and major dependencies. For versions:
 - **DO**: "Terraform version defined in .terraform-version"
 - **DON'T**: "Uses Node 20.11.1" (goes stale)
 
-### 4. Development Workflow (HOW)
+### 4. Development Workflow
 
 Commands to build, test, lint, format, and run locally. Reference the source of truth:
 
@@ -55,7 +55,7 @@ Commands to build, test, lint, format, and run locally. Reference the source of 
 
 Include only commands a developer runs frequently. Not setup guides.
 
-### 5. Conventions & Patterns (HOW)
+### 5. Conventions & Patterns
 
 Project-specific patterns Claude should follow:
 
@@ -67,7 +67,7 @@ Project-specific patterns Claude should follow:
 
 Only include patterns that are non-obvious or project-specific. Skip universal best practices.
 
-### 6. Key Files & Entry Points (WHAT)
+### 6. Key Files & Entry Points
 
 Point to files that matter for navigation:
 
@@ -78,7 +78,7 @@ Point to files that matter for navigation:
 
 Use relative paths. Brief annotation per file.
 
-### 7. Gotchas & Context (WHY)
+### 7. Gotchas & Context
 
 Things that would surprise or trip up Claude (or a new developer):
 
@@ -96,7 +96,7 @@ These rules are mandatory for all generated CLAUDE.md content:
 - **No full file trees**: Describe structure patterns, not every file
 - **Dense formatting**: Use bold, short bullets, tables where they compress information
 - **Imperative tone**: "Run `make test`" not "You can run `make test`"
-- **Under 150 lines**: If exceeding, split into supplementary docs and reference them
+- **Under 200 lines**: If exceeding, split into supplementary docs and reference them
 - **Present tense**: "The API validates input at the controller layer"
 - **No hedging**: State facts. If uncertain, investigate first or omit.
 
@@ -117,6 +117,6 @@ Before presenting the CLAUDE.md to the user:
 - [ ] Every section answers WHAT, WHY, or HOW (not just WHAT)
 - [ ] No hardcoded versions (only pointers to where versions live)
 - [ ] No full directory listings (only meta-structure descriptions)
-- [ ] Under 150 lines
+- [ ] Under 200 lines
 - [ ] All referenced files actually exist in the project
 - [ ] Commands listed are accurate (verify by checking Makefile/package.json/CI)

@@ -1,65 +1,46 @@
 ---
 name: helm
-description: Helm chart conventions — applied when writing or editing Helm charts, templates, and values files.
+description: Consuming third-party Helm charts via values files and install/upgrade. Applied when editing a values file (values.yaml, values-*.yaml, helmfile.yaml) or installing, upgrading, or modifying a Helm release/package.
 user-invocable: false
 model-invocable: true
 allowed-tools: Read, Glob, Grep, Bash
 ---
 
-# Helm Chart Conventions
+# Consuming Helm Charts
 
-Apply these conventions when writing or editing Helm charts, templates, and values files.
+These conventions cover installing and configuring upstream charts through values overrides — not authoring charts.
 
 ## Before Making Changes
 
-**Always locate and read the relevant values file first.** Before editing any template or values:
+Trace the values chain first so you override at the right layer and don't duplicate an existing setting.
 
-1. Find the chart's `values.yaml` — this is the source of truth for defaults.
-2. Check for environment-specific overrides (e.g., `values-prod.yaml`, `values-staging.yaml`, `values.<env>.yaml`).
-3. If a helmfile is present (`helmfile.yaml`), read it to understand which values files are composed and in what order.
-4. Verify the value you're adding/changing isn't already defined elsewhere in the override chain.
+1. Find the chart's `values.yaml` (the override target) and any env-specific files (`values-prod.yaml`, `values.<env>.yaml`).
+2. If `helmfile.yaml` is present, read it — it composes which values files apply, in what order, per release. (helmfile is a separate declarative tool layered on the `helm` CLI: github.com/helmfile/helmfile.)
+3. Confirm the value isn't already set upstream or earlier in the override chain before adding it.
 
-## Chart Structure
+## Know the Upstream Defaults
 
-Standard layout:
+- `helm show values <chart>` prints the chart's full `values.yaml`; `helm show chart <chart>` prints its `Chart.yaml`. Read these before overriding.
+- Override **only the keys that differ** from upstream. Never paste the entire upstream values file into your override — it silently pins defaults you didn't mean to own and drifts on chart upgrades.
+- If the chart ships a `values.schema.json`, your final values must satisfy it. The schema is validated on `install`, `upgrade`, `lint`, and `template` (including `--set` overrides); a mismatch fails the command.
 
-```
-chart-name/
-├── Chart.yaml
-├── values.yaml
-├── templates/
-│   ├── _helpers.tpl
-│   ├── deployment.yaml
-│   ├── service.yaml
-│   └── ...
-└── charts/          # subcharts (if any)
-```
+## Sourcing and Pinning
 
-## Values
+- HTTP repos: `helm repo add <name> <url>` then `helm repo update`. OCI charts use the full ref as the chart argument: `oci://registry/repo/chart`.
+- Always pin `--version <ver>` on install/upgrade — prefer an exact tag for reproducibility (the flag also accepts semver ranges). Without it Helm resolves to the latest available version.
 
-- **Flat where possible**: Avoid deeply nested structures that are hard to override.
-- **Document values**: Add comments above each key in `values.yaml` explaining its purpose and valid options.
-- **Sensible defaults**: `values.yaml` should produce a working deployment with minimal overrides.
-- **No secrets in values**: Reference external secrets (ExternalSecrets, SealedSecrets, or CSI driver). Never commit plaintext secrets.
+## Installing and Upgrading
 
-## Templates
+- Idempotent apply: `helm upgrade --install <release> <chart> -n <ns> --create-namespace --version <ver> -f values.yaml`. `--install` installs if the release is absent; `--create-namespace` only acts when `--install` is set.
+- Supply values with `-f`/`--values` (repeatable, later files win) and `--set key=val` for one-offs.
+- Values-merge footgun on upgrade: the default is conditional. With **no** `-f`/`--set`, Helm carries over the entire prior release config (reuse-like); with **any** `-f`/`--set`, it uses chart defaults plus only this run's overrides, so **prior overrides you don't re-specify are dropped** (reset-like). `--reuse-values` forces reuse with your overrides merged on top; `--reset-values` forces chart defaults; `--reset-then-reuse-values` (Helm 3.14+) resets to chart defaults, re-applies the last release's values, then merges your CLI overrides. If a previously-set override vanishes on upgrade, this is why — pass the full values file each time rather than relying on the implicit merge.
 
-- **Use `_helpers.tpl`** for reusable template definitions (labels, names, selectors).
-- **Standard labels**: Use the helpers to generate consistent `app.kubernetes.io/*` labels across all resources.
-- **`toYaml | nindent`**: When inserting structured values, always pipe through `toYaml` and `nindent` for correct indentation.
-- **Conditional resources**: Wrap optional resources in `{{- if .Values.feature.enabled }}`.
-- **Quote strings**: Use `{{ .Values.foo | quote }}` for string values in templates to prevent YAML parsing issues.
+## Preview and Validate
 
-## Validation
+- `helm diff upgrade <release> <chart> -f values.yaml` shows what an upgrade would change against the live release. It's the `helm-diff` plugin, not core Helm: `helm plugin install https://github.com/databus23/helm-diff`.
+- `helm template <chart> -f values.yaml` renders manifests locally (no cluster). `--dry-run=server` on install/upgrade simulates server-side against the cluster (so server-side validation/admission applies); `--dry-run=client` skips the cluster.
+- Validate rendered output against the `kubernetes` skill conventions before applying.
 
-When modifying a chart:
+## Secrets
 
-- Run `helm template <release> <chart> -f <values>` to verify rendered output.
-- Check that all Kubernetes conventions from the `kubernetes` skill are followed in the rendered manifests.
-- Verify no duplicate resource names or missing required fields.
-
-## Dependencies
-
-- Pin subchart versions in `Chart.yaml` — no floating ranges.
-- Run `helm dependency update` after changing dependencies.
-- Commit the `Chart.lock` file.
+Never commit plaintext secrets to a values file. Reference ExternalSecrets, SealedSecrets, or the Secrets Store CSI driver and let those reconcile the actual secret material.

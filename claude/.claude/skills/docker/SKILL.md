@@ -1,6 +1,6 @@
 ---
 name: docker
-description: Container build conventions -- applied when writing or editing Dockerfiles and .dockerignore.
+description: Container build conventions — applied when writing or editing Dockerfiles and .dockerignore.
 user-invocable: false
 model-invocable: true
 allowed-tools: Read, Glob, Grep
@@ -40,7 +40,7 @@ When editing an existing file:
   shrink the image.
 - **BuildKit mounts** over manual cache juggling: `--mount=type=cache` for package caches,
   `--mount=type=bind` to read build inputs without persisting them in a layer.
-- **`COPY` over `ADD`** — use `ADD` only for remote URLs or tar auto-extraction.
+- **`COPY` over `ADD`** — use `ADD` only for tar auto-extraction. `ADD <url>` does no checksum verification; fetch remote files via a `RUN` with an explicit `sha256sum` check instead.
 - **`WORKDIR`** with an absolute path instead of `cd` in `RUN`.
 
 ## Secrets
@@ -67,13 +67,13 @@ When editing an existing file:
 - **Run as non-root**: create a dedicated user and set `USER` before the entrypoint;
   `COPY --chown` to give it ownership.
 - **Pin package versions** where the package manager supports it.
-- **`.dockerignore`**: Exclude all by default and implicitly add what is needed.
+- **`.dockerignore`**: deny-all first (`**`), then explicitly re-include what the build needs with `!` patterns.
 
 ## Runtime
 
 - **Exec form** for `ENTRYPOINT`/`CMD` (`["bin", "arg"]`) so the process runs as PID 1 and
   receives signals (SIGTERM) directly. `ENTRYPOINT` = executable, `CMD` = default args.
-- **`EXPOSE`** documented ports.
+- **`EXPOSE`** documents ports only — it does not publish them (that's `-p` / `ports:` at run time).
 
 ## Parser directive
 

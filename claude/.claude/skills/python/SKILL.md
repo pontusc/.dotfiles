@@ -25,8 +25,7 @@ When editing an existing project:
 
 ## Tooling
 
-- **uv** manages dependencies, the lockfile (`uv.lock`), and the venv.
-  `poetry` / `pip-tools`.
+- **uv** manages dependencies, the lockfile (`uv.lock`), and the venv. Prefer it over `poetry` / `pip-tools`.
 - **ty** is the type checker (+ LSP); **ruff** is both the linter (`ruff check`) and the
   formatter (`ruff format`).
 - The local inner loop (`uv sync`) runs the same tools as CI.
@@ -38,7 +37,8 @@ When editing an existing project:
 - **Pin every direct dependency to an exact version** (`==`); `uv.lock` pins transitives.
   Nothing floats (`>=` / `~=` / `@latest`) — bumps are deliberate.
 - **Bound `requires-python` on both ends** (e.g. `>=3.14,<3.15`) so the local resolve matches
-  CI and the image. Patches float; crossing a minor is deliberate.
+  CI and the image — applications only; libraries shouldn't cap the upper bound. Patches float;
+  crossing a minor is deliberate.
 - Dev tools go in `[dependency-groups] dev`, not runtime dependencies.
 
 ## Project layout
@@ -67,10 +67,18 @@ When editing an existing project:
   people/agents work their piece in parallel without colliding.
 - **Names say exactly what the thing does.** Comments explain **why**, not what.
 - **Strongly typed.** Annotate every function signature (params + return) and class attribute;
-  let ty infer locals — don't annotate the obvious. Avoid `Any` / bare `object` and don't
-  silence the checker with `# type: ignore`; `ty check` passes clean.
-- **Type the seams precisely**: `Protocol` / `ABC` for swappable interfaces, a typed sentinel
-  over `str | object`.
+  let ty infer locals — don't annotate the obvious. Avoid `Any` / bare `object`; `ty check`
+  passes clean — earned, not silenced.
+- **Type the seams precisely**: `Protocol` for structural (duck-typed) interfaces, `ABC` for
+  nominal base classes; a typed sentinel over `str | object`.
+- **Fix the cause a warning names, never silence the symptom.** A linter or type-checker
+  flag is evidence of a real defect; understand *why* the tool fires before you act. Inline
+  ignore/disable comments, blanket `except`, config loosening, or scaffolding added only to
+  quiet a tool are not fixes — an unjustifiable suppression is itself a defect.
+- **Every construct must have a purpose you can state plainly.** No symbol, parameter,
+  constant, or abstraction exists merely to satisfy a tool or carried along out of habit. If
+  you can't articulate what a thing is for, that's the signal to delete or refactor it — not
+  to keep it.
 
 ## Testing
 

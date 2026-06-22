@@ -1,6 +1,6 @@
 ---
 name: kubernetes
-description: Kubernetes manifest conventions — applied when writing or editing Kubernetes resource YAML files.
+description: Kubernetes manifest conventions — applied when writing or editing Kubernetes resource YAML (Deployments, Services, ConfigMaps, Ingress, etc.).
 user-invocable: false
 model-invocable: true
 allowed-tools: Read, Glob, Grep
@@ -8,11 +8,11 @@ allowed-tools: Read, Glob, Grep
 
 # Kubernetes Manifest Conventions
 
-Apply these conventions when writing or editing Kubernetes resource manifests (Deployments, Services, ConfigMaps, etc.).
+Conventions for new files and the lines you're changing — on existing files stay surgical and suggest divergences rather than migrating.
 
 ## General
 
-- **API version**: Use the latest stable API version for each resource kind. Avoid deprecated/beta APIs unless required.
+- **API version**: Use the current stable API per kind (`apps/v1` Deployments/StatefulSets, `batch/v1` Jobs/CronJobs, `networking.k8s.io/v1` Ingress/NetworkPolicy, `policy/v1` PDB). Avoid deprecated/beta APIs unless required.
 - **Namespaces**: Always specify `metadata.namespace`. Never deploy to `default` namespace.
 
 ## Images
@@ -22,13 +22,17 @@ Apply these conventions when writing or editing Kubernetes resource manifests (D
 
 ## Security
 
-- **Security contexts**: Always set on both pod and container level:
+- **Security contexts**: not added by default — pods run unhardened unless hardening is asked for. When it is requested, set fields at the correct level: `runAsNonRoot` is pod-level; `allowPrivilegeEscalation`, `readOnlyRootFilesystem`, and `capabilities` are **container-level** and are silently ignored if set only on the pod:
 
 ```yaml
+# spec.securityContext (pod)
 securityContext:
   runAsNonRoot: true
-  readOnlyRootFilesystem: true
+
+# spec.containers[].securityContext (container)
+securityContext:
   allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
   capabilities:
     drop: ["ALL"]
 ```
@@ -38,8 +42,8 @@ securityContext:
 
 ## Resource Management
 
-- **Always set `resources.requests` and `resources.limits`** for CPU and memory.
-- Requests should reflect actual usage, limits should cap burst. Don't set them equal unless you want Guaranteed QoS.
+- **Always set `requests` (CPU + memory)** — reflect actual usage.
+- Propose a memory `limit` to cap burst. Don't set a CPU `limit` (it throttles via CFS even with spare node capacity); set limits equal to requests only when you specifically want Guaranteed QoS.
 - Use `LimitRange` and `ResourceQuota` at namespace level as guardrails.
 
 ## Probes
@@ -47,7 +51,7 @@ securityContext:
 - **Liveness probe**: Detects deadlocks — should check internal health, not dependencies.
 - **Readiness probe**: Detects readiness to serve — should check that the app can handle requests.
 - **Startup probe**: Use for slow-starting containers to avoid premature liveness kills.
-- Set sensible `initialDelaySeconds`, `periodSeconds`, and `failureThreshold`.
+- Set sensible `initialDelaySeconds`, `periodSeconds`, `timeoutSeconds`, and `failureThreshold`.
 
 ## Networking
 

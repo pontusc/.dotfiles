@@ -1,6 +1,6 @@
 ---
 name: session-retrospective
-description: Use when the user asks to "review the session", "evaluate our conversation", "improve the workflow", "analyze what went wrong", or mentions session quality/efficiency
+description: Review the current session for recurring mistakes and propose CLAUDE.md/skill edits to prevent them. Use when asked to "review the session", "evaluate our conversation", "improve the workflow", or "analyze what went wrong".
 user-invocable: true
 model-invocable: false
 model: sonnet
@@ -38,7 +38,7 @@ For each issue:
 **Create/Update Skill**: Repeatable workflows (3+ times)
 **Compact/Remove**: Merge similar learnings, remove outdated items, generalize examples
 
-**Token Budget**: CLAUDE.md should stay ~800-1200 tokens. If over, consolidate.
+**Length**: CLAUDE.md should stay under ~200 lines. If over, consolidate.
 
 ### 4. Present Recommendations
 

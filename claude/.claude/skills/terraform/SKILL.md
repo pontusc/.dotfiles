@@ -8,7 +8,7 @@ allowed-tools: Read, Glob, Grep
 
 # Terraform / Terragrunt Conventions
 
-Apply these conventions when writing or editing `*.tf`, `*.hcl`, or `terragrunt.hcl` files.
+Conventions for new files and the lines you're changing — on existing files stay surgical and suggest divergences rather than migrating.
 
 ## File Structure
 
@@ -17,7 +17,6 @@ Standard module layout:
 - `main.tf` — primary resources
 - `variables.tf` — all input variables
 - `outputs.tf` — all outputs
-- `versions.tf` — `terraform {}` block with required providers and version constraints
 - `locals.tf` — local values (if needed, keep minimal)
 - `data.tf` — data sources (if more than 1-2, otherwise inline in `main.tf`)
 
@@ -33,6 +32,7 @@ Standard module layout:
 
 - **Naming**: Use `snake_case`. Resource names should describe purpose, not repeat the resource type (e.g., `google_storage_bucket.artifacts`, not `google_storage_bucket.google_storage_bucket_artifacts`).
 - **`prevent_destroy`**: Add `lifecycle { prevent_destroy = true }` on stateful resources (databases, storage buckets, clusters).
+- **`for_each` over `count`**: default to `for_each` (keyed by a stable map/set) so adding/removing one element doesn't reindex the rest; use `count` only for a simple on/off toggle (`count = var.enabled ? 1 : 0`).
 
 ## Security
 
@@ -44,6 +44,7 @@ Standard module layout:
 
 - Keep `terragrunt.hcl` DRY — use `include` blocks to inherit common config.
 - Use `dependency` blocks to reference outputs from other modules.
+- Generate the provider block — with a pinned provider version — via a terragrunt `generate` block, rather than a per-module `versions.tf`.
 - Inputs should be flat and explicit — avoid deep nesting.
 - When calling a module and resources have to be added (e.g. a firewall to a GKE Cluster module), don't edit the module itself. Utilize the fact that terragrunt just copies all files to a folder and define a new firewall.tf file in the calling directory instead to extend the module.
 
@@ -59,7 +60,6 @@ Standard module layout:
 
 - Remote state only — never commit `.tfstate` files.
 - State bucket must have versioning enabled.
-- Use state locking.
 
 ## Plan Verification
 
@@ -74,5 +74,5 @@ For changes that touch stateful resources (databases, clusters, buckets, load ba
 **After editing — required:**
 
 - The task is not done until plan has been run and reviewed.
-- Delegate plan execution and review to the `validator` agent (Agent tool, `subagent_type: "validator"`). Hand it the exact command (`terragrunt plan` from the module dir, or `terraform plan` for non-terragrunt dirs) and the stated change intent so it can flag mismatches.
+- Delegate to the `validator` agent (Agent tool, `subagent_type: "validator"`). Hand it the sequence — `terraform fmt -check`, `terraform validate`, then `terragrunt plan` (module dir) or `terraform plan` (non-terragrunt) — plus the stated change intent so it can flag mismatches.
 - Report the validator's structured verdict to the user. If it flags an issue (unintended destroy/replace, `prevent_destroy` conflict, out-of-scope drift), stop and wait for user input.

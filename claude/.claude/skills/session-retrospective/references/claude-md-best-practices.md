@@ -1,15 +1,15 @@
-# CLAUDE.md Best Practices
+# CLAUDE.md Maintenance (for retrospectives)
+
+For general CLAUDE.md writing rules (pointers over content, dense formatting, no version pinning, section structure), use the `create-claude-md` skill. This file covers only what's specific to maintaining a CLAUDE.md over time.
 
 ## Structure
-- **Target**: 100-200 lines (~800-1200 tokens)
+- **Target**: under ~200 lines
 - **Priority**: Communication > Guidelines > Principles > Learnings
 - **Session Learnings**: Max 3-5 recent, rotate out after 30 days
 
-## Content Rules
+## Maintaining Learnings
 - **Principles, not examples**: "Plans: outline only" not "When creating Docker plans..."
 - **Merge similar**: 3 related learnings → 1 principle
-- **Remove obvious**: Basic programming practices don't need docs
-- **Token estimate**: ~4 chars = 1 token
 
 ## Session Learnings Format
 ```markdown
@@ -19,7 +19,7 @@
 ```
 
 ## Compaction Triggers
-When CLAUDE.md >200 lines:
+When CLAUDE.md exceeds the target:
 1. Merge overlapping learnings
 2. Remove items not referenced in 30+ days
 3. Generalize specific examples

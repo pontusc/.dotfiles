@@ -8,7 +8,7 @@ allowed-tools: Read, Glob, Grep
 
 # GitHub Actions CI/CD Conventions
 
-Apply these conventions when writing or editing `.github/workflows/*.yml` files.
+Conventions for new files and the lines you're changing — on existing files stay surgical and suggest divergences rather than migrating.
 
 ## Workflow Structure
 
@@ -26,7 +26,7 @@ on:
 
 ## Actions
 
-- **Pin actions by SHA**, not tag: `uses: actions/checkout@<full-sha>` — prevents supply chain attacks from tag mutation.
+- **Pin actions by SHA**, not tag: `uses: actions/checkout@<full-sha>` — prevents supply-chain attacks from tag mutation. SHAs go stale; let Dependabot or Renovate (`github-actions` ecosystem) keep them current.
 - **Minimize third-party actions**: Prefer inline `run:` steps for simple operations. Only use actions when they provide real value.
 - **Official actions first**: Prefer `actions/*` and first-party vendor actions over community alternatives.
 
@@ -35,30 +35,31 @@ on:
 - **Never hardcode secrets** — use `${{ secrets.NAME }}`.
 - **Least privilege `permissions:`** — always define `permissions:` at the workflow or job level. Start with `permissions: {}` and add only what's needed.
 - **No `pull_request_target` with checkout** — avoid checking out PR code in `pull_request_target` workflows (code injection risk).
+- **Prefer OIDC over long-lived secrets**: for cloud auth (GCP/AWS/Azure), use `permissions: id-token: write` plus the provider's federated-login action instead of static credentials in `secrets.*`.
 
 ## Jobs
 
-- **`runs-on:`** — use specific runner versions (e.g., `ubuntu-24.04`), not `ubuntu-latest` (reproducibility).
+- **`runs-on:`** — use `ubuntu-latest` for GitHub-hosted runners (GitHub maintains and patches the image). Pin a specific version (e.g., `ubuntu-24.04`) only for self-hosted runners or when a job needs a fixed toolchain.
 - **Job dependencies**: Use `needs:` to express dependencies. Keep the DAG shallow.
-- **Concurrency**: Use `concurrency:` to prevent duplicate runs on the same branch/PR.
+- **Concurrency**: Use `concurrency:` to prevent duplicate runs. `cancel-in-progress: true` for CI (superseded runs are wasted work); set it `false` for deploy/release jobs — cancelling mid-deploy can leave infra half-applied.
 
 ```yaml
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: true  # false for deploy/release jobs
 ```
 
 ## Steps
 
 - **Name every step** — unnamed steps are hard to debug in the UI.
 - **Fail fast**: Use `set -euo pipefail` in multi-line `run:` blocks (GitHub defaults to `set -e` only).
-- **Cache wisely**: Use `actions/cache` for dependencies. Always include a hash of the lockfile in the cache key.
+- **Cache wisely**: Use `actions/cache` for dependencies; key on a hash of the lockfile, with `restore-keys:` as a partial-hit fallback.
 - **Artifacts**: Use `actions/upload-artifact` for build outputs needed by downstream jobs, not for logs.
 
 ## Environment Variables
 
 - Define shared env vars at workflow level, job-specific at job level.
-- Use `$GITHUB_OUTPUT` for passing values between steps (not deprecated `::set-output`).
+- Use `$GITHUB_OUTPUT`/`$GITHUB_STATE` for step outputs/state (not the deprecated `::set-output`/`::save-state`).
 - Use `$GITHUB_ENV` sparingly — prefer explicit step outputs.
 
 ## Script Paths with `working-directory`
