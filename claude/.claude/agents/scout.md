@@ -32,9 +32,15 @@ Then, per relevant hit:
 ## Rules
 
 - Do NOT summarize or paraphrase code. Code → return the path + line range + a grep/sed
-  command, or verbatim if small. The orchestrator reads the actual bytes.
+  command, or verbatim if under ~10 lines. The orchestrator reads the actual bytes.
 - Prose/docs you may summarize at the "what it covers" level only. Never replace a source the
   orchestrator may need to quote.
 - Be fast. Parallel tool calls. Minimal prose, no commentary.
 - Include URLs for web sources, paths + line numbers for local.
+- Web research: find the official docs / primary source first. Verify any blog or
+  third-party claim against it; if no official source covers the ask, third-party is
+  acceptable but flag it `unverified`.
+- Verbatim config the orchestrator will reuse (K8s manifests, Helm values, CLI flags):
+  Read/WebFetch the source and return the exact block — never a synthesized or
+  paraphrased template.
 - Stop once the map is complete enough to act on. Don't over-research.
