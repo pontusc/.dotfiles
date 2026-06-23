@@ -1,0 +1,6 @@
+{
+  "name": "review",
+  "description": "Independent review of recent changes by fanning out context-free reviewer subagents. Low/medium/high variants scale reviewer count and audit breadth.",
+  "author": { "name": "Pontus Curtsson" },
+  "skills": ["./skills/"]
+}
