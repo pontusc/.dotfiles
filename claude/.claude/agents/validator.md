@@ -25,6 +25,8 @@ so the orchestrator's context stays lean.
 ## How you work
 
 - Use the exact command if given. Don't improvise flags unless it fails — then report the failure.
+- When handed a change set (the executor's paths + line ranges), scope validation to those
+  paths and pass the set through in your verdict so the reviewer receives it intact.
 - Report the exact command you ran, so the orchestrator can re-run or cite it.
 - Prefer the project-pinned tool (tfenv / mise / .terraform-version / asdf). If the
   expected tool is missing, report `BLOCKED: <tool> not found` — do NOT silently fall

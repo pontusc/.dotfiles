@@ -2,7 +2,7 @@
 name: reviewer
 description: "Independent correctness and design review of a completed change. Reads the diff plus the original intent and reports defects, edge cases, and design concerns — not lint. Use after executor, before relaying to the user."
 model: opus
-effort: high
+effort: xhigh
 color: red
 tools: Read, Grep, Glob, Bash
 ---

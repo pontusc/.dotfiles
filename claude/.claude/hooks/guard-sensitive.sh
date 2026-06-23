@@ -13,7 +13,7 @@
 # Files:
 #   .env, .env.*, .env.local, etc.
 #   *.pem, *.key, *.pfx, *.p12, *.gpg, *.age
-#   *credentials*, *secret*
+#   *credentials*
 #   id_rsa, id_ed25519, id_ecdsa, id_dsa (+ .pub variants)
 #   authorized_keys
 #   *.tfstate, *.tfstate.backup
@@ -116,7 +116,6 @@ Bash)
     "${L}[^[:space:]]*kubeconfig[^[:space:]]*${R}"
     "${L}[^[:space:]]*credentials[^[:space:]]*\.[A-Za-z0-9_-]{1,12}${R}"
     "${L}[^[:space:]]*\.(pem|key|pfx|p12|gpg|age)${R}"
-    "${L}[^[:space:]]*secrets?(\.[A-Za-z0-9_-]+|/)${R}"
   )
   LABELS=(
     ".ssh/ directory"
@@ -135,7 +134,6 @@ Bash)
     "kubeconfig"
     "credentials file"
     "certificate/key extension"
-    "secret file/dir"
   )
 
   # ripgrep if present (faster, consistent regex), else grep -E.
@@ -228,10 +226,6 @@ is_blocked_file() {
     ;;
   *credentials*)
     echo "file rule: credentials in name"
-    return 0
-    ;;
-  *secret*)
-    echo "file rule: secret in name"
     return 0
     ;;
   *kubeconfig*)
