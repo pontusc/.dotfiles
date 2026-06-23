@@ -7,10 +7,10 @@ Security is enforced via hooks rather than sandbox — the sandbox is disabled.
 
 ### Hook Types
 
-| Event       | When                 | Exit 0       | Exit 2                      |
-| ----------- | -------------------- | ------------ | --------------------------- |
-| PreToolUse  | Before tool executes | Allow        | Block (stderr sent to agent)                       |
-| PostToolUse | After tool executes  | Pass through | Tool already ran; stderr shown, agent fixes & retries |
+| Event       | When                 | Exit 0       | Exit 2                                                 |
+| ----------- | -------------------- | ------------ | ------------------------------------------------------ |
+| PreToolUse  | Before tool executes | Allow        | Block (stderr sent to agent)                           |
+| PostToolUse | After tool executes  | Pass through | Tool already ran; stderr shown, agent fixes & retries  |
 
 ### Active Hooks
 

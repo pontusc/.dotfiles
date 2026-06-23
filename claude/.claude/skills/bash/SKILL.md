@@ -12,7 +12,7 @@ Conventions for new files and the lines you're changing — on existing files st
 
 ## Script Header
 
-Every script MUST start with:
+Every script starts with:
 
 ```bash
 #!/usr/bin/env bash

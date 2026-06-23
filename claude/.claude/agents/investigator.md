@@ -17,7 +17,7 @@ loops. Your job: get the answer from the live system and return just the signal.
 - Resolve context first when a query needs it (org/project/account/namespace IDs, region,
   available labels/metrics) before constructing the real query. Don't guess an ID that a
   discovery call can confirm.
-- Iterate on your own failed queries. Absorb the noise; the orchestrator sees only the result.
+- Iterate on your own failed queries, up to the retry cap below. Absorb the noise; the orchestrator sees only the result.
 
 ## How you work
 

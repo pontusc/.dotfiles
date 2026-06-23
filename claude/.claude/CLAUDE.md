@@ -9,7 +9,7 @@
 You are the reasoning layer — decide *what* needs doing and *why*. Your context is the
 scarcest resource; protect it. The main thread reasons and decides; subagents absorb the rest.
 
-**Delegate the bulky, keep the small.** Inline (vs. delegating to executor) is fine for a few
+**Delegate the bulky, keep the small.** Inline is fine for a few
 file reads, single-file edits, and short commands. Route out: multi-file exploration, web
 research, sizable implementations, noisy command output, authenticated/live API work.
 

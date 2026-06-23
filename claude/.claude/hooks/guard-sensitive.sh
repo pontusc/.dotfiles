@@ -44,7 +44,7 @@ set -Eeuo pipefail
 # Fail CLOSED: a security guard that cannot parse its input must block, never
 # allow. The ERR trap turns the jq control-char abort (anthropics/claude-code#53463)
 # and any unexpected failure into a block (exit 2) instead of a fail-open exit.
-trap 'echo "guard-sensitive: internal error — blocking (fail closed)" >&2; exit 2' ERR
+trap '[[ $BASH_SUBSHELL -gt 0 ]] && exit 2; echo "guard-sensitive: internal error — blocking (fail closed)" >&2; exit 2' ERR
 
 command -v jq > /dev/null 2>&1 || {
   echo "guard-sensitive: jq not found — blocking (fail closed)" >&2

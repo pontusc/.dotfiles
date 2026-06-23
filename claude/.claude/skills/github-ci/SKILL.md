@@ -33,7 +33,7 @@ on:
 ## Secrets and Security
 
 - **Never hardcode secrets** — use `${{ secrets.NAME }}`.
-- **Least privilege `permissions:`** — always define `permissions:` at the workflow or job level. Start with `permissions: {}` and add only what's needed.
+- **Least privilege `permissions:`** — define `permissions:` at the workflow or job level. Start with `permissions: {}` and add only what's needed.
 - **No `pull_request_target` with checkout** — avoid checking out PR code in `pull_request_target` workflows (code injection risk).
 - **Prefer OIDC over long-lived secrets**: for cloud auth (GCP/AWS/Azure), use `permissions: id-token: write` plus the provider's federated-login action instead of static credentials in `secrets.*`.
 

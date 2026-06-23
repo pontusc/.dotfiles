@@ -28,7 +28,7 @@ When editing an existing project:
 - **uv** manages dependencies, the lockfile (`uv.lock`), and the venv. Prefer it over `poetry` / `pip-tools`.
 - **ty** is the type checker (+ LSP); **ruff** is both the linter (`ruff check`) and the
   formatter (`ruff format`).
-- The local inner loop (`uv sync`) runs the same tools as CI.
+- `uv sync` provisions the env from `uv.lock`, so local and CI run identical tool versions (see Quality gate).
 - **If a preferred tool isn't available in the project**, fall back to this structure with
   whatever it has — don't block on the exact toolchain.
 
@@ -36,7 +36,7 @@ When editing an existing project:
 
 - **Pin every direct dependency to an exact version** (`==`); `uv.lock` pins transitives.
   Nothing floats (`>=` / `~=` / `@latest`) — bumps are deliberate.
-- **Bound `requires-python` on both ends** (e.g. `>=3.14,<3.15`) so the local resolve matches
+- **Bound `requires-python` on both ends** (cap to a single minor, e.g. `>=3.12,<3.13`) so the local resolve matches
   CI and the image — applications only; libraries shouldn't cap the upper bound. Patches float;
   crossing a minor is deliberate.
 - Dev tools go in `[dependency-groups] dev`, not runtime dependencies.

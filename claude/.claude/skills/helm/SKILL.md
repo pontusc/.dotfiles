@@ -1,6 +1,6 @@
 ---
 name: helm
-description: Consuming third-party Helm charts via values files and install/upgrade. Applied when editing a values file (values.yaml, values-*.yaml, helmfile.yaml) or installing, upgrading, or modifying a Helm release/package.
+description: Consuming third-party Helm charts via values files and install/upgrade. Applied when editing Helm values/override files (values.yaml, values-*.yaml, values.<env>.yaml, helmfile.yaml) or running helm install/upgrade on a release/package.
 user-invocable: false
 model-invocable: true
 allowed-tools: Read, Glob, Grep, Bash
@@ -15,7 +15,7 @@ These conventions cover installing and configuring upstream charts through value
 Trace the values chain first so you override at the right layer and don't duplicate an existing setting.
 
 1. Find the chart's `values.yaml` (the override target) and any env-specific files (`values-prod.yaml`, `values.<env>.yaml`).
-2. If `helmfile.yaml` is present, read it — it composes which values files apply, in what order, per release. (helmfile is a separate declarative tool layered on the `helm` CLI: github.com/helmfile/helmfile.)
+2. If `helmfile.yaml` is present, read it — it composes which values files apply, in what order, per release. (helmfile is a separate declarative tool layered on the `helm` CLI: https://github.com/helmfile/helmfile.)
 3. Confirm the value isn't already set upstream or earlier in the override chain before adding it.
 
 ## Know the Upstream Defaults
@@ -39,7 +39,7 @@ Trace the values chain first so you override at the right layer and don't duplic
 
 - `helm diff upgrade <release> <chart> -f values.yaml` shows what an upgrade would change against the live release. It's the `helm-diff` plugin, not core Helm: `helm plugin install https://github.com/databus23/helm-diff`.
 - `helm template <chart> -f values.yaml` renders manifests locally (no cluster). `--dry-run=server` on install/upgrade simulates server-side against the cluster (so server-side validation/admission applies); `--dry-run=client` skips the cluster.
-- Validate rendered output against the `kubernetes` skill conventions before applying.
+- Sanity-check the rendered manifests against the same Kubernetes conventions you'd apply to hand-written manifests before applying.
 
 ## Secrets
 

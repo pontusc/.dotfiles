@@ -21,7 +21,7 @@ Before writing anything, gather project context. Run these in parallel where pos
 
 ## Output Structure
 
-The generated CLAUDE.md MUST follow this section order. Omit sections that don't apply. Every section should be 2-8 lines.
+The generated CLAUDE.md should follow this section order. Omit sections that don't apply. Every section should be 2-8 lines.
 
 ### 1. Project Overview
 
@@ -89,7 +89,7 @@ Things that would surprise or trip up Claude (or a new developer):
 
 ## Writing Rules
 
-These rules are mandatory for all generated CLAUDE.md content:
+Apply these rules to all generated CLAUDE.md content:
 
 - **Pointers over content**: Reference where information lives, don't duplicate it
 - **No version pinning**: Say where versions are defined, not what they are
@@ -114,7 +114,7 @@ When editing an existing CLAUDE.md:
 
 Before presenting the CLAUDE.md to the user:
 
-- [ ] Every section answers WHAT, WHY, or HOW (not just WHAT)
+- [ ] Every section gives reasoning or guidance, not just a bare fact
 - [ ] No hardcoded versions (only pointers to where versions live)
 - [ ] No full directory listings (only meta-structure descriptions)
 - [ ] Under 200 lines

@@ -74,5 +74,5 @@ For changes that touch stateful resources (databases, clusters, buckets, load ba
 **After editing — required:**
 
 - The task is not done until plan has been run and reviewed.
-- Delegate to the `validator` agent (Agent tool, `subagent_type: "validator"`). Hand it the sequence — `terraform fmt -check`, `terraform validate`, then `terragrunt plan` (module dir) or `terraform plan` (non-terragrunt) — plus the stated change intent so it can flag mismatches.
+- Delegate to the `validator` agent (Agent tool, `subagent_type: "validator"`). Hand it the sequence `fmt -check` → `validate` → `plan` — run via `terragrunt` in a Terragrunt module (it wraps Terraform), or `terraform` directly otherwise — plus the stated change intent so it can flag mismatches.
 - Report the validator's structured verdict to the user. If it flags an issue (unintended destroy/replace, `prevent_destroy` conflict, out-of-scope drift), stop and wait for user input.
