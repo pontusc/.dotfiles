@@ -39,7 +39,17 @@
 # Registered in ~/.claude/settings.json under hooks.PreToolUse with
 # matcher "Read|Bash|Grep|Glob".
 
-set -euo pipefail
+set -Eeuo pipefail
+
+# Fail CLOSED: a security guard that cannot parse its input must block, never
+# allow. The ERR trap turns the jq control-char abort (anthropics/claude-code#53463)
+# and any unexpected failure into a block (exit 2) instead of a fail-open exit.
+trap 'echo "guard-sensitive: internal error — blocking (fail closed)" >&2; exit 2' ERR
+
+command -v jq > /dev/null 2>&1 || {
+  echo "guard-sensitive: jq not found — blocking (fail closed)" >&2
+  exit 2
+}
 
 INPUT=$(cat)
 
@@ -73,6 +83,11 @@ Bash)
   # redirection (`< .env`), heredocs, etc. — not just the cat/head/tail
   # family that the old whitelist covered.
   #
+  # GUARDRAIL, NOT A BOUNDARY: a static scan cannot catch obfuscation
+  # (eval "$(base64 -d ...)", variable splitting like C=.en; C+=v). The native
+  # deny rules in settings.json are the robust layer; this hook catches the
+  # obvious mistakes.
+  #
   # Boundary classes (L = before, R = after) ensure 'process.env.FOO' is NOT
   # matched (preceded by 's' — alphanumeric, not a boundary), while
   # 'cat .env', '/etc/.env', '--file=.env' ARE.
@@ -85,13 +100,13 @@ Bash)
   R='($|[[:space:]<>|&;=,)/\\"'\''])'
 
   PATTERNS=(
-    "${L}\.ssh/"
-    "${L}\.kube/"
-    "${L}\.talos/"
-    "${L}\.gnupg/"
-    "${L}\.aws/"
-    "${L}\.secret/"
-    "${L}\.terragrunt-cache/"
+    "${L}\.ssh(/|${R})"
+    "${L}\.kube(/|${R})"
+    "${L}\.talos(/|${R})"
+    "${L}\.gnupg(/|${R})"
+    "${L}\.aws(/|${R})"
+    "${L}\.secret(/|${R})"
+    "${L}\.terragrunt-cache(/|${R})"
     "${L}\.env(\.[A-Za-z0-9_-]+)?${R}"
     "${L}\.npmrc${R}"
     "${L}\.netrc${R}"
@@ -101,6 +116,7 @@ Bash)
     "${L}[^[:space:]]*kubeconfig[^[:space:]]*${R}"
     "${L}[^[:space:]]*credentials[^[:space:]]*\.[A-Za-z0-9_-]{1,12}${R}"
     "${L}[^[:space:]]*\.(pem|key|pfx|p12|gpg|age)${R}"
+    "${L}[^[:space:]]*secrets?(\.[A-Za-z0-9_-]+|/)${R}"
   )
   LABELS=(
     ".ssh/ directory"
@@ -119,6 +135,7 @@ Bash)
     "kubeconfig"
     "credentials file"
     "certificate/key extension"
+    "secret file/dir"
   )
 
   # ripgrep if present (faster, consistent regex), else grep -E.
@@ -133,10 +150,10 @@ Bash)
       LABEL="${LABELS[$i]}"
       echo "guard-sensitive [Bash]: BLOCKED command" >&2
       echo "  matched: $LABEL" >&2
-      echo ""
-      echo "Access denied: this command references a path that may contain secrets."
-      echo "Command: $CMD"
-      echo "Rule: $LABEL"
+      echo "" >&2
+      echo "Access denied: this command references a path that may contain secrets." >&2
+      echo "Command: $CMD" >&2
+      echo "Rule: $LABEL" >&2
       exit 2
     fi
   done
@@ -213,6 +230,10 @@ is_blocked_file() {
     echo "file rule: credentials in name"
     return 0
     ;;
+  *secret*)
+    echo "file rule: secret in name"
+    return 0
+    ;;
   *kubeconfig*)
     echo "file rule: kubeconfig"
     return 0
@@ -252,9 +273,9 @@ MATCH=$(is_blocked_dir) || MATCH=$(is_blocked_file) || true
 if [[ -n "$MATCH" ]]; then
   echo "guard-sensitive [$TOOL]: BLOCKED $FILE" >&2
   echo "  matched: $MATCH" >&2
-  echo ""
-  echo "Access denied: this file may contain secrets and cannot be read."
-  echo "Tool: $TOOL | File: $FILE | Rule: $MATCH"
+  echo "" >&2
+  echo "Access denied: this file may contain secrets and cannot be read." >&2
+  echo "Tool: $TOOL | File: $FILE | Rule: $MATCH" >&2
   exit 2
 fi
 

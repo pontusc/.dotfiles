@@ -6,13 +6,13 @@
 # Registered in ~/.claude/settings.json under hooks.PostToolUse with
 # matcher "Write|Edit". Claude Code invokes this script AFTER every
 # Write or Edit tool call. The script receives a JSON payload on stdin
-# containing tool_name, tool_input (with file_path), and tool_response.
+# containing tool_name, tool_input (with file_path), and tool_output.
 #
-# Exit code contract:
-#   0  → allow (tool result returned to agent normally)
-#   2  → block  (stderr + stdout fed back to the agent as an error;
-#                the agent must fix the issue and retry)
-#   1  → ignored by Claude Code (does NOT block), avoid using
+# Exit code contract (PostToolUse — the tool has ALREADY run):
+#   0  → pass (tool result returned to agent normally)
+#   2  → cannot block (the write already happened); stderr is fed back to
+#        the agent as an error so it fixes and re-edits. stdout is ignored.
+#   1  → ignored by Claude Code (no feedback), avoid using
 #
 # LINT-ONLY: this hook never rewrites files. Formatting belongs to the
 # author/editor; the hook only validates and blocks (exit 2) on lint
@@ -45,6 +45,7 @@
 # .js .ts .jsx     │ eslint_d       │ —
 #   .tsx .mjs .cjs │                │
 # .go              │ golangci-lint  │ —
+# .tf .tfvars      │ tflint         │ .tflint.hcl
 # .toml            │ taplo lint     │ taplo.toml / .taplo.toml
 # .json            │ jsonlint       │ —
 # ──────────────────────────────────────────────────────────────────────────────
@@ -61,6 +62,14 @@ FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 [[ -n "$FILE" && -f "$FILE" ]] || exit 0
 
 EXT="${FILE##*.}"
+
+# Dotfiles have no real extension (`.bashrc` → EXT="bashrc"), so the case below
+# would skip them. Map the common shell dotfiles to the shell linter by basename.
+case "$(basename "$FILE")" in
+.bashrc | .bash_profile | .bash_aliases | .profile | .zshrc | .zshenv | .zprofile)
+  EXT="sh"
+  ;;
+esac
 
 # ── Tool resolution ──────────────────────────────────────────────────────────
 # Returns the absolute path to the tool binary, preferring Mason-installed
@@ -119,8 +128,13 @@ sh | bash | zsh)
   ;;
 yml | yaml)
   LINT_OUTPUT=$(run_lint yamllint -c "$HOME/.config/yamllint/config" "$FILE") || LINT_RC=$?
-  if [[ "$IS_GHACTION" == true && "$LINT_RC" -eq 0 ]]; then
-    LINT_OUTPUT=$(run_lint actionlint "$FILE") || LINT_RC=$?
+  # actionlint runs regardless of the yamllint result — gating it on yamllint
+  # passing would hide Actions errors behind unrelated YAML style for a round-trip.
+  if [[ "$IS_GHACTION" == true ]]; then
+    ACTION_OUT=$(run_lint actionlint "$FILE") || LINT_RC=$?
+    if [[ -n "$ACTION_OUT" ]]; then
+      LINT_OUTPUT="${LINT_OUTPUT:+$LINT_OUTPUT$'\n'}$ACTION_OUT"
+    fi
   fi
   ;;
 js | ts | jsx | tsx | mjs | cjs)
@@ -133,6 +147,15 @@ go)
     LINT_OUTPUT=$(cd "$(dirname "$FILE")" && "$GOLANGCI" run ./... 2>&1) || LINT_RC=$?
   else
     echo "format-and-lint: linter 'golangci-lint' not found (Mason or PATH)" >&2
+  fi
+  ;;
+tf | tfvars)
+  # tflint operates on a directory, not a single file — run from the file's dir.
+  TFLINT=$(mason_bin tflint)
+  if [[ -n "$TFLINT" ]]; then
+    LINT_OUTPUT=$(cd "$(dirname "$FILE")" && "$TFLINT" 2>&1) || LINT_RC=$?
+  else
+    echo "format-and-lint: linter 'tflint' not found (Mason or PATH)" >&2
   fi
   ;;
 toml)

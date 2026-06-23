@@ -9,8 +9,8 @@ Security is enforced via hooks rather than sandbox — the sandbox is disabled.
 
 | Event       | When                 | Exit 0       | Exit 2                      |
 | ----------- | -------------------- | ------------ | --------------------------- |
-| PreToolUse  | Before tool executes | Allow        | Block (error sent to agent) |
-| PostToolUse | After tool executes  | Pass through | Agent must fix and retry    |
+| PreToolUse  | Before tool executes | Allow        | Block (stderr sent to agent)                       |
+| PostToolUse | After tool executes  | Pass through | Tool already ran; stderr shown, agent fixes & retries |
 
 ### Active Hooks
 
@@ -26,12 +26,12 @@ Security is enforced via hooks rather than sandbox — the sandbox is disabled.
 ### Exit Codes
 
 - `0` — allow / pass
-- `2` — block (stderr + stdout sent to agent as error)
+- `2` — block (PreToolUse) / feedback (PostToolUse, can't block — tool already ran). Only **stderr** is sent to the agent; stdout and JSON are ignored on exit 2
 - `1` — avoid (ignored by Claude Code, neither blocks nor provides feedback)
 
 ### Input
 
-Hooks receive JSON on stdin with `tool_name`, `tool_input`, and (PostToolUse only) `tool_response`.
+Hooks receive JSON on stdin with `tool_name`, `tool_input`, and (PostToolUse only) `tool_output`.
 Parse with `jq`. Always guard with `// empty` to handle missing fields.
 
 ### Notifications
