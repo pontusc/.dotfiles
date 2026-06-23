@@ -15,6 +15,15 @@ Conventions for new files and the lines you're changing — on existing files st
 - **API version**: Use the current stable API per kind (`apps/v1` Deployments/StatefulSets, `batch/v1` Jobs/CronJobs, `networking.k8s.io/v1` Ingress/NetworkPolicy, `policy/v1` PDB). Avoid deprecated/beta APIs unless required.
 - **Namespaces**: Always specify `metadata.namespace`. Never deploy to `default` namespace.
 
+## Labels & Annotations
+
+- **Never add labels or annotations the user didn't ask for.** Do not stamp the
+  `app.kubernetes.io/*` recommended set (`name`, `instance`, `version`, `component`,
+  `part-of`, `managed-by`), nor `app:`, `tier:`, or `environment:`, by default.
+- Add **only** the minimal label pair a selector requires to function (a Deployment's
+  `spec.selector.matchLabels` and the matching pod-template label) — nothing more.
+- On existing manifests, never introduce a label/annotation key that isn't already present.
+
 ## Images
 
 - **No `latest` tag** — always pin to a specific version or digest.

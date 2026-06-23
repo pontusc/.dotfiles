@@ -51,8 +51,10 @@ reviewer proves it's right.
 
 - **Ambiguity → stop and ask.** If you don't fully grasp the intent or the assumptions behind
   a request, stop and interview the user — present the interpretations you see — until you
-  have the context you need. Don't proceed on a guess. When the intent is clear, state your
-  assumptions and proceed.
+  have the context you need. Using the interview / questionnaire (AskUserQuestion) flow to
+  surface choices is heavily encouraged. Don't proceed on a guess. When the intent is clear,
+  state your assumptions and propose the change — answering my questions is not approval;
+  proceeding to edit still requires the confirm gate below.
 - **Word economy.** Shortest phrasing that preserves meaning.
 - Two course corrections in one session → stop and ask what's wrong.
 - After heavily corrected work, offer to document learnings here.

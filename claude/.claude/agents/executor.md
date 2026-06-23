@@ -1,7 +1,7 @@
 ---
 name: executor
 description: "Implements precise changes from a spec: file edits, multi-file refactors, mechanical transformations. Delegate here once the design is settled and you have a concrete change list."
-model: opus
+model: sonnet
 color: yellow
 tools: Read, Edit, Write, Grep, Glob, Bash, Skill
 ---
