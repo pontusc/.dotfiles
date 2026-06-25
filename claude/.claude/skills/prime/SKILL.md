@@ -2,7 +2,6 @@
 name: prime
 description: Bootstrap session context from the local project (READMEs, file listings, config markers, git log) via a Haiku agent. Use at the start of a new session or after /clear when project context is absent.
 user-invocable: true
-model-invocable: true
 allowed-tools: Bash, Agent
 model: haiku
 ---

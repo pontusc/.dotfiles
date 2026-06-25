@@ -2,7 +2,6 @@
 name: coding-principles
 description: Cross-cutting code-quality principles (KISS, modularity, descriptive naming, env-var configuration, minimal guarding) — apply whenever writing, editing, refactoring, or reviewing source code, configuration, or infrastructure definitions, in any language, alongside any language-specific skill.
 user-invocable: false
-model-invocable: true
 ---
 
 # Coding Principles
@@ -25,6 +24,10 @@ suggest divergences rather than refactoring working code to match them.
   than growing one large unit. Compartmentalize and document each module's interface so
   independent contributors or agents can work on separate modules in parallel without
   conflict.
+- **Structure by domain.** Mirror the logical decomposition in the file tree: group files
+  by the concern they serve, and split a file along the same lines (by subdomain) once it
+  grows into a catch-all. A reader should locate a concern by its path, not by scrolling one
+  giant file.
 - **Descriptive names — never shorthand.** Name variables, functions, and types for
   their purpose, spelled out in full (not `connTo` or `ct` for a connection timeout;
   case follows the language). Conventional loop indices (`i`, `j`) and established

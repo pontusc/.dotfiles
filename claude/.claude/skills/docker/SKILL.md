@@ -2,7 +2,6 @@
 name: docker
 description: Container build conventions — applied when writing or editing Dockerfiles and .dockerignore.
 user-invocable: false
-model-invocable: true
 allowed-tools: Read, Glob, Grep
 ---
 

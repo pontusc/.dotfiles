@@ -2,7 +2,6 @@
 name: helm
 description: Consuming third-party Helm charts via values files and install/upgrade. Applied when editing Helm values/override files (values.yaml, values-*.yaml, values.<env>.yaml, helmfile.yaml) or running helm install/upgrade on a release/package.
 user-invocable: false
-model-invocable: true
 allowed-tools: Read, Glob, Grep, Bash
 ---
 

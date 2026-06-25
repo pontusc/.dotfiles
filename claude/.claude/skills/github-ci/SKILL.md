@@ -2,7 +2,6 @@
 name: github-ci
 description: GitHub Actions CI/CD conventions — applied when writing or editing .github/workflows/*.yml files.
 user-invocable: false
-model-invocable: true
 allowed-tools: Read, Glob, Grep
 ---
 

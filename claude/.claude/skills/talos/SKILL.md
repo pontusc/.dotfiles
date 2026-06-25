@@ -2,7 +2,6 @@
 name: talos
 description: Talos Linux cluster operations — command-targeting safety and machine-config conventions. Applied when proposing or running talosctl commands, or editing Talos machine config YAML (controlplane.yaml, worker.yaml, talconfig.yaml, or any YAML with top-level `version: v1alpha1` / `kind: MachineConfig` / `machine:` / `cluster:`).
 user-invocable: false
-model-invocable: true
 allowed-tools: Read, Glob, Grep
 ---
 

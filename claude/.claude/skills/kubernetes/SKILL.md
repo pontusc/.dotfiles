@@ -2,7 +2,6 @@
 name: kubernetes
 description: Kubernetes manifest conventions — applied when writing or editing Kubernetes resource YAML (Deployments, Services, ConfigMaps, Ingress, etc.).
 user-invocable: false
-model-invocable: true
 allowed-tools: Read, Glob, Grep
 ---
 

@@ -2,7 +2,6 @@
 name: makefile
 description: Makefile conventions — applied when writing or editing Makefiles and .mk includes.
 user-invocable: false
-model-invocable: true
 allowed-tools: Read, Glob, Grep
 ---
 

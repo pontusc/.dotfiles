@@ -2,7 +2,7 @@
 name: session-retrospective
 description: Review the current session for recurring mistakes and propose CLAUDE.md/skill edits to prevent them. Use when asked to "review the session", "evaluate our conversation", "improve the workflow", or "analyze what went wrong".
 user-invocable: true
-model-invocable: false
+disable-model-invocation: true
 model: sonnet
 ---
 

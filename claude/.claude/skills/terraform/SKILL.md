@@ -2,7 +2,6 @@
 name: terraform
 description: Terraform/Terragrunt conventions — applied when writing or editing .tf, .hcl, and terragrunt.hcl files.
 user-invocable: false
-model-invocable: true
 allowed-tools: Read, Glob, Grep
 ---
 

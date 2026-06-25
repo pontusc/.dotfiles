@@ -2,7 +2,6 @@
 name: bash
 description: Shell scripting conventions — applied when writing or editing .sh/.bash files or inline shell scripts.
 user-invocable: false
-model-invocable: true
 allowed-tools: Read, Glob, Grep, Bash
 ---
 

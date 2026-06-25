@@ -2,7 +2,6 @@
 name: python
 description: Python project conventions — applied when writing or editing Python projects (pyproject.toml, src/, tests/) or .py files.
 user-invocable: false
-model-invocable: true
 allowed-tools: Read, Glob, Grep
 ---
 
