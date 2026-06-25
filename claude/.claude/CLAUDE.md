@@ -77,22 +77,13 @@ Capture: key decisions (WHY), course corrections, critical file:line refs, archi
   only the orphans your change created.
 - **Large-file edits**: For any file >200 lines, grep for the exact target string before
   delegating to executor. String mismatch on large files is a predictable failure mode.
-- **Simplicity first.** Most direct solution. "simple/basic/barebones" → minimal scope. No
-  unsolicited refactoring or features.
 - **Plan-doc hygiene.** On plan-driven work, write state back before context is wiped
   (`/handoff` or update the doc — `/compact` summaries don't survive `/clear`), and after an
   implementation phase suggest `/plan:review <slug>` to keep the doc in sync.
-
-## Coding Principles
-
-- **Indentation**: spaces, never tabs. 2-space default (Neovim/LazyVim).
-- **Security first**: for this IaC/DevOps surface that means secrets hygiene (never expose or
-  commit credentials), least-privilege IAM, and supply-chain care (pinned, verified deps).
-  Standard injection/XSS rules still apply when writing application code.
-- **Minimal dependencies**: standard tools, containerized.
-- **Validate before proposing**: confirm tool/service capabilities first. Never assert
+- **Validate before proposing.** Confirm tool/service capabilities first. Never assert
   runtime/infra behavior or versions from memory ("X is not possible", rejoin/billing
   semantics, resource sizing) — verify via scout/investigator (versions always fetched live
   from the web), or flag it as unverified. For metric/query work, verify labels/metrics via
-  live API before writing queries.
-- **Language conventions**: handled by the relevant skill — invoke it.
+  live API before writing queries. Likewise treat dependencies as supply-chain risk — pin
+  and verify before adding.
+- **Language conventions.** Handled by the relevant skill — invoke it.
