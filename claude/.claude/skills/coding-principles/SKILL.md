@@ -13,6 +13,9 @@ syntax and idiom; this skill covers the cross-cutting practice.
 These apply to new code and the lines you're changing — on existing code stay surgical and
 suggest divergences rather than refactoring working code to match them.
 
+Code is read and reviewed far more than it's written — favor the choice that's obvious to the
+next reader (human or agent). Every principle below serves that.
+
 - **KISS.** Pick the most direct solution that solves the actual problem. No
   speculative abstraction, no patterns the problem doesn't demand.
 - **Write like an expert using only the basics.** Reach for plain language features
@@ -41,6 +44,11 @@ suggest divergences rather than refactoring working code to match them.
 - **Immutable by default.** Bind every value as a constant (`const`, `final`, `readonly`,
   `val` — whatever the language provides). Mutability is an explicit opt-in, used only where
   you genuinely reassign. A value that is never reassigned must never be left mutable.
+- **Type the boundaries.** Give function signatures, public APIs, and data structures
+  explicit types; don't restate types the language can already see for obvious locals. Parse
+  external data into typed structures at the boundary rather than threading raw dicts/JSON
+  inward — the typed value is what lets inner code trust its invariants. Prefer precise types
+  over escape hatches (`Any`, `any`, `interface{}`, unchecked casts).
 - **Don't over-guard.** Validate at trust boundaries (external input, untrusted
   callers); inside that boundary, trust your own invariants. Skip defensive checks
   for conditions that can't occur — but where you rely on an invariant, fail loud
