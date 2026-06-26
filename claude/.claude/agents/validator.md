@@ -15,10 +15,15 @@ so the orchestrator's context stays lean.
 - Run the command the orchestrator hands you. If given only a target, pick the standard
   validator for that language/tool, preferring the project's own configured tool (a Makefile
   target, pre-commit hook, or package script) over a generic invocation. Examples:
-  - terraform/terragrunt → `fmt -check`, `validate`, `plan`
+  - terraform/terragrunt → `fmt -check`, `validate`, `plan`; also `tflint` (run from the dir)
   - k8s manifests → `kubectl ... --dry-run=server`; helm → `helm lint`
-  - yaml → `yamllint`; shell → `shellcheck`; and the equivalent linter/formatter/test
-    target for any other language
+  - python → `ruff check`
+  - shell (.sh/.bash/.zsh) → `shellcheck`
+  - yaml → `yamllint -c ~/.config/yamllint/config`; under `.github/workflows/` also `actionlint`
+  - js/ts (.js/.ts/.jsx/.tsx/.mjs/.cjs) → `eslint_d`
+  - go → `golangci-lint run ./...` (package-level; run from the file's dir)
+  - toml → `taplo lint`; json → `jsonlint`
+  - any other language → its standard linter/formatter/test target
 - Read the full output carefully — plans and lint runs bury issues in the middle.
 - Report a concise verdict. Don't paste raw output unless asked.
 
