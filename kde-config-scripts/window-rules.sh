@@ -19,14 +19,16 @@ wr() { kwriteconfig6 --file "${FILE}" --group "$1" --key "$2" "$3"; }
 wr General count 2
 wr General rules "1,2"
 
-# --- 1: TeamSpeak 3 -> top strip of left monitor (1080x500 @ 0,0) ---
+# --- 1: TeamSpeak 3 -> top strip of left monitor, below the top panel
+#        (1080x620 @ 0,30). The y-offset clears the docked (non-floating)
+#        top panel (30px thickness) that would otherwise cover its top. ---
 wr 1 Description "TeamSpeak 3 - left monitor, top strip"
 wr 1 wmclass "TeamSpeak 3"
 wr 1 wmclassmatch 1           # exact
 wr 1 wmclasscomplete false    # match resourceClass only
-wr 1 position 0,0
+wr 1 position 0,30
 wr 1 positionrule 2           # force
-wr 1 size 1080,650
+wr 1 size 1080,620
 wr 1 sizerule 2
 
 # --- 2: Discord -> rest of left monitor (1080x1270 @ 0,650) ---

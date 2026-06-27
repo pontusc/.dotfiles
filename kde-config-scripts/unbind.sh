@@ -8,6 +8,7 @@ set -euo pipefail
 # keeping the friendly name, so it still appears (unbound) in System Settings.
 
 readonly FILE="kglobalshortcutsrc"
+readonly GAMING_HOST="desktop"   # only this host gets the Meta+1..5 unbinds
 
 # unbind <group> <key> <friendlyName>
 unbind() {
@@ -32,3 +33,14 @@ unbind_launch "org.kde.plasma-systemmonitor.desktop"
 # Free Meta+V for kitty's paste (kitty.conf) — Plasma 6 folds Klipper into
 # plasmashell, which binds Meta+V to "Show Clipboard Items at Mouse Position".
 unbind "plasmashell" "show-on-mouse-pos" "Show Clipboard Items at Mouse Position"
+
+# Free Meta+1..5 for the monitor-bound-workspaces KWin script (desktop host
+# only) — Plasma binds these to "Activate Task Manager Entry N" by default.
+# Hostname captured on its own line so a hostnamectl failure trips set -e.
+host="$(hostnamectl --static hostname)"
+readonly host
+if [[ "${host}" == "${GAMING_HOST}" ]]; then
+  for n in 1 2 3 4 5; do
+    unbind plasmashell "activate task manager entry ${n}" "Activate Task Manager Entry ${n}"
+  done
+fi

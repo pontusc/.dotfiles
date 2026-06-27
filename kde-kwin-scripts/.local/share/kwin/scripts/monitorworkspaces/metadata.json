@@ -1,0 +1,14 @@
+{
+    "KPlugin": {
+        "Id": "monitorworkspaces",
+        "Name": "Monitor Workspaces",
+        "Description": "Monitor-bound virtual desktops and Steam/game routing",
+        "Authors": [{ "Name": "Pontus Curtsson", "Email": "pontus.curtsson@alchemyinnovations.se" }],
+        "License": "MIT",
+        "Version": "1.0",
+        "EnabledByDefault": false
+    },
+    "KPackageStructure": "KWin/Script",
+    "X-Plasma-API": "javascript",
+    "X-Plasma-MainScript": "code/main.js"
+}
