@@ -11,6 +11,7 @@ standalone.
 | `kwin.sh` | KWin settings, virtual desktops, per-output desktops | `kwriteconfig6` on `kwinrc` |
 | `window-rules.sh` | Per-window placement rules | `kwriteconfig6` on `kwinrc` |
 | `panel.sh` | One bar per screen (pager · clock · tray) | Plasma JS scripting API via `evaluateScript` |
+| `keyboard-layout.sh` | Layout switch shortcut (Both Alts) | `kwriteconfig6` on `kxkbrc` |
 
 ## Why `panel.sh` is different
 

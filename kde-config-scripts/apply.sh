@@ -10,7 +10,7 @@ HERE="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 readonly HERE
 
 # Concern scripts, applied in order (unbind defaults before setting new binds).
-for script in unbind keybinds kwin window-rules panel; do
+for script in unbind keybinds kwin window-rules panel keyboard-layout session; do
   echo "==> applying ${script}"
   "${HERE}/${script}.sh"
 done

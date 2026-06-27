@@ -85,6 +85,29 @@ function isPinned(cls) {
     return false;
 }
 
+// Focus + raise the topmost normal, non-minimized window on the given
+// output+desktop, so keyboard focus follows a switch/move. Returns false if
+// there is no eligible window (e.g. an empty desktop). KWin scripts cannot
+// move the mouse cursor (workspace.cursorPos is read-only), so this is
+// focus-only -- the pointer stays where it is.
+function focusTopOn(out, desk) {
+    var wins = workspace.stackingOrder;  // bottom-to-top; topmost is last
+    for (var i = wins.length - 1; i >= 0; i--) {
+        var w = wins[i];
+        if (w.output === out
+            && (w.onAllDesktops || w.desktops.indexOf(desk) !== -1)
+            && !w.minimized
+            && w.normalWindow
+            && w.wantsInput
+            && !w.skipSwitcher) {
+            workspace.activeWindow = w;
+            workspace.raiseWindow(w);
+            return true;
+        }
+    }
+    return false;
+}
+
 // --- Window routing ---------------------------------------------------------
 
 function routeWindow(window) {
@@ -111,6 +134,13 @@ function routeWindow(window) {
 
 // --- Shortcut wiring --------------------------------------------------------
 
+// KWin on Wayland strips Shift from global-shortcut matching unless the shifted
+// key is a letter (xkb.cpp modifiersRelevantForGlobalShortcuts; KDE bug 434988),
+// so "Meta+Shift+<digit>" never fires -- only the digit's shifted SYMBOL does.
+// QKeySequence needs the literal symbol char ("$"), NOT the keysym name
+// ("dollar"), which parses to an empty (unbound) sequence. us-layout symbols:
+var SHIFT_SYMBOL = { 1: "!", 2: "@", 3: "#", 4: "$", 5: "%" };
+
 function registerWorkspaceShortcuts() {
     WORKSPACES.forEach(function (ws) {
         // Meta+<key>: switch <output> to its workspace.
@@ -123,16 +153,20 @@ function registerWorkspaceShortcuts() {
                 var desk = workspace.desktops[ws.desktop];
                 if (out && desk) {
                     workspace.setCurrentDesktopForScreen(desk, out);
+                    focusTopOn(out, desk);
                 }
             }
         );
 
-        // Meta+Shift+<key>: move the active window to that workspace and follow
-        // it there (Hyprland movetoworkspace style).
+        // Move the active window to that workspace and follow it there
+        // (Hyprland movetoworkspace style). Physically Meta+Shift+<key>, but
+        // bound to Meta+<shifted symbol> per the Wayland bug noted above. The
+        // action name is bumped ("_movewindow_") when the key changes so
+        // KGlobalAccel re-binds instead of keeping a stale entry for the name.
         registerShortcut(
-            "monitorworkspaces_move_ws" + ws.key,
+            "monitorworkspaces_movewindow_ws" + ws.key,
             "Monitor Workspaces: move window to workspace " + ws.key + " (" + ws.output + ")",
-            "Meta+Shift+" + ws.key,
+            "Meta+" + SHIFT_SYMBOL[ws.key],
             function () {
                 var w = workspace.activeWindow;
                 var out = outputByName(ws.output);
@@ -141,6 +175,8 @@ function registerWorkspaceShortcuts() {
                     w.desktops = [desk];
                     workspace.sendClientToScreen(w, out);
                     workspace.setCurrentDesktopForScreen(desk, out);
+                    workspace.activeWindow = w;   // keep focus on the moved window
+                    workspace.raiseWindow(w);
                 }
             }
         );
