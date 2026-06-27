@@ -113,6 +113,7 @@ function routeWindow(window) {
 
 function registerWorkspaceShortcuts() {
     WORKSPACES.forEach(function (ws) {
+        // Meta+<key>: switch <output> to its workspace.
         registerShortcut(
             "monitorworkspaces_ws" + ws.key,
             "Monitor Workspaces: workspace " + ws.key + " (" + ws.output + ")",
@@ -125,6 +126,45 @@ function registerWorkspaceShortcuts() {
                 }
             }
         );
+
+        // Meta+Shift+<key>: move the active window to that workspace and follow
+        // it there (Hyprland movetoworkspace style).
+        registerShortcut(
+            "monitorworkspaces_move_ws" + ws.key,
+            "Monitor Workspaces: move window to workspace " + ws.key + " (" + ws.output + ")",
+            "Meta+Shift+" + ws.key,
+            function () {
+                var w = workspace.activeWindow;
+                var out = outputByName(ws.output);
+                var desk = workspace.desktops[ws.desktop];
+                if (w && out && desk) {
+                    w.desktops = [desk];
+                    workspace.sendClientToScreen(w, out);
+                    workspace.setCurrentDesktopForScreen(desk, out);
+                }
+            }
+        );
+    });
+}
+
+// --- Startup ----------------------------------------------------------------
+
+// On load, pin each monitor to its first/home desktop (the first WORKSPACES
+// entry for that output). KWin otherwise restores whatever desktop each screen
+// was left on before reboot, so without this a session left on the games
+// desktop comes back there instead of starting in a known state.
+function resetToHomeDesktops() {
+    var done = {};
+    WORKSPACES.forEach(function (ws) {
+        if (done[ws.output]) {
+            return;
+        }
+        var out = outputByName(ws.output);
+        var desk = workspace.desktops[ws.desktop];
+        if (out && desk) {
+            workspace.setCurrentDesktopForScreen(desk, out);
+            done[ws.output] = true;
+        }
     });
 }
 
@@ -133,4 +173,5 @@ function registerWorkspaceShortcuts() {
 if (haveRequiredOutputs()) {
     registerWorkspaceShortcuts();
     workspace.windowAdded.connect(routeWindow);
+    resetToHomeDesktops();
 }

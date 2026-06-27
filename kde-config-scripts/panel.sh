@@ -83,19 +83,36 @@ var ref = readRefTray();
 var existing = panels();
 for (var i = 0; i < existing.length; i++) existing[i].remove();
 
+// Opacity is NOT set here: the scripting `opacity`/`panel.opacity` property is a
+// no-op in Plasma 6.7 (set returns the unchanged value). We emit the new panel
+// ids instead and write panelOpacity directly to plasmashellrc from bash below.
+var ids = [];
 for (var s = 0; s < screenCount; s++) {
     var panel = new Panel;
     panel.screen = s;
     panel.location = "top";
     panel.floating = false;          // dock flush to the edge (no floating gap)
     buildBar(panel, ref);
+    ids.push(panel.id);
 }
+print(ids.join(" "));
 EOF
 
 # evaluateScript only works against a live plasmashell; skip cleanly otherwise
 # so apply.sh doesn't abort on a non-Plasma machine.
 if qdbus6 org.kde.plasmashell >/dev/null 2>&1; then
-  qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "${JS}"
+  # evaluateScript echoes the script's print() output, i.e. the new panel ids.
+  ids="$(qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "${JS}")"
+
+  # Force the bars translucent. The scripting opacity property is a no-op in
+  # Plasma 6.7, so write panelOpacity straight to plasmashellrc for each panel
+  # (OpacityMode enum: 0=Adaptive, 1=Opaque, 2=Translucent). KConfig merges the
+  # key while plasmashell runs; it renders translucent after plasmashell next
+  # re-reads its config (log out / back in, or reboot).
+  for id in ${ids}; do
+    kwriteconfig6 --file plasmashellrc --group PlasmaViews --group "Panel ${id}" \
+      --key panelOpacity 2
+  done
 else
   echo "plasmashell not reachable; skipping panel layout" >&2
 fi
