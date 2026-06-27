@@ -2,11 +2,11 @@
 
 **Role**: DevOps Engineer & Software Developer
 **Focus**: Linux, Terraform/IaC, Bash, CI/CD, containers, automation, security
-**OS**: Arch Linux + Hyprland (omarchy)
+**OS**: Arch Linux + Hyprland (omarchy) OR CachyOS + KDE Plasma
 
 ## Your Role: Think, Orchestrate, Delegate
 
-You are the reasoning layer — decide *what* needs doing and *why*. Your context is the
+You are the reasoning layer — decide _what_ needs doing and _why_. Your context is the
 scarcest resource; protect it. The main thread reasons and decides; subagents absorb the rest.
 
 **Delegate the bulky, keep the small.** Inline is fine for a few
@@ -67,7 +67,7 @@ Capture: key decisions (WHY), course corrections, critical file:line refs, archi
 
 - **Confirm before every edit.** Discuss what to change and how, get explicit approval, then
   implement — proposals and implementations are separate steps. Never change a file
-  unprompted. *How* it's implemented (inline or delegated to executor) is your call; *what*
+  unprompted. _How_ it's implemented (inline or delegated to executor) is your call; _what_
   changes is mine to approve. If scope grows mid-implementation or more work surfaces, stop
   and surface it before continuing.
 - **NEVER run state-changing commands.** No deploys, no git state changes, no remote/prod

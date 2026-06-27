@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=btop
+Comment=System monitor in a terminal (Super+Shift+T)
+Exec=kitty -o remember_window_size=no -o initial_window_width=110c -o initial_window_height=30c btop
+Terminal=false
+NoDisplay=true

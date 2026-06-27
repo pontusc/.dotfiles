@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+#
+# walker-driven power menu, bound to Super+Escape (see keybinds.sh).
+# Pipes options into walker's dmenu mode and runs the chosen action via
+# KDE's Shutdown service (clean, session-saving) or logind.
+
+choice=$(printf '%s\n' "Lock" "Suspend" "Log Out" "Reboot" "Shut Down" \
+  | walker --dmenu --placeholder "Power") || exit 0
+
+case "${choice}" in
+  "Lock")      loginctl lock-session ;;
+  "Suspend")   systemctl suspend ;;
+  "Log Out")   qdbus6 org.kde.Shutdown /Shutdown org.kde.Shutdown.logout ;;
+  "Reboot")    qdbus6 org.kde.Shutdown /Shutdown org.kde.Shutdown.logoutAndReboot ;;
+  "Shut Down") qdbus6 org.kde.Shutdown /Shutdown org.kde.Shutdown.logoutAndShutdown ;;
+esac

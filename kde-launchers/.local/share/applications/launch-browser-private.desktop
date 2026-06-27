@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Vivaldi (Private)
+Comment=New incognito browser window (Super+Shift+B)
+Exec=vivaldi-stable --incognito
+Terminal=false
+NoDisplay=true

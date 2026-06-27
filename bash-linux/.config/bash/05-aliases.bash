@@ -3,6 +3,20 @@ alias bsource="source ~/.bashrc"
 alias vi='nvim'
 alias unstow='stow --delete'
 
+# Navigation (zd defined in 04-functions.bash, zoxide init in 03-init.bash)
+command -v zoxide &>/dev/null && alias cd="zd"
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+
+# eza-backed ls replacements
+if command -v eza &>/dev/null; then
+  alias ls='eza -lh --group-directories-first --icons=auto'
+  alias lsa='eza -lah --group-directories-first --icons=auto'
+  alias lt='eza --tree --level=2 --long --icons --git'
+  alias lta='lt -a'
+fi
+
 # Python virtual environment
 alias ve="python3 -m venv ./venv"
 alias va="source ./venv/bin/activate"

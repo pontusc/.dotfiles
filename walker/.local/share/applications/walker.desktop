@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Walker
+Comment=Application launcher
+Exec=walker
+Terminal=false
+NoDisplay=true

@@ -10,10 +10,8 @@ stow -D "packate-to-uninstall" to remove symlinks
 
 ## Required tools
 
-alacritty  
-ghostty  
-tmux  
-sesh  
+alacritty/kitty  
+tmux & plugin manager  
 starship  
 lazygit  
 lazydocker

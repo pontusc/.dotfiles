@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Power Menu
+Comment=walker power menu (Super+Escape)
+Exec=sh -c "exec ~/.local/bin/power-menu"
+Terminal=false
+NoDisplay=true

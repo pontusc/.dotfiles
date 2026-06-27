@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Walker (service)
+Comment=Walker launcher background service for instant popup
+Exec=walker --gapplication-service
+Terminal=false
+X-KDE-autostart-phase=2

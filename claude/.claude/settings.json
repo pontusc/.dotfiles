@@ -71,6 +71,7 @@
     ],
     "defaultMode": "default"
   },
+  "model": "opus",
   "hooks": {
     "Notification": [
       {
@@ -120,7 +121,8 @@
   },
   "enabledPlugins": {
     "claude@cc-marketplace": true,
-    "plan@plans": true
+    "plan@plans": true,
+    "lua-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "cc-marketplace": {
@@ -142,8 +144,8 @@
   "syntaxHighlightingDisabled": false,
   "awaySummaryEnabled": false,
   "tui": "fullscreen",
+  "theme": "dark-ansi",
   "preferences": {
     "verboseMode": true
-  },
-  "model": "opus"
+  }
 }

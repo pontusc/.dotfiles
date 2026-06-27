@@ -1,0 +1,181 @@
+/* Tokyo Night (Night) for walker.
+   Palette vendored from kitty theme.conf (folke/tokyonight.nvim, night variant).
+   Structure mirrors the bundled default theme; only the colors are changed.
+   Shipping style.css replaces the default CSS wholesale — all other theme
+   files (layout.xml, item.xml, ...) still fall back to walker's defaults. */
+
+@define-color window_bg_color #1a1b26;  /* base background        */
+@define-color surface_color   #24283b;  /* input / elevated       */
+@define-color selection_color #283457;  /* text selection         */
+@define-color accent_bg_color #7aa2f7;  /* blue accent (selected) */
+@define-color border_color    #292e42;  /* borders / dividers     */
+@define-color theme_fg_color  #c0caf5;  /* foreground             */
+@define-color error_bg_color  #f7768e;  /* red                    */
+@define-color error_fg_color  #1a1b26;
+
+* {
+  all: unset;
+}
+
+popover {
+  background: @surface_color;
+  border: 1px solid @border_color;
+  border-radius: 0;
+  padding: 10px;
+}
+
+.normal-icons {
+  -gtk-icon-size: 16px;
+}
+
+.large-icons {
+  -gtk-icon-size: 32px;
+}
+
+scrollbar {
+  opacity: 0;
+}
+
+.box-wrapper {
+  box-shadow:
+    0 19px 38px rgba(0, 0, 0, 0.3),
+    0 15px 12px rgba(0, 0, 0, 0.22);
+  background: @window_bg_color;
+  padding: 20px;
+  border-radius: 0;
+  border: 1px solid @border_color;
+}
+
+.preview-box,
+.elephant-hint,
+.placeholder {
+  color: @theme_fg_color;
+}
+
+.search-container {
+  border-radius: 0;
+}
+
+.input placeholder {
+  opacity: 0.5;
+}
+
+.input selection {
+  background: @selection_color;
+}
+
+.input {
+  caret-color: @theme_fg_color;
+  background: @surface_color;
+  padding: 10px;
+  color: @theme_fg_color;
+}
+
+.list {
+  color: @theme_fg_color;
+}
+
+.item-box {
+  border-radius: 0;
+  padding: 10px;
+}
+
+.item-quick-activation {
+  background: alpha(@accent_bg_color, 0.25);
+  border-radius: 0;
+  padding: 10px;
+}
+
+child:selected .item-box,
+row:selected .item-box {
+  background: alpha(@accent_bg_color, 0.25);
+}
+
+.item-subtext {
+  font-size: 12px;
+  opacity: 0.5;
+}
+
+.providerlist .item-subtext {
+  font-size: unset;
+  opacity: 0.75;
+}
+
+.item-image-text {
+  font-size: 28px;
+}
+
+.preview {
+  border: 1px solid @border_color;
+  border-radius: 0;
+  color: @theme_fg_color;
+}
+
+.calc .item-text {
+  font-size: 24px;
+}
+
+.symbols .item-image {
+  font-size: 24px;
+}
+
+.todo.done .item-text-box {
+  opacity: 0.25;
+}
+
+.todo.urgent {
+  font-size: 24px;
+}
+
+.todo.active {
+  font-weight: bold;
+}
+
+.bluetooth.disconnected {
+  opacity: 0.5;
+}
+
+.preview .large-icons {
+  -gtk-icon-size: 64px;
+}
+
+.keybinds {
+  padding-top: 10px;
+  border-top: 1px solid @border_color;
+  font-size: 12px;
+  color: @theme_fg_color;
+}
+
+.keybind-button {
+  opacity: 0.5;
+}
+
+.keybind-button:hover {
+  opacity: 0.75;
+}
+
+.keybind-bind {
+  text-transform: lowercase;
+  opacity: 0.35;
+}
+
+.keybind-label {
+  padding: 2px 4px;
+  border-radius: 0;
+  border: 1px solid @theme_fg_color;
+}
+
+.error {
+  padding: 10px;
+  background: @error_bg_color;
+  color: @error_fg_color;
+}
+
+:not(.calc).current {
+  font-style: italic;
+}
+
+.preview-content.archlinuxpkgs,
+.preview-content.dnfpackages {
+  font-family: monospace;
+}
