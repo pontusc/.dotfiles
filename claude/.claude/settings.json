@@ -122,7 +122,10 @@
   "enabledPlugins": {
     "claude@cc-marketplace": true,
     "plan@plans": true,
-    "lua-lsp@claude-plugins-official": true
+    "lua-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "cc-marketplace": {

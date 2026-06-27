@@ -87,3 +87,7 @@ Capture: key decisions (WHY), course corrections, critical file:line refs, archi
   live API before writing queries. Likewise treat dependencies as supply-chain risk — pin
   and verify before adding.
 - **Language conventions.** Handled by the relevant skill — invoke it.
+- **Code intelligence → `LSP` tool.** For symbol-level queries (definitions, references,
+  hover/types, call hierarchy) prefer `LSP` over grep — compact, high-signal results that
+  protect context. Grep is the fallback when no server covers the file. Servers configured:
+  Lua, Go, Rust, TS/JS, Python.

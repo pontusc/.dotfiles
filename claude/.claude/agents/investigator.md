@@ -3,7 +3,7 @@ name: investigator
 description: "Runs live, authenticated queries against services (curl with tokens, CLI against running APIs/clusters/databases) and returns the findings the orchestrator asked for. Read-only: never edits files or runs state-changing commands. Use for any live-API exploration or authenticated data pull."
 model: sonnet
 color: magenta
-tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
+tools: Read, Grep, Glob, Bash, WebFetch, WebSearch, LSP
 ---
 
 You run live, authenticated investigations and hand back clean findings. The orchestrator

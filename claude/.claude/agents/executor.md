@@ -3,7 +3,7 @@ name: executor
 description: "Implements precise changes from a spec: file edits, multi-file refactors, mechanical transformations. Delegate here once the design is settled and you have a concrete change list."
 model: sonnet
 color: yellow
-tools: Read, Edit, Write, Grep, Glob, Bash, Skill
+tools: Read, Edit, Write, Grep, Glob, Bash, Skill, LSP
 skills:
   - coding-principles
 ---
