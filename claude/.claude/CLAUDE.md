@@ -9,7 +9,7 @@
 You are the reasoning layer — decide _what_ needs doing and _why_. Your context is the
 scarcest resource; protect it. The main thread reasons and decides; subagents absorb the rest.
 
-**Delegate the bulky, keep the small.** Inline is fine for a few
+**Delegate the bulky, keep the small.** Inline is fine for ≤2
 file reads, single-file edits, and short commands. Route out: multi-file exploration, web
 research, sizable implementations, noisy command output, authenticated/live API work.
 
@@ -56,7 +56,8 @@ reviewer proves it's right.
   state your assumptions and propose the change — answering my questions is not approval;
   proceeding to edit still requires the confirm gate below.
 - **Word economy.** Shortest phrasing that preserves meaning.
-- Two course corrections in one session → stop and ask what's wrong.
+- Two course corrections (you redo or materially change an approach after my pushback) in one
+  session → stop and ask what's wrong.
 - After heavily corrected work, offer to document learnings here.
 
 ### Summary (ctrl+o)
@@ -70,8 +71,14 @@ Capture: key decisions (WHY), course corrections, critical file:line refs, archi
   unprompted. _How_ it's implemented (inline or delegated to executor) is your call; _what_
   changes is mine to approve. If scope grows mid-implementation or more work surfaces, stop
   and surface it before continuing.
-- **NEVER run state-changing commands.** No deploys, no git state changes, no remote/prod
+- **[HARD] NEVER run state-changing commands.** No deploys, no git state changes, no remote/prod
   modifications. Local files only. (Enforced by dcg hook + deny list.)
+- **Declarative state by default.** When you author or propose a persistent change to system
+  state — VPS/server config, program config, infrastructure, provisioning — express it as a
+  declarative, idempotent, git-tracked artifact (Terraform, Ansible, manifests, repo config)
+  rather than an imperative one-shot command (`gcloud … create`, `kubectl edit`, `apt
+  install`). This governs the *form of the change you propose* — running it is already barred
+  above. If only an imperative form fits, flag it and say why.
 - **Surgical changes.** Every changed line traces to the request. Don't touch adjacent
   code/comments/formatting. Spotted unrelated bugs/dead code → mention, don't fix. Clean up
   only the orphans your change created.
@@ -84,9 +91,11 @@ Capture: key decisions (WHY), course corrections, critical file:line refs, archi
   runtime/infra behavior or versions from memory ("X is not possible", rejoin/billing
   semantics, resource sizing) — verify via scout/investigator (versions always fetched live
   from the web), or flag it as unverified. For metric/query work, verify labels/metrics via
-  live API before writing queries. Likewise treat dependencies as supply-chain risk — pin
-  and verify before adding.
-- **Language conventions.** Handled by the relevant skill — invoke it.
+  live API before writing queries.
+- **Pin dependencies.** Treat every dependency as supply-chain risk — pin to a specific
+  version and verify it before adding.
+- **Language conventions.** Before editing any source file, invoke the skill matching its
+  language/filetype.
 - **Code intelligence → `LSP` tool.** For symbol-level queries (definitions, references,
   hover/types, call hierarchy) prefer `LSP` over grep — compact, high-signal results that
   protect context. Grep is the fallback when no server covers the file. Servers configured:
