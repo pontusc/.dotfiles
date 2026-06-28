@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=tmux session
-Comment=New tmux session in a terminal (Super+Alt+Enter)
-Exec=kitty tmux new
+Comment=Attach (or create) the "default" tmux session in a terminal (Super+Alt+Enter)
+Exec=kitty tmux new-session -A -s default
 Terminal=false
 NoDisplay=true
