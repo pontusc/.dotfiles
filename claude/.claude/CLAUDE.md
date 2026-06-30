@@ -77,7 +77,7 @@ Capture: key decisions (WHY), course corrections, critical file:line refs, archi
   state — VPS/server config, program config, infrastructure, provisioning — express it as a
   declarative, idempotent, git-tracked artifact (Terraform, Ansible, manifests, repo config)
   rather than an imperative one-shot command (`gcloud … create`, `kubectl edit`, `apt
-  install`). This governs the *form of the change you propose* — running it is already barred
+install`). This governs the _form of the change you propose_ — running it is already barred
   above. If only an imperative form fits, flag it and say why.
 - **Surgical changes.** Every changed line traces to the request. Don't touch adjacent
   code/comments/formatting. Spotted unrelated bugs/dead code → mention, don't fix. Clean up
@@ -98,5 +98,4 @@ Capture: key decisions (WHY), course corrections, critical file:line refs, archi
   language/filetype.
 - **Code intelligence → `LSP` tool.** For symbol-level queries (definitions, references,
   hover/types, call hierarchy) prefer `LSP` over grep — compact, high-signal results that
-  protect context. Grep is the fallback when no server covers the file. Servers configured:
-  Lua, Go, Rust, TS/JS, Python.
+  protect context. Grep is the fallback when no server covers the file. Servers are configured on a project basis.

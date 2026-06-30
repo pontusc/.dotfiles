@@ -3,6 +3,7 @@
     "CLAUDE_CODE_DISABLE_1M_CONTEXT": "1",
     "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
     "CLAUDE_CODE_NO_FLICKER": "1",
+    "ENABLE_LSP_TOOL": "1",
     "CLAUDE_CODE_SCROLL_SPEED": "3"
   },
   "permissions": {
@@ -121,11 +122,7 @@
   },
   "enabledPlugins": {
     "claude@cc-marketplace": true,
-    "plan@plans": true,
-    "lua-lsp@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "rust-analyzer-lsp@claude-plugins-official": true,
-    "gopls-lsp@claude-plugins-official": true
+    "plan@plans": true
   },
   "extraKnownMarketplaces": {
     "cc-marketplace": {
@@ -137,7 +134,8 @@
     "plans": {
       "source": {
         "source": "github",
-        "repo": "pontusc-alchemy/host-plans"
+        "repo": "pontusc-alchemy/host-plans",
+        "ref": "claudeplans"
       }
     }
   },
