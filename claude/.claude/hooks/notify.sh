@@ -61,5 +61,11 @@ esac
 
 [[ -n "$MESSAGE" ]] || exit 0
 
+# Append tmux location when running inside tmux (best-effort, no-op otherwise).
+if [[ -n "${TMUX:-}" ]] && command -v tmux &> /dev/null; then
+  LOCATION=$(tmux display-message -p -t "${TMUX_PANE:-}" '#S:#{=12:window_name}' 2> /dev/null)
+  [[ -n "$LOCATION" ]] && TITLE="$TITLE — $LOCATION"
+fi
+
 notify-send -u "$URGENCY" -i "$ICON" "$TITLE" "$MESSAGE" 2> /dev/null || true
 exit 0
