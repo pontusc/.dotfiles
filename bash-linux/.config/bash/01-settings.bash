@@ -4,4 +4,4 @@ export GIT_EDITOR="$EDITOR"
 export SUDO_EDITOR="$EDITOR"
 
 # Terraform
-export TF_CACHE_LOCAL="$HOME/.terraform.d/plugin-cache"
+export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
