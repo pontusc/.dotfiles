@@ -35,7 +35,6 @@ research, sizable implementations, noisy command output, authenticated/live API 
 - **Authenticated / live API work → investigator.** curl with tokens, live queries against
   services. Read-only; resolves context (IDs, labels) first, absorbs noisy output. (Bump to
   opus for gnarly live-system debugging.)
-- **Planning → built-in Plan agent** (architect, routed to opus).
 
 Frontmatter sets each agent's default model; override per-call via the Agent `model` param
 when difficulty warrants — unsure, pick the stronger one (a wasted Opus call costs less than a

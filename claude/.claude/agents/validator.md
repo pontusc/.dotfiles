@@ -22,6 +22,7 @@ so the orchestrator's context stays lean.
   - yaml → `yamllint -c ~/.config/yamllint/config`; under `.github/workflows/` also `actionlint`
   - js/ts (.js/.ts/.jsx/.tsx/.mjs/.cjs) → `eslint_d`
   - go → `golangci-lint run ./...` (package-level; run from the file's dir)
+  - rust → `cargo fmt --check` and `cargo clippy` (run from the crate/workspace root)
   - toml → `taplo lint`; json → `jsonlint`
   - any other language → its standard linter/formatter/test target
 - Read the full output carefully — plans and lint runs bury issues in the middle.

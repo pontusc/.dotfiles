@@ -14,12 +14,11 @@ Security is enforced via hooks rather than sandbox — the sandbox is disabled.
 
 ### Active Hooks
 
-| Hook                 | Event              | Matcher                  | Purpose                                          |
-| -------------------- | ------------------ | ------------------------ | ------------------------------------------------ |
-| `notify.sh`          | Notification, Stop | —                        | Single entry point for all desktop notifications |
-| `guard-sensitive.sh` | PreToolUse         | `Read\|Bash\|Grep\|Glob` | Blocks access to sensitive files/dirs            |
-| `format-and-lint.sh` | PostToolUse        | `Write\|Edit`            | Lints written files                              |
-| `dcg` (binary)       | PreToolUse         | `Bash`                   | Blocks destructive shell commands                |
+| Hook                 | Event        | Matcher                  | Purpose                                          |
+| -------------------- | ------------ | ------------------------ | ------------------------------------------------ |
+| `notify.sh`          | Notification | —                        | Single entry point for all desktop notifications |
+| `guard-sensitive.sh` | PreToolUse   | `Read\|Bash\|Grep\|Glob` | Blocks access to sensitive files/dirs            |
+| `dcg` (binary)       | PreToolUse   | `Bash`                   | Blocks destructive shell commands                |
 
 ## Design Rules
 
@@ -36,21 +35,18 @@ Parse with `jq`. Always guard with `// empty` to handle missing fields.
 
 ### Notifications
 
-`notify.sh` is registered for Claude Code `Notification` and `Stop` events only.
-It surfaces attention-required events: permission prompts and task completion.
+`notify.sh` is registered for the Claude Code `Notification` event only.
+It surfaces attention-required events: permission prompts and the idle
+waiting-for-input ping. `Stop` is deliberately not registered — it fires at
+every turn end, so with background subagents it would ping "done" while work
+is still running.
 
-PreToolUse blocks (guard-sensitive, dcg) and PostToolUse lint failures do NOT
-notify — they return `exit 2` with details on stderr, and the agent fixes and
-retries on its own. Surfacing them would be noise.
+PreToolUse blocks (guard-sensitive, dcg) do NOT notify — they return `exit 2`
+with details on stderr, and the agent fixes and retries on its own. Surfacing
+them would be noise.
 
 Never call `notify-send` directly from a hook. If you need to add a new
 attention event, route it through `notify.sh` and add a case branch there.
-
-### Tool Resolution
-
-Prefer Mason-installed binaries (`~/.local/share/nvim/mason/bin/`) for linters
-to stay in sync with Neovim. Fall back to PATH. Missing tools should
-soft-fail (warn, don't block) unless the tool is the linter itself.
 
 ### Self-Protection
 
