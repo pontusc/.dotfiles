@@ -124,8 +124,8 @@
     "plans": {
       "source": {
         "source": "github",
-        "repo": "pontusc-alchemy/host-plans",
-        "ref": "claudeplans"
+        "repo": "pontusc-alchemy/claudeplans",
+        "ref": "v0.0.1"
       }
     }
   },
@@ -136,6 +136,8 @@
   "awaySummaryEnabled": false,
   "tui": "fullscreen",
   "theme": "dark-ansi",
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": false,
   "preferences": {
     "verboseMode": true
   }
