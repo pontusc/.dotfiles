@@ -95,6 +95,10 @@ install`). This governs the _form of the change you propose_ — running it is a
   version and verify it before adding.
 - **Language conventions.** Before editing any source file, invoke the skill matching its
   language/filetype.
-- **Code intelligence → `LSP` tool.** For symbol-level queries (definitions, references,
-  hover/types, call hierarchy) prefer `LSP` over grep — compact, high-signal results that
-  protect context. Grep is the fallback when no server covers the file. Servers are configured on a project basis.
+- **Code intelligence → `LSP` tool (main thread only — it never reaches subagents).** For
+  symbol-level queries (definition, hover/types, targeted references) call `LSP` directly:
+  its output is `path:line` pointers, cheaper and faster than a scout spawn. A large
+  reference list is the handoff point — pass it to scout to read the sites. Exploratory
+  flow-tracing stays with scout on grep, as does anything without server coverage. Servers
+  are defined per project (skills-dir plugin with `.lsp.json`); never install an LSP plugin
+  globally or disable one per-project — that corrupts the global plugin registry.

@@ -86,8 +86,9 @@ When editing an existing project:
 - Exercise CLIs in-process (via a test runner), not via subprocess.
 - Split test files by feature/command group (`test_cli_doc.py`, `test_cli_phase.py`), not
   by driving mechanism — per coding-principles (test-file organization).
-- Shared fixtures go in `conftest.py`; shared non-fixture helpers/constants in a small
-  `_helpers` module — never pinned inside one test module, or that module can't be split.
+- `conftest.py` is for fixtures only. Shared non-fixture helpers/constants go in a small
+  `_helpers` module — never in `conftest.py`, and never pinned inside one test module, or
+  that module can't be split.
 
 ## Quality gate
 
