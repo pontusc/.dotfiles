@@ -3,24 +3,26 @@
 #
 # ── Purpose ───────────────────────────────────────────────────────────────────
 #
-# Single relay for desktop notifications. Surfaces ONLY events that need the
-# user's attention — permission prompts and task completion. Hook blocks
-# (PreToolUse) and lint failures (PostToolUse) deliberately do not notify;
+# Single relay for desktop notifications. Surfaces ONLY the two Notification
+# subtypes that need the user's attention — permission prompts and the idle
+# "waiting for input" ping. Stop/SubagentStop deliberately do not notify: Stop
+# fires at every turn end, so with background subagents it would ping "done"
+# while work is still running. Hook blocks (PreToolUse) likewise stay silent;
 # they go back to the agent which fixes and retries on its own.
 #
 # ── Input ─────────────────────────────────────────────────────────────────────
 #
 # Claude Code native event JSON on stdin:
-#   { "hook_event_name": "Notification", "message": "...", ... }
-#   { "hook_event_name": "Stop", ... }
+#   { "hook_event_name": "Notification", "notification_type": "...", "message": "...", ... }
 #
-# ── Event routing ─────────────────────────────────────────────────────────────
+# ── Event routing ──────────────────────────────────────────────────────────────
 #
-#   Event         │ Urgency  │ Icon              │ Message
-#   ──────────────┼──────────┼───────────────────┼──────────────────────────
-#   Notification  │ normal   │ dialog-question   │ event.message
-#   Stop          │ low      │ dialog-information│ "Task complete ❇️"
-#   SubagentStop  │ (skipped — too noisy)
+#   notification_type │ Urgency  │ Icon               │ Timeout  │ Message
+#   ──────────────────┼──────────┼────────────────────┼──────────┼────────────────
+#   permission_prompt │ critical │ dialog-warning     │ 0 (stay) │ event.message
+#   idle_prompt       │ normal   │ dialog-information  │ 10s      │ "Task complete…"
+#   (other)           │ normal   │ dialog-question    │ default  │ event.message
+#   Stop/SubagentStop │ (not registered / skipped)
 #
 # ── Exit ──────────────────────────────────────────────────────────────────────
 #
@@ -37,16 +39,29 @@ URGENCY="normal"
 ICON="dialog-information"
 TITLE="Claude Code"
 MESSAGE=""
+TIMEOUT="" # notify-send -t (ms); empty leaves the daemon default
 
 case "$EVENT" in
 Notification)
-  MESSAGE=$(echo "$INPUT" | jq -r '.message // "Attention needed"')
-  URGENCY="normal"
-  ICON="dialog-question"
-  ;;
-Stop)
-  MESSAGE="Task complete ❇️"
-  URGENCY="low"
+  case "$(echo "$INPUT" | jq -r '.notification_type // empty')" in
+  permission_prompt)
+    # Approval required — high priority, persists until manually dismissed.
+    MESSAGE=$(echo "$INPUT" | jq -r '.message // "Approval needed"')
+    URGENCY="critical"
+    ICON="dialog-warning"
+    TIMEOUT=0
+    ;;
+  idle_prompt)
+    # Task finished, Claude is waiting for input — brief, auto-dismiss.
+    MESSAGE="Task complete — waiting for input ❇️"
+    TIMEOUT=10000
+    ;;
+  *)
+    # Other notification subtypes — best-effort relay.
+    MESSAGE=$(echo "$INPUT" | jq -r '.message // "Attention needed"')
+    ICON="dialog-question"
+    ;;
+  esac
   ;;
 SubagentStop)
   # Subagent completions are too frequent to surface
@@ -67,5 +82,7 @@ if [[ -n "${TMUX:-}" ]] && command -v tmux &> /dev/null; then
   [[ -n "$LOCATION" ]] && TITLE="$TITLE — $LOCATION"
 fi
 
-notify-send -u "$URGENCY" -i "$ICON" "$TITLE" "$MESSAGE" 2> /dev/null || true
+NOTIFY_ARGS=(-u "$URGENCY" -i "$ICON")
+[[ -n "$TIMEOUT" ]] && NOTIFY_ARGS+=(-t "$TIMEOUT")
+notify-send "${NOTIFY_ARGS[@]}" "$TITLE" "$MESSAGE" 2> /dev/null || true
 exit 0

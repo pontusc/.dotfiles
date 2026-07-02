@@ -72,19 +72,9 @@
     ],
     "defaultMode": "default"
   },
-  "model": "opus",
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/home/pontusc/.claude/hooks/notify.sh"
-          }
-        ]
-      }
-    ],
-    "Stop": [
       {
         "hooks": [
           {
