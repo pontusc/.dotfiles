@@ -1,6 +1,6 @@
 ---
 name: coding-principles
-description: Cross-cutting code-quality principles (KISS, modularity, descriptive naming, env-var configuration, minimal guarding) — apply whenever writing, editing, refactoring, or reviewing source code, configuration, or infrastructure definitions, in any language, alongside any language-specific skill.
+description: Cross-cutting code-quality principles (KISS, modularity, descriptive naming, test-file organization, env-var configuration, minimal guarding) — apply whenever writing, editing, refactoring, or reviewing source code, configuration, or infrastructure definitions, in any language, alongside any language-specific skill.
 user-invocable: false
 ---
 
@@ -31,6 +31,13 @@ next reader (human or agent). Every principle below serves that.
   by the concern they serve, and split a file along the same lines (by subdomain) once it
   grows into a catch-all. A reader should locate a concern by its path, not by scrolling one
   giant file.
+- **Test files are organized by covered behavior.** Name and split test files by the
+  feature/behavior under test, never by the mechanism that drives them — a file named for
+  its harness ("e2e", "cli-runner") has no axis to narrow along, grows without bound, and
+  every branch collides in it. Shared test plumbing (fixtures, helpers, constants) lives in
+  the language's shared location, never pinned inside one test module, so any test file can
+  split along feature lines. Size is the symptom, not the rule: one file spanning many
+  independent feature groups is the signal to split.
 - **Descriptive names — never shorthand.** Name variables, functions, and types for
   their purpose, spelled out in full (not `connTo` or `ct` for a connection timeout;
   case follows the language). Conventional loop indices (`i`, `j`) and established
