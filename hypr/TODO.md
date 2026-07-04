@@ -1,0 +1,4 @@
+# User written notes
+
+SDDM login screen, same animation as currently but tokyo night converted?
+Change cursor, also cursor hidden while typing and follows focus changes (but hidden).

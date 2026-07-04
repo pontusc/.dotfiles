@@ -179,14 +179,20 @@ Daily-drive it. Fix what annoys. Candidates in likely order:
   leave wallpaper slivers with gaps_in 0), opaque windows + light blur 2/2 for
   translucent layers, shadow off, animations minimal (global speed 2 on `quick`
   bezier, `workspaces` leaf disabled → workspace + special swap instant).
-- window rules (Bitwarden float, YT-Music workspace; terminal scroll_touchpad done).
-- **omarchy-style per-window opacity** (revisit, noted 2026-07-04): omarchy makes
-  every window translucent via tag-based window rules, not decoration settings —
-  all windows tagged `default-opacity` → `opacity 0.97 0.9`, chromium/firefox
-  browsers opt out to `1.0 0.97`, media apps (mpv/vlc/OBS/Zoom/YT webapp) pinned
-  `1 1` (see `dev:default/hypr/windows.lua` + `apps/browser.lua`). Global blur
-  2/2 is already in place here, so porting is just the rule set in
-  `config/windowrules.lua` — natural to fold into the window-rules task above.
+- **window rules + omarchy per-window opacity** ✅ done 2026-07-04
+  (`config/windowrules.lua`): Bitwarden float, YT-Music webapp → ws5 silent +
+  opaque, PiP pinned overlay top-right (omarchy verbatim), suppress
+  self-maximize, XWayland drag-fix `no_focus`, screen-share "…is sharing…" pill
+  → special silent, mpv/vlc opaque. Opacity is omarchy's tag scheme from
+  `dev:default/hypr/windows.lua` + `apps/browser.lua`: all windows tagged
+  `+default-opacity`, browsers opt out to `1.0 0.97`
+  (chromium-based/firefox-based tags), media opt out to `1 1`, then
+  `match tag=default-opacity → opacity "0.97 0.9"` applied as the LAST rule —
+  rules are order-dependent (last match wins), keep opt-outs above it. Gotcha:
+  omarchy's browser regex has `Vivaldi-stable` capitalized but the class here
+  is lowercase `vivaldi-stable` — fixed to `[vV]ivaldi-stable` (verified via
+  `hyprctl clients` tags). Desktop rules (games/steam/discord workspaces) wait
+  for the Phase 3 host tables.
 - webapp-style launchers if missed (simple `$BROWSER --app=URL` bind), waybar polish.
 
 Add each as a small commit when it earns it.
@@ -204,6 +210,14 @@ Add each as a small commit when it earns it.
 
 ## Later / cleanup
 
+- **Proper session initialization (revisit — current autostart is a band-aid)**:
+  the `dbus-update ; reset-failed ; restart` chain in `autostart.lua` papers over
+  a structural problem — nothing manages session lifecycle, so the user manager
+  keeps stale env across relogins, units dbus-activate before the compositor is
+  up, and `graphical-session.target` never activates. Research the official way
+  (uwsm, or Hyprland's own systemd integration / `hyprland-session.target` if it
+  exists by then, official Hyprland + systemd docs) and adopt it; the chain and
+  its ops-note bullets below then collapse into it.
 - Migrate desktop and work hosts onto the package as they move to CachyOS Hyprland
   (this is a full migration off Omarchy — no compatibility layer). Old conf packages
   keep working until then.
@@ -222,8 +236,30 @@ Add each as a small commit when it earns it.
   SIGABRTed on the dead socket before the env import landed, and nothing ever
   retried. Fix in `autostart.lua`: env import and service start chained in one
   `sh -c '… && …'`. Verified: manual start with fresh env stays active.
-  `elephant.service` is started unchained — it doesn't connect to the
-  compositor, so the stale-env race doesn't apply.
+  `elephant.service` was assumed safe unchained — **wrong, see next bullet**.
+- **walker Logout broken — stale env in elephant.service ✅ fixed 2026-07-04**:
+  power-menu entries are executed *by elephant*, a systemd user service that
+  survives relogin, so it spawned `hyprshutdown` (CachyOS ELF binary; resolves
+  the compositor socket from `HYPRLAND_INSTANCE_SIGNATURE`) with the previous
+  session's signature → dead instance → silent no-op. Proven live: elephant
+  (started 19:01) held the pre-relogin signature while Hyprland (19:59) had a
+  new one. Fix in `autostart.lua`: elephant folded into the chained env-import
+  command as `restart` (not `start`) — every login force-respawns it with
+  fresh env. Verified: signatures match after restart. (Lock/Suspend/Reboot
+  never needed the signature; a mid-rebase config checkout separately caused a
+  one-off broken state that a manual `hyprctl reload` cleared.)
+- **walker Logout broke AGAIN (2026-07-04, next relogin) — `&&` chain was
+  fragile ✅ fixed**: something dbus-activated hyprpolkitagent at 20:50:41,
+  *before* Hyprland was up (20:50:46) → ABRT crash-loop ×6 → start-limit-hit.
+  When the autostart chain ran at 20:50:47 its `systemctl start hyprpolkitagent`
+  failed on the start limit, and the `&&` short-circuited the elephant restart —
+  elephant (respawned during logout with the dying session's env) kept the stale
+  signature. Polkit prompts were dead too. Lesson: units can be in
+  `start-limit-hit` before autostart runs, so the chain must not use `&&`.
+  Fix in `autostart.lua`: `dbus-update … ; reset-failed both ; restart both`
+  (`;` so no step vetoes the rest; reset-failed clears prior crash-loops;
+  restart is idempotent and force-respawns stale survivors). End-to-end proof
+  pending next relogin.
 - **Stale `HYPRLAND_INSTANCE_SIGNATURE` after relogin**: shells/sessions started
   before a relogin can't reach hyprctl (`Couldn't connect to … .socket.sock`).
   Fix: `export HYPRLAND_INSTANCE_SIGNATURE=$(ls -t /run/user/1000/hypr/ | head -1)`.
@@ -249,9 +285,20 @@ Add each as a small commit when it earns it.
   (ssh), deliberately outside stow.
 - **Omarchy bind extras deliberately declined** (don't re-propose):
   former-workspace toggle, alt-tab window cycle, group extras, move-into-group.
-- **Waybar clock shows Swedish day names**: deliberate — system locale is
-  `LANG=en_GB` + `LC_TIME=sv_SE` and the clock format's `L` honors LC_TIME.
-  Left as-is 2026-07-04; bar-only fix if ever wanted: clock `"locale"` option.
+- **Locale**: ✅ fixed 2026-07-04 — was installer default `LANG=en_GB` + all
+  `LC_*=sv_SE` (Swedish day names in waybar/journal, decimal comma from
+  LC_NUMERIC). Now `/etc/locale.conf` = `LANG=en_GB.UTF-8` with sv_SE kept only
+  for MONETARY/PAPER/ADDRESS/TELEPHONE/MEASUREMENT. System file, not stowed —
+  reapply on a new host with:
+  `sudo localectl set-locale LANG=en_GB.UTF-8 LC_TIME=en_GB.UTF-8 LC_NUMERIC=en_GB.UTF-8 LC_NAME=en_GB.UTF-8 LC_IDENTIFICATION=en_GB.UTF-8 LC_MONETARY=sv_SE.UTF-8 LC_PAPER=sv_SE.UTF-8 LC_MEASUREMENT=sv_SE.UTF-8 LC_ADDRESS=sv_SE.UTF-8 LC_TELEPHONE=sv_SE.UTF-8`
+  (set-locale *merges* — it can't unset, so unwanted vars are set equal to LANG,
+  which systemd then strips from the file). ~~Effective at next login~~ — WRONG,
+  verified 2026-07-04 post-relogin: the old `LC_*` set was still live in the
+  user manager AND the whole session (`date +%A` → lördag). PID1 and SDDM read
+  locale.conf at *boot* and the session inherits SDDM's env at login, so a
+  relogin re-inherits the stale values. **Effective at next reboot** (same
+  stale-env-survivor family as the autostart band-aid — another datapoint for
+  the session-init revisit).
 
 ## Reference — where the old stuff lives (look, don't copy)
 
