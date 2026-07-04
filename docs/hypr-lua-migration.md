@@ -80,11 +80,20 @@ Daily-drive it. Fix what annoys. Candidates in likely order:
   extras also cover fzf/btop/lazygit/eza/tmux for later), hand-port its hex where none
   does (mako ✅ done 2026-07-04, new `mako/` package, colors from the dunst extra).
   tmux and starship as configured in this repo are already correct — leave them.
-  Still to reconcile: waybar + hyprlock use an ad-hoc dark palette (`#111826`/
-  `#82dccc`), walker's tokyonight theme is already canonical. A template engine
+  hyprlock ✅ done 2026-07-04 (ad-hoc `#111826`/`#82dccc` → canonical night values,
+  blue `#7aa2f7` accent; background now `path = screenshot` + 3 blur passes so it
+  follows the live wallpaper); waybar ✅ done 2026-07-04, see its bullet below;
+  walker's tokyonight theme is already canonical. Still open: **dolphin** (Qt app
+  outside a Plasma session — needs Qt theming under Hyprland, likely
+  qt6ct/kde colorscheme route; noted 2026-07-04, not yet investigated). A template engine
   (wallust — evaluated 2026-07-04, deferred) only earns its place if scheme-switching
   across the hand-ported configs is ever wanted; don't generate what upstream ships.
-  Wallpaper (hyprpaper) belongs here.
+  Wallpaper ✅ done 2026-07-04: hyprpaper with omarchy's six tokyo-night
+  backgrounds vendored in `hypr/.config/hypr/wallpapers/` (~12.7MB),
+  `1-sunset-lake.png` as fallback-for-all-monitors default. Gotcha: hyprpaper
+  0.8+ dropped the old `preload =`/`wallpaper = mon,path` lines for
+  `wallpaper {}` blocks (old syntax parses but sets no target — daemon runs,
+  no wallpaper); runtime switch via `hyprctl hyprpaper wallpaper ', <path>'`.
 - **login screen**: stay on SDDM (decided 2026-07-04 — no official hyprwm DM exists,
   wiki has no DM recommendation, SDDM is the CachyOS convention and actively
   maintained; greeter can run on Wayland via `DisplayServer=wayland`). Theme decided
@@ -117,6 +126,19 @@ Daily-drive it. Fix what annoys. Candidates in likely order:
   close-all-apps-then-exit tool) exists only as the menu's logout entry. Gotcha:
   elephant scans the menus dir only at provider setup — restart elephant.service
   after adding menu files.
+- **waybar omarchy look** ✅ done 2026-07-04: copied omarchy's bar verbatim-ish
+  (basecamp/omarchy `config/waybar/` — height 26, JetBrainsMono Nerd Font 12px,
+  flat/borderless, icon-only modules, persistent workspaces 1–5 with 󱓻 active
+  dot, tray behind expander arrow), omarchy-only modules dropped (logo, weather,
+  updater, voxtype, indicators), our window-title + backlight modules dropped
+  (decided 2026-07-04), cpu + bluetooth added. Clicks remapped: network →
+  `$TERMINAL nmtui`, cpu → `$TERMINAL btop`, battery → `walker -m menus:power`,
+  volume → wpctl mute toggle. Colors hardcoded tokyonight-night bg `#1a1b26` /
+  fg_dark `#a9b1d6` (folke ships NO waybar extra — confirmed; omarchy's
+  tokyo-night theme feeds waybar these same two values, nothing more). One
+  deviation: `battery.critical` = tokyonight red (no notifier daemon here).
+  Same day: `config/defaults.lua` now exports TERMINAL/BROWSER via `hl.env()` —
+  session-wide app defaults, nothing hardcodes the terminal anymore.
 - window rules (Bitwarden float, YT-Music workspace; terminal scroll_touchpad done).
 - webapp-style launchers if missed (simple `$BROWSER --app=URL` bind), waybar polish.
 
@@ -160,6 +182,9 @@ Add each as a small commit when it earns it.
   (ssh), deliberately outside stow.
 - **Omarchy bind extras deliberately declined** (don't re-propose):
   former-workspace toggle, alt-tab window cycle, group extras, move-into-group.
+- **Waybar clock shows Swedish day names**: deliberate — system locale is
+  `LANG=en_GB` + `LC_TIME=sv_SE` and the clock format's `L` honors LC_TIME.
+  Left as-is 2026-07-04; bar-only fix if ever wanted: clock `"locale"` option.
 
 ## Reference — where the old stuff lives (look, don't copy)
 
