@@ -1,46 +1,78 @@
+/* Omarchy's waybar style (basecamp/omarchy config/waybar/style.css) with the
+ * theme colors hardcoded to Tokyo Night (night) instead of omarchy's template
+ * import — same values omarchy's tokyo-night theme feeds it: canonical
+ * tokyonight bg + fg_dark. Omarchy-only module rules dropped.
+ * Deviation from omarchy: battery.critical gets tokyonight red (icon-only
+ * battery + no omarchy notifier here = it would die silently otherwise). */
+
+@define-color background #1a1b26;
+@define-color foreground #a9b1d6;
+
 * {
-    font-family: monospace;
-    font-size: 12px;
+    background-color: @background;
+    color: @foreground;
+
+    border: none;
+    border-radius: 0;
     min-height: 0;
+    font-family: 'JetBrainsMono Nerd Font';
+    font-size: 12px;
 }
 
-window#waybar {
-    background: rgba(17, 24, 38, 0.9);
-    color: #dddddd;
+.modules-left {
+    margin-left: 8px;
+}
+
+.modules-right {
+    margin-right: 8px;
 }
 
 #workspaces button {
+    all: initial;
     padding: 0 6px;
-    color: #798bb2;
-    border-radius: 0;
+    margin: 0 1.5px;
+    min-width: 9px;
 }
 
-#workspaces button.active {
-    color: #82dccc;
-    border-bottom: 2px solid #82dccc;
+#workspaces button.empty {
+    opacity: 0.5;
 }
 
-#workspaces button.urgent {
-    color: #ff5555;
-}
-
-#window {
-    color: #798bb2;
-}
-
-#clock,
-#tray,
-#wireplumber,
-#backlight,
-#network,
-#battery {
-    padding: 0 8px;
-}
-
-#battery.warning {
-    color: #f0c674;
+#cpu,
+#battery,
+#pulseaudio {
+    min-width: 12px;
+    margin: 0 7.5px;
 }
 
 #battery.critical {
-    color: #ff5555;
+    color: #f7768e;
+}
+
+#tray {
+    margin-right: 16px;
+}
+
+#bluetooth {
+    margin-right: 17px;
+}
+
+#network {
+    margin-right: 13px;
+}
+
+#custom-expand-icon {
+    margin-right: 18px;
+}
+
+tooltip {
+    padding: 2px;
+}
+
+#clock {
+    margin-left: 8.75px;
+}
+
+.hidden {
+    opacity: 0;
 }
