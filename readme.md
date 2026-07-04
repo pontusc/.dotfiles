@@ -10,12 +10,14 @@ stow -D "packate-to-uninstall" to remove symlinks
 
 ## Required tools
 
-alacritty/kitty  
-tmux & plugin manager  
+kitty  
+neovim (config: ssh clone of github.com/pontusc/nvim into ~/.config/nvim)  
+tmux & plugin manager (tpm: git clone into ~/.tmux/plugins/tpm)  
 starship  
 lazygit  
-lazydocker
+lazydocker  
 fzf  
 ripgrep  
 zoxide  
-eza
+eza  
+dcg — destructive command guard for the Claude Code Bash hook (github.com/Dicklesworthstone/destructive_command_guard); install the release binary to ~/.local/bin/dcg (the `claude` package registers the hook and provides ~/.config/dcg/config.toml — skip the installer's --easy-mode, it rewrites settings.json)

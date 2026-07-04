@@ -25,7 +25,7 @@ if command -v terraform &> /dev/null; then
   complete -o nospace -C terraform tf
 fi
 
-# Terraform completions
+# Netbird completions
 if command -v netbird &> /dev/null; then
   source <(netbird completion bash)
 fi

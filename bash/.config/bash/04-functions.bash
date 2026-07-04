@@ -7,6 +7,23 @@ tmux() {
   fi
 }
 
+# zoxide-backed cd: builtin cd for real paths, zoxide jump otherwise
+zd() {
+  if (( $# == 0 )); then
+    builtin cd ~ || return
+  elif [[ -d $1 ]]; then
+    builtin cd "$1" || return
+  else
+    if ! z "$@"; then
+      echo "Error: Directory not found"
+      return 1
+    fi
+
+    printf "\U000F17A9 "
+    pwd
+  fi
+}
+
 kds() {
   if [ -z "$1" ]; then
     echo "Usage: kds <secret-name> [-n <namespace>]"
@@ -121,4 +138,15 @@ kcs() {
 
 kns() {
   kubectl config set-context --current --namespace "$(kubectl get namespaces -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | fzf)"
+}
+
+# Launch a temporary network testing pod in Kubernetes
+kube-netshell() {
+  local namespace="${1:-}"
+  if [[ -z "$namespace" ]]; then
+    read -rp "Namespace (empty for default): " namespace
+  fi
+  local ns_args=()
+  [[ -n "$namespace" ]] && ns_args=(-n "$namespace")
+  kubectl run tmp-shell --rm -it --restart=Never --image=nicolaka/netshoot "${ns_args[@]}" -- bash
 }

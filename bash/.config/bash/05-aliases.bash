@@ -6,6 +6,20 @@ alias unstow='stow --delete'
 # Fix watch command and aliases
 alias watch='watch ' # the trailing space forces bash to expand next word apparently
 
+# Navigation (zd defined in 04-functions.bash, zoxide init in 03-init.bash)
+command -v zoxide &>/dev/null && alias cd="zd"
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+
+# eza-backed ls replacements
+if command -v eza &>/dev/null; then
+  alias ls='eza -lh --group-directories-first --icons=auto'
+  alias lsa='eza -lah --group-directories-first --icons=auto'
+  alias lt='eza --tree --level=2 --long --icons --git'
+  alias lta='lt -a'
+fi
+
 # Python virtual environment
 alias ve="python3 -m venv ./venv"
 alias va="source ./venv/bin/activate"
@@ -15,7 +29,7 @@ alias da="deactivate"
 alias tf="terraform"
 alias tg="terragrunt"
 
-# Kubernetes
+# Kubernetes (kns/kcs are fzf-backed functions in 04-functions.bash)
 alias k="kubectl"
 alias mkube="minikube"
 alias t="talosctl"

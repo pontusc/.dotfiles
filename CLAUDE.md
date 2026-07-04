@@ -12,8 +12,10 @@ mirrors the destination relative to `$HOME` (`claude/.claude/settings.json` →
 - **Tree folding**: stow links the highest directory it can own outright — a package whose
   target doesn't exist gets one symlink for the whole tree. When the target already exists as
   a real directory, stow *unfolds* and links each entry inside it individually.
-- Packages are machine/role-specific (`hypr-desktop` vs `hypr-laptop` vs `hypr-work`,
-  `bash-linux` vs `bash-work`, `kde-*`) — install only what applies to the host.
+- Packages are being unified (v2): `bash/` and `hypr/` are single shared packages with
+  capability/host guards instead of per-machine copies. Legacy per-machine packages
+  (`hypr-desktop`, `hypr-work`, `kde-*`) remain until those hosts migrate to CachyOS —
+  install only what applies to the host.
 
 ## The claude package (partially folded — read before adding files)
 
