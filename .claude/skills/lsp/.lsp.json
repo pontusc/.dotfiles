@@ -1,0 +1,7 @@
+{
+  "lua": {
+    "command": "lua-language-server",
+    "extensionToLanguage": { ".lua": "lua" },
+    "workspaceFolder": "/home/pontusc/dotfiles/hypr/.config/hypr"
+  }
+}
