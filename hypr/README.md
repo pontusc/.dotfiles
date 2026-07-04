@@ -74,12 +74,15 @@ sudo pacman -Rns noctalia-shell noctalia-qs cachyos-hypr-noctalia
 
 ## Where things live
 
-- Keybinds: `config/binds.lua` — notable choices: SUPER+W close, SUPER+F
-  fullscreen, SUPER+E file manager, SUPER+O pop window out (float+pin
-  toggle), SUPER+C/V universal copy/paste (CTRL+Insert / SHIFT+Insert to the
-  focused window), SUPER+CTRL+V walker clipboard history, SUPER+Space walker,
-  SUPER+comma dismiss notification, SUPER+P screenshot region → clipboard
-  (no Print key on the laptop keyboard).
+- Keybinds: `config/binds.lua` — notable choices: SUPER+W close,
+  SUPER+SHIFT+W force-kill mode (`hyprctl kill`), SUPER+Escape power menu
+  (walker on the custom elephant menu in the `walker/` package;
+  SUPER+SHIFT+Escape deliberately unbound), SUPER+F fullscreen, SUPER+E file
+  manager, SUPER+O pop window out (float+pin toggle), SUPER+C/V universal
+  copy/paste (CTRL+Insert / SHIFT+Insert to the focused window),
+  SUPER+CTRL+V walker clipboard history, SUPER+Space walker, SUPER+comma
+  dismiss notification, SUPER+P screenshot region → clipboard (no Print key
+  on the laptop keyboard).
 - Default apps (terminal/browser/file manager): `config/defaults.lua`.
 - Bar: the `waybar/` stow package. Launcher: the `walker/` stow package.
 - Autostarted daemons (waybar, mako, hyprpolkitagent, walker service):
@@ -92,6 +95,9 @@ sudo pacman -Rns noctalia-shell noctalia-qs cachyos-hypr-noctalia
 - mako and hyprpolkitagent silently lose their D-Bus/polkit registration race
   if another shell (e.g. Noctalia) is still running — kill it first, then
   restart them.
+- elephant only scans `~/.config/elephant/menus/` at provider setup — after
+  adding or renaming a menu file, `systemctl --user restart elephant`
+  (`elephant listproviders` should then show `menus:<name>`).
 
 ## Manual system steps (not stowable)
 

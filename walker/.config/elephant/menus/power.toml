@@ -1,0 +1,33 @@
+# Power menu — opened by walker (`walker -m menus:power`, SUPER+Escape).
+# Elephant only walks this dir at provider setup: after adding/renaming a menu
+# file, `systemctl --user restart elephant`. Entry values run via `sh -c`.
+name = "power"
+name_pretty = "Power"
+icon = "system-shutdown"
+action = "%VALUE%"
+fixed_order = true
+
+[[entries]]
+text = "Lock"
+value = "hyprlock"
+icon = "system-lock-screen"
+
+[[entries]]
+text = "Suspend"
+value = "systemctl suspend"
+icon = "system-suspend"
+
+[[entries]]
+text = "Logout"
+value = "hyprshutdown"
+icon = "system-log-out"
+
+[[entries]]
+text = "Reboot"
+value = "systemctl reboot"
+icon = "system-reboot"
+
+[[entries]]
+text = "Shutdown"
+value = "systemctl poweroff"
+icon = "system-shutdown"

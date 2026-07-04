@@ -74,15 +74,43 @@ Once the laptop works, refactor (no behavior change):
 
 Daily-drive it. Fix what annoys. Candidates in likely order:
 
-- **central theming**: one palette as the single source of truth feeding kitty (Tokyo
-  Night today), waybar + hyprlock (ad-hoc dark theme today), mako, walker, starship —
-  pick the scheme once, wire every config to it. Wallpaper (hyprpaper) belongs here.
-- **login screen**: SDDM is the DM and only stock themes are installed
-  (elarun/maldives/maya) — install/configure a theme matching the central theme.
+- **central theming**: scheme is Tokyo Night (night); the single source of truth is
+  folke/tokyonight.nvim, as a *convention*, not a tool: vendor its official extra
+  verbatim where one exists (kitty ✅ done 2026-07-04, byte-identical to upstream;
+  extras also cover fzf/btop/lazygit/eza/tmux for later), hand-port its hex where none
+  does (mako ✅ done 2026-07-04, new `mako/` package, colors from the dunst extra).
+  tmux and starship as configured in this repo are already correct — leave them.
+  Still to reconcile: waybar + hyprlock use an ad-hoc dark palette (`#111826`/
+  `#82dccc`), walker's tokyonight theme is already canonical. A template engine
+  (wallust — evaluated 2026-07-04, deferred) only earns its place if scheme-switching
+  across the hand-ported configs is ever wanted; don't generate what upstream ships.
+  Wallpaper (hyprpaper) belongs here.
+- **login screen**: stay on SDDM (decided 2026-07-04 — no official hyprwm DM exists,
+  wiki has no DM recommendation, SDDM is the CachyOS convention and actively
+  maintained; greeter can run on Wayland via `DisplayServer=wayland`). Theme decided
+  2026-07-04: **sddm-astronaut-theme** (Keyitdev, actively maintained; installed
+  2026-07-04 from AUR) using a **premade variant** (decided 2026-07-04 — no custom
+  tokyonight.conf; pick from the ten shipped `Themes/*.conf` when implementing) —
+  chosen over the ready-made but archived siddrs/tokyo-night-sddm.
+  **Work to do**: (1) browse variants (`/usr/share/sddm/themes/sddm-astronaut-theme/
+  Themes/`), pick one — preview via `sddm-greeter-qt6 --test-mode --theme <dir>` if
+  it works, else pick by README screenshots; (2) select variant: root-owned edit of
+  the theme's `metadata.desktop` `ConfigFile=` line (user runs it); (3)
+  `/etc/sddm.conf.d/` drop-in setting `[Theme] Current=sddm-astronaut-theme` (user
+  runs it); (4) document both manual steps in hypr/README.md's "Manual system
+  steps" section; (5) verify greeter after logout. All system-level — nothing
+  stowable.
 - hypridle idle chain (10min lock → 11min kbd-backlight off → 12min dpms off);
   hyprlock itself done 2026-07-04 (SUPER+CTRL+L, `hyprlock.conf` in the package).
-- power menu on SUPER+Escape via walker (shutdown/reboot/logout/lock — walker menus
-  provider; move window-kill elsewhere or drop it).
+- **power menu** ✅ done 2026-07-04 on SUPER+Escape via **walker menus**: custom
+  elephant menu at `walker/.config/elephant/menus/power.toml` (lock / suspend /
+  logout via `hyprshutdown` / reboot / shutdown; menu-level `action = "%VALUE%"`,
+  entries run via `sh -c`), opened with `walker -m menus:power`. Window-kill
+  (`hyprctl kill`) moved to SUPER+SHIFT+W; SUPER+SHIFT+Escape deliberately unbound
+  (decided 2026-07-04) — hyprshutdown (installed 2026-07-04, cachyos repo; graceful
+  close-all-apps-then-exit tool) exists only as the menu's logout entry. Gotcha:
+  elephant scans the menus dir only at provider setup — restart elephant.service
+  after adding menu files.
 - window rules (Bitwarden float, YT-Music workspace; terminal scroll_touchpad done).
 - webapp-style launchers if missed (simple `$BROWSER --app=URL` bind), waybar polish.
 
