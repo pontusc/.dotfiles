@@ -15,6 +15,7 @@ neovim (config: ssh clone of github.com/pontusc/nvim into ~/.config/nvim)
 tmux & plugin manager (tpm: git clone into ~/.tmux/plugins/tpm)  
 starship  
 lazygit  
+github-cli (gh)  
 lazydocker  
 fzf  
 ripgrep  
