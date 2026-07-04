@@ -11,8 +11,8 @@ all hosts. Currently laptop-only; host branching comes with `config/host.lua`
 
 ```
 sudo pacman -S --needed stow waybar walker mako hyprpolkitagent hyprlock playerctl \
-    tmux brightnessctl grim slurp wl-clipboard kitty ttf-jetbrains-mono-nerd \
-    vivaldi dolphin btop
+    hyprshutdown tmux brightnessctl grim slurp wl-clipboard kitty \
+    ttf-jetbrains-mono-nerd vivaldi dolphin btop
 ```
 
 What each is for:
@@ -24,6 +24,7 @@ What each is for:
 | mako | notifications (config in the `mako/` stow package) |
 | hyprpolkitagent | polkit auth dialogs (started via its systemd user unit) |
 | hyprlock | lock screen — SUPER+CTRL+L (`hyprlock.conf` in this package) |
+| hyprshutdown | graceful logout — the power menu's Logout entry (no keybind) |
 | playerctl, brightnessctl, wpctl (wireplumber) | hardware keys in `config/binds.lua` |
 | grim, slurp, wl-clipboard | screenshot binds |
 | kitty, vivaldi, dolphin, btop, tmux | `config/defaults.lua` default apps + terminal binds (kitty config: the `kitty/` stow package) |
@@ -101,6 +102,25 @@ sudo pacman -Rns noctalia-shell noctalia-qs cachyos-hypr-noctalia
 
 ## Manual system steps (not stowable)
 
+- **SDDM login theme:** sddm-astronaut-theme (AUR:
+  `paru -S sddm-astronaut-theme`), `pixel_sakura` variant. Two root-owned
+  steps:
+
+  ```sh
+  # pick the variant (the theme's own mechanism — a line in its metadata)
+  sudo sed -i 's|^ConfigFile=.*|ConfigFile=Themes/pixel_sakura.conf|' \
+      /usr/share/sddm/themes/sddm-astronaut-theme/metadata.desktop
+
+  # point SDDM at the theme
+  sudo mkdir -p /etc/sddm.conf.d
+  printf '[Theme]\nCurrent=sddm-astronaut-theme\n' | sudo tee /etc/sddm.conf.d/10-theme.conf
+  ```
+
+  Caveat: `metadata.desktop` belongs to the package, so a theme update resets
+  the variant to `astronaut` — re-run the first command after upgrades.
+  Preview variants without root: copy the theme dir somewhere user-owned,
+  edit `ConfigFile=` in the copy's `metadata.desktop`, then
+  `sddm-greeter-qt6 --test-mode --theme <copy>`.
 - **Clamshell (Phase 5, not yet done):** logind must ignore the lid so
   Hyprland can handle it — `/etc/systemd/logind.conf.d/lid.conf` with
   `HandleLidSwitch=ignore` etc. Document the exact file here when done.

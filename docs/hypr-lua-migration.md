@@ -91,15 +91,13 @@ Daily-drive it. Fix what annoys. Candidates in likely order:
   2026-07-04: **sddm-astronaut-theme** (Keyitdev, actively maintained; installed
   2026-07-04 from AUR) using a **premade variant** (decided 2026-07-04 — no custom
   tokyonight.conf; pick from the ten shipped `Themes/*.conf` when implementing) —
-  chosen over the ready-made but archived siddrs/tokyo-night-sddm.
-  **Work to do**: (1) browse variants (`/usr/share/sddm/themes/sddm-astronaut-theme/
-  Themes/`), pick one — preview via `sddm-greeter-qt6 --test-mode --theme <dir>` if
-  it works, else pick by README screenshots; (2) select variant: root-owned edit of
-  the theme's `metadata.desktop` `ConfigFile=` line (user runs it); (3)
-  `/etc/sddm.conf.d/` drop-in setting `[Theme] Current=sddm-astronaut-theme` (user
-  runs it); (4) document both manual steps in hypr/README.md's "Manual system
-  steps" section; (5) verify greeter after logout. All system-level — nothing
-  stowable.
+  chosen over the ready-made but archived siddrs/tokyo-night-sddm. Variant picked
+  2026-07-04: **pixel_sakura** (animated; `pixel_sakura_static` is the fallback),
+  previewed via a user-owned theme copy + `sddm-greeter-qt6 --test-mode`. Both
+  root-owned steps (variant `ConfigFile=` edit + `/etc/sddm.conf.d/10-theme.conf`
+  drop-in) are documented in hypr/README.md "Manual system steps", incl. the
+  caveat that theme package updates reset the variant. Remaining: user runs the
+  two sudo commands, then verify the greeter after logout.
 - hypridle idle chain (10min lock → 11min kbd-backlight off → 12min dpms off);
   hyprlock itself done 2026-07-04 (SUPER+CTRL+L, `hyprlock.conf` in the package).
 - **power menu** ✅ done 2026-07-04 on SUPER+Escape via **walker menus**: custom
