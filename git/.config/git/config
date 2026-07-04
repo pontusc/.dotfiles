@@ -1,0 +1,57 @@
+[user]
+	name = Pontus Curtsson
+	email = pontuscurtsson@gmail.com
+
+# Work identity for anything cloned under ~/Work/
+[includeIf "gitdir:~/Work/"]
+	path = config-work
+
+[init]
+	defaultBranch = master
+
+[column]
+	ui = auto
+
+[branch]
+	sort = -committerdate
+
+[tag]
+	sort = version:refname
+
+[diff]
+	algorithm = histogram
+	colorMoved = plain
+	mnemonicPrefix = true
+	renames = true
+
+[pull]
+	rebase = true
+
+[merge]
+	# Linear history: plain `git merge` refuses non-ff; use --no-ff to override
+	ff = only
+	conflictstyle = zdiff3
+
+[rebase]
+	autoStash = true
+	autoSquash = true
+	updateRefs = true
+
+[push]
+	default = simple
+	autoSetupRemote = true
+	followTags = true
+
+[fetch]
+	prune = true
+	pruneTags = true
+
+[commit]
+	verbose = true
+
+[rerere]
+	enabled = true
+	autoupdate = true
+
+[help]
+	autocorrect = prompt
