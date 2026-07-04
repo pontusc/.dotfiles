@@ -1,0 +1,15 @@
+# Tokyo Night (night) — no official mako port exists; colors hand-ported from
+# folke/tokyonight.nvim extras/dunst/tokyonight_night.dunstrc (MIT, Folke Lemaitre)
+font=JetBrainsMono Nerd Font 11
+background-color=#1a1b26
+text-color=#c0caf5
+border-color=#c0caf5
+
+[urgency=low]
+background-color=#16161e
+
+[urgency=critical]
+background-color=#292e42
+text-color=#db4b4b
+border-color=#db4b4b
+default-timeout=0
