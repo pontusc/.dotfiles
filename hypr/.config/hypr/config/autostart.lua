@@ -2,10 +2,13 @@
 -- autostart entries do not run — start everything from here.
 
 hl.on("hyprland.start", function()
-    hl.exec_cmd("dbus-update-activation-environment --systemd --all")
+    -- The env import must complete before systemd services that connect to the
+    -- compositor start: the user manager survives relogins with the previous
+    -- session's WAYLAND_DISPLAY, and hyprpolkitagent crash-loops on the dead
+    -- socket into start-limit-hit if started against it — so chain, don't race.
+    hl.exec_cmd("sh -c 'dbus-update-activation-environment --systemd --all && systemctl --user start hyprpolkitagent.service'")
     hl.exec_cmd("waybar")
     hl.exec_cmd("mako")
-    hl.exec_cmd("systemctl --user start hyprpolkitagent.service")
     hl.exec_cmd("hypridle")
     hl.exec_cmd("hyprpaper")
     -- elephant's unit is WantedBy=graphical-session.target, which never

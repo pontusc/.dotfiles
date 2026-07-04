@@ -83,9 +83,40 @@ Daily-drive it. Fix what annoys. Candidates in likely order:
   hyprlock ✅ done 2026-07-04 (ad-hoc `#111826`/`#82dccc` → canonical night values,
   blue `#7aa2f7` accent; background now `path = screenshot` + 3 blur passes so it
   follows the live wallpaper); waybar ✅ done 2026-07-04, see its bullet below;
-  walker's tokyonight theme is already canonical. Still open: **dolphin** (Qt app
-  outside a Plasma session — needs Qt theming under Hyprland, likely
-  qt6ct/kde colorscheme route; noted 2026-07-04, not yet investigated). A template engine
+  walker's tokyonight theme is already canonical. btop ✅ done 2026-07-04: new
+  `btop/` package ships folke's extra verbatim (`themes/tokyonight_night.theme`);
+  `btop.conf` stays host-local (btop rewrites it on exit — would fight a symlink).
+  lazygit ✅ done 2026-07-04: new `lazygit/` package, folke's extra verbatim as the
+  entire `config.yml` (it's a complete standalone config). dolphin ✅ RESOLVED by
+  replacement 2026-07-04: **dropped for yazi** (folke ships an official
+  `extras/yazi` theme). Rationale: theming dolphin properly needed
+  `plasma-integration` + `breeze`, which hard-pulls `xdg-desktop-portal-kde` →
+  `plasma-workspace` → kwin/kscreenlocker — ~62 packages / ~275 MiB for one file
+  manager; the gtk3 route tested-failed (no dark GTK theme installed; omarchy is
+  no template — zero Qt6/Dolphin theming, kvantum is Qt5-only, its Nautilus is
+  plain Adwaita-dark). New `yazi/` package ships folke's
+  `extras/yazi/tokyonight_night.toml` verbatim as `theme.toml`, stowed (folded:
+  `~/.config/yazi` → repo; one local patch: `name =` → `url =` in `[filetype]`
+  rules — key renamed in yazi 25.x, folke's extra not yet updated). Super+E
+  opens it via `FILE_MANAGER = TERMINAL .. " -e yazi"` in `defaults.lua`.
+  Removed: `dolphin/` package (its salvaged
+  `TokyoNight.colors` is gone with it), host `~/.config/kdeglobals`, and
+  `~/.local/share/color-schemes/`. User runs: `sudo pacman -S yazi` and
+  `sudo pacman -Rns dolphin` (cascades baloo/baloo-widgets/kio-extras — all
+  dependency-installed, nothing else needs them), then orphan sweep
+  `pacman -Qdtq`. Remaining Qt6 apps (hyprpolkitagent, btrfs-assistant, CachyOS
+  tools) stay on the gtk3 platform theme, unthemed-tolerable; `qt6ct` (0.7 MiB,
+  zero deps) is the escape hatch if that ever bothers. uwsm detour
+  (same day, reverted): `~/.config/uwsm/env` turned out to be dead config — SDDM
+  `Session=hyprland` runs CachyOS's `start-hyprland` binary, uwsm never runs, the
+  file was never sourced (its `BROWSER=firefox` + session-wide `TERM` were wrong
+  anyway). Deleted; session env now lives in new `config/envs.lua`
+  (`QT_QPA_PLATFORM`, `QT_QPA_PLATFORMTHEME=gtk3`,
+  `ELECTRON_OZONE_PLATFORM_HINT`) with cursor vars in `looknfeel.lua` — Hyprland
+  exports `env =` to the systemd user environment at startup (verified via
+  `systemctl --user show-environment`), so hl.env reaches services too; `env` is
+  startup-only → relogin, not reload. Noctalia leftovers purged (btop/KDE
+  schemes, `~/.config/qt6ct` + `qt5ct`). A template engine
   (wallust — evaluated 2026-07-04, deferred) only earns its place if scheme-switching
   across the hand-ported configs is ever wanted; don't generate what upstream ships.
   Wallpaper ✅ done 2026-07-04: hyprpaper with omarchy's six tokyo-night
@@ -139,6 +170,9 @@ Daily-drive it. Fix what annoys. Candidates in likely order:
   deviation: `battery.critical` = tokyonight red (no notifier daemon here).
   Same day: `config/defaults.lua` now exports TERMINAL/BROWSER via `hl.env()` —
   session-wide app defaults, nothing hardcodes the terminal anymore.
+  Same day: `hyprland/language` module added (EN/SE between pulseaudio and cpu,
+  click cycles layout) — the compositor side (us,se + `grp:alts_toggle` Alt+Alt
+  switch) was already in `config/input.lua`; only the indicator was missing.
 - **looknfeel polish** ✅ done 2026-07-04 (`config/looknfeel.lua`, chosen from
   stock-CachyOS vs omarchy side-by-side): solid blue active border `#7aa2f7` /
   inactive fg_gutter `#3b4261`, border_size 2, rounding 0 (rounded corners
@@ -180,6 +214,19 @@ Add each as a small commit when it earns it.
 
 ## Operational notes (laptop, living section)
 
+- **hyprpolkitagent.service ✅ fixed 2026-07-04**: it was `failed
+  (start-limit-hit)` — the systemd user manager survives relogins keeping the
+  previous session's stale `WAYLAND_DISPLAY`, and autostart raced the async
+  `dbus-update-activation-environment` against `systemctl --user start
+  hyprpolkitagent`; the agent (plus 5 instant `Restart=on-failure` retries)
+  SIGABRTed on the dead socket before the env import landed, and nothing ever
+  retried. Fix in `autostart.lua`: env import and service start chained in one
+  `sh -c '… && …'`. Verified: manual start with fresh env stays active.
+  `elephant.service` is started unchained — it doesn't connect to the
+  compositor, so the stale-env race doesn't apply.
+- **Stale `HYPRLAND_INSTANCE_SIGNATURE` after relogin**: shells/sessions started
+  before a relogin can't reach hyprctl (`Couldn't connect to … .socket.sock`).
+  Fix: `export HYPRLAND_INSTANCE_SIGNATURE=$(ls -t /run/user/1000/hypr/ | head -1)`.
 - **Stale binds after git churn**: Hyprland auto-reloads on config change, so a
   checkout/stash that briefly reverts `binds.lua` can leave the *old* bind set
   loaded (seen 2026-07-04: SUPER+Escape dead, SUPER+SHIFT+Escape back). Fix:

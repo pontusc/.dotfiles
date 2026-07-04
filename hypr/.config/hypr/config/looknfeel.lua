@@ -41,6 +41,14 @@ hl.config({
     },
 })
 
+-- Cursor theme: Hyprland reads these at startup, clients inherit them.
+-- Portal dialogs (systemd-launched, not Hyprland children) miss XCURSOR_THEME
+-- and may show a default cursor — accepted, keeps all appearance config here.
+hl.env("HYPRCURSOR_THEME", "Bibata-Modern-Ice")
+hl.env("HYPRCURSOR_SIZE", "24")
+hl.env("XCURSOR_THEME", "Bibata-Modern-Ice")
+hl.env("XCURSOR_SIZE", "24")
+
 -- Minimal: one quick curve, ~200ms everything, workspace switch instant
 -- (specialWorkspace inherits the disabled workspaces leaf).
 hl.curve("quick", { type = "bezier", points = { { 0.15, 0 }, { 0.1, 1 } } })

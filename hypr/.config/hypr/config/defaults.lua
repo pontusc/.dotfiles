@@ -4,7 +4,7 @@
 
 TERMINAL     = "kitty"
 BROWSER      = "vivaldi"
-FILE_MANAGER = "dolphin"
+FILE_MANAGER = TERMINAL .. " -e yazi"
 
 hl.env("TERMINAL", TERMINAL)
 hl.env("BROWSER", BROWSER)

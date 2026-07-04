@@ -3,6 +3,7 @@
 -- Setup guide: ~/dotfiles/hypr/README.md
 
 require("config.defaults")
+require("config.envs")
 require("config.monitors")
 require("config.input")
 require("config.looknfeel")
