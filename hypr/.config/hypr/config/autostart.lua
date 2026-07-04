@@ -8,5 +8,8 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("systemctl --user start hyprpolkitagent.service")
     hl.exec_cmd("hypridle")
     hl.exec_cmd("hyprpaper")
+    -- elephant's unit is WantedBy=graphical-session.target, which never
+    -- activates without uwsm — start it here (before walker, its consumer)
+    hl.exec_cmd("systemctl --user start elephant.service")
     hl.exec_cmd("walker --gapplication-service")
 end)

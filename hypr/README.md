@@ -89,8 +89,9 @@ sudo pacman -Rns noctalia-shell noctalia-qs cachyos-hypr-noctalia
 - Default apps (terminal/browser/file manager): `config/defaults.lua`.
 - Bar: the `waybar/` stow package. Launcher: the `walker/` stow package.
 - Autostarted daemons (waybar, mako, hyprpolkitagent, hypridle, hyprpaper,
-  walker service): `config/autostart.lua`. Elephant runs as a systemd user
-  service instead.
+  elephant, walker service): `config/autostart.lua`. Elephant is a systemd
+  user service, but it still needs the explicit `systemctl --user start`
+  from autostart.lua — see Gotchas.
 
 ## Gotchas
 
@@ -102,6 +103,10 @@ sudo pacman -Rns noctalia-shell noctalia-qs cachyos-hypr-noctalia
 - elephant only scans `~/.config/elephant/menus/` at provider setup — after
   adding or renaming a menu file, `systemctl --user restart elephant`
   (`elephant listproviders` should then show `menus:<name>`).
+- Units `WantedBy=graphical-session.target` (elephant, and most
+  session-scoped user units) never start in this session: without uwsm
+  nothing activates that target, and it refuses manual starts. Such units
+  must be started explicitly from `config/autostart.lua`.
 
 ## Manual system steps (not stowable)
 

@@ -139,6 +139,11 @@ Daily-drive it. Fix what annoys. Candidates in likely order:
   deviation: `battery.critical` = tokyonight red (no notifier daemon here).
   Same day: `config/defaults.lua` now exports TERMINAL/BROWSER via `hl.env()` —
   session-wide app defaults, nothing hardcodes the terminal anymore.
+- **looknfeel polish** ← NEXT (decided 2026-07-04, after reboot test passed):
+  `general` border size + tokyonight border colors (active blue `#7aa2f7`?),
+  `decoration` rounding/blur/shadow/dim_inactive, `animations` curves. First
+  step: pull stock CachyOS config + omarchy values as concrete reference
+  points, then choose. Gaps already decided Phase 2 (gaps_in 0 / gaps_out 1).
 - window rules (Bitwarden float, YT-Music workspace; terminal scroll_touchpad done).
 - webapp-style launchers if missed (simple `$BROWSER --app=URL` bind), waybar polish.
 
@@ -175,7 +180,14 @@ Add each as a small commit when it earns it.
   `config/autostart.lua`; the `walker-service.desktop` XDG autostart entry only
   serves the KDE hosts (`xdg-desktop-autostart.target` never activates here). It
   died once (2026-07-04, cause unknown) — walker then still works per-invocation,
-  just slower. If it recurs: give it a systemd user unit like elephant's.
+  just slower. If it recurs: give it a systemd user unit like elephant's (but see
+  the graphical-session.target caveat below).
+- **`graphical-session.target` never activates here** (reboot test 2026-07-04):
+  without uwsm nothing pulls it in, and it's `RefuseManualStart=yes` — so user
+  units `WantedBy=graphical-session.target` (elephant) stay dead at login. Fix:
+  explicit `systemctl --user start` from `config/autostart.lua`. Everything else
+  in the autostart chain (waybar, mako, hypridle, hyprpaper, hyprpolkitagent,
+  walker, wallpaper on both monitors) came up clean on reboot.
 - **Stock-config backups**: `~/.config/{hypr,alacritty,kitty}.cachyos-stock`,
   `~/.bashrc.cachyos-stock`, `~/.claude/settings.json.pre-stow`.
 - **nvim is cloned, not stowed**: `~/.config/nvim` ← github.com/pontusc/nvim
