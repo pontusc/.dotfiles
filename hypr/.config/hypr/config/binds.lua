@@ -50,9 +50,10 @@ local popOut  = [[hyprctl dispatch "hl.dsp.window.float({ action = \"toggle\" })
 local popBack = [[hyprctl dispatch "hl.dsp.window.pin({})" && hyprctl dispatch "hl.dsp.window.float({ action = \"toggle\" })"]]
 hl.bind(mod .. " + O", hl.dsp.exec_cmd("sh -c 'if hyprctl activewindow | grep -q \"pinned: 1\"; then " .. popBack .. "; else " .. popOut .. "; fi'"))
 hl.bind(mod .. " + CONTROL + J", hl.dsp.layout("togglesplit"))
--- TODO: SUPER+Escape should become a walker power menu (shutdown/reboot/
--- logout/lock) instead of window kill — likely walker -m menus + a custom
--- elephant menu definition.
+-- TODO: SUPER+Escape should become a walker power menu (walker -m menus +
+-- custom elephant menu: shutdown/reboot/logout/lock/suspend) instead of
+-- window kill. SUPER+SHIFT+Escape should become `hyprshutdown` (graceful
+-- close-all-apps + exit) once installed — cachyos repo.
 hl.bind(mod .. " + Escape",         hl.dsp.exec_cmd("hyprctl kill"))
 hl.bind(mod .. " + SHIFT + Escape", hl.dsp.exit())
 

@@ -21,7 +21,7 @@ What each is for:
 |---|---|
 | waybar | bar (config in the `waybar/` stow package) |
 | walker | launcher / clipboard / emoji (config in the `walker/` stow package) |
-| mako | notifications |
+| mako | notifications (config in the `mako/` stow package) |
 | hyprpolkitagent | polkit auth dialogs (started via its systemd user unit) |
 | hyprlock | lock screen — SUPER+CTRL+L (`hyprlock.conf` in this package) |
 | playerctl, brightnessctl, wpctl (wireplumber) | hardware keys in `config/binds.lua` |
@@ -53,7 +53,7 @@ Deferred (Phase 4, add when set up): `hypridle hyprpaper hyprsunset`.
 mv ~/.config/hypr ~/.config/hypr.stock
 
 # 2. Stow this package + its companions from the repo root
-cd ~/dotfiles && stow hypr waybar walker kitty
+cd ~/dotfiles && stow hypr waybar walker kitty mako
 
 # 3. Reload (or just log out/in)
 hyprctl reload
@@ -102,7 +102,7 @@ sudo pacman -Rns noctalia-shell noctalia-qs cachyos-hypr-noctalia
 ## Rollback
 
 ```sh
-cd ~/dotfiles && stow -D hypr waybar walker
+cd ~/dotfiles && stow -D hypr waybar walker kitty mako
 mv ~/.config/hypr.stock ~/.config/hypr
 hyprctl reload
 ```
