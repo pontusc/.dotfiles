@@ -10,8 +10,8 @@ all hosts. Currently laptop-only; host branching comes with `config/host.lua`
 ## Required packages
 
 ```
-sudo pacman -S --needed stow waybar walker mako hyprpolkitagent hyprlock playerctl \
-    hyprshutdown tmux brightnessctl grim slurp wl-clipboard kitty \
+sudo pacman -S --needed stow waybar walker mako hyprpolkitagent hyprlock hypridle \
+    playerctl hyprshutdown tmux brightnessctl grim slurp wl-clipboard kitty \
     ttf-jetbrains-mono-nerd vivaldi dolphin btop
 ```
 
@@ -24,6 +24,7 @@ What each is for:
 | mako | notifications (config in the `mako/` stow package) |
 | hyprpolkitagent | polkit auth dialogs (started via its systemd user unit) |
 | hyprlock | lock screen — SUPER+CTRL+L (`hyprlock.conf` in this package) |
+| hypridle | idle chain — 10min lock, 11min kbd backlight off, 12min display off, lock before suspend (`hypridle.conf` in this package) |
 | hyprshutdown | graceful logout — the power menu's Logout entry (no keybind) |
 | playerctl, brightnessctl, wpctl (wireplumber) | hardware keys in `config/binds.lua` |
 | grim, slurp, wl-clipboard | screenshot binds |
@@ -45,7 +46,7 @@ elephant service enable
 systemctl --user start elephant.service
 ```
 
-Deferred (Phase 4, add when set up): `hypridle hyprpaper hyprsunset`.
+Deferred (Phase 4, add when set up): `hyprpaper hyprsunset`.
 
 ## Install on a new host
 
@@ -86,8 +87,9 @@ sudo pacman -Rns noctalia-shell noctalia-qs cachyos-hypr-noctalia
   on the laptop keyboard).
 - Default apps (terminal/browser/file manager): `config/defaults.lua`.
 - Bar: the `waybar/` stow package. Launcher: the `walker/` stow package.
-- Autostarted daemons (waybar, mako, hyprpolkitagent, walker service):
-  `config/autostart.lua`. Elephant runs as a systemd user service instead.
+- Autostarted daemons (waybar, mako, hyprpolkitagent, hypridle, walker
+  service): `config/autostart.lua`. Elephant runs as a systemd user service
+  instead.
 
 ## Gotchas
 

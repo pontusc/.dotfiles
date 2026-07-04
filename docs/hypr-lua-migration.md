@@ -98,8 +98,16 @@ Daily-drive it. Fix what annoys. Candidates in likely order:
   drop-in) are documented in hypr/README.md "Manual system steps", incl. the
   caveat that theme package updates reset the variant. Remaining: user runs the
   two sudo commands, then verify the greeter after logout.
-- hypridle idle chain (10min lock → 11min kbd-backlight off → 12min dpms off);
-  hyprlock itself done 2026-07-04 (SUPER+CTRL+L, `hyprlock.conf` in the package).
+- **hypridle idle chain** ✅ done 2026-07-04: `hypridle.conf` in the hypr
+  package (10min lock → 11min kbd-backlight off → 12min dpms off), wiki-pattern
+  general block (`lock_cmd = pidof hyprlock || hyprlock`, `before_sleep_cmd =
+  loginctl lock-session` — fixes suspend-resumes-unlocked via sleep inhibition,
+  `after_sleep_cmd` dpms enable), autostarted from `config/autostart.lua`,
+  README package list updated. Old hypr-work timings kept but its mechanics
+  were broken here: `hyprctl dispatch dpms off` is conf syntax and errors on
+  the Lua config — listeners use `hl.dsp.dpms({ action = "…" })` (verified
+  live). hyprlock itself done 2026-07-04 (SUPER+CTRL+L, `hyprlock.conf` in
+  the package).
 - **power menu** ✅ done 2026-07-04 on SUPER+Escape via **walker menus**: custom
   elephant menu at `walker/.config/elephant/menus/power.toml` (lock / suspend /
   logout via `hyprshutdown` / reboot / shutdown; menu-level `action = "%VALUE%"`,
@@ -134,6 +142,24 @@ Add each as a small commit when it earns it.
   `hypr-work` as their hosts migrate; then update `CLAUDE.md` and `readme.md`.
 
 ---
+
+## Operational notes (laptop, living section)
+
+- **Stale binds after git churn**: Hyprland auto-reloads on config change, so a
+  checkout/stash that briefly reverts `binds.lua` can leave the *old* bind set
+  loaded (seen 2026-07-04: SUPER+Escape dead, SUPER+SHIFT+Escape back). Fix:
+  `hyprctl reload`.
+- **Walker service is unsupervised**: started fire-and-forget from
+  `config/autostart.lua`; the `walker-service.desktop` XDG autostart entry only
+  serves the KDE hosts (`xdg-desktop-autostart.target` never activates here). It
+  died once (2026-07-04, cause unknown) — walker then still works per-invocation,
+  just slower. If it recurs: give it a systemd user unit like elephant's.
+- **Stock-config backups**: `~/.config/{hypr,alacritty,kitty}.cachyos-stock`,
+  `~/.bashrc.cachyos-stock`, `~/.claude/settings.json.pre-stow`.
+- **nvim is cloned, not stowed**: `~/.config/nvim` ← github.com/pontusc/nvim
+  (ssh), deliberately outside stow.
+- **Omarchy bind extras deliberately declined** (don't re-propose):
+  former-workspace toggle, alt-tab window cycle, group extras, move-into-group.
 
 ## Reference — where the old stuff lives (look, don't copy)
 
