@@ -15,6 +15,7 @@
         "bluetooth",
         "network",
         "pulseaudio",
+        "hyprland/language",
         "cpu",
         "battery"
     ],
@@ -93,6 +94,13 @@
         "interval": 5,
         "format": "󰍛",
         "on-click": "$TERMINAL btop"
+    },
+
+    "hyprland/language": {
+        "format": "{}",
+        "format-en": "EN",
+        "format-sv": "SE",
+        "on-click": "hyprctl switchxkblayout current next"
     },
 
     "battery": {

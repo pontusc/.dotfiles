@@ -139,12 +139,20 @@ Daily-drive it. Fix what annoys. Candidates in likely order:
   deviation: `battery.critical` = tokyonight red (no notifier daemon here).
   Same day: `config/defaults.lua` now exports TERMINAL/BROWSER via `hl.env()` —
   session-wide app defaults, nothing hardcodes the terminal anymore.
-- **looknfeel polish** ← NEXT (decided 2026-07-04, after reboot test passed):
-  `general` border size + tokyonight border colors (active blue `#7aa2f7`?),
-  `decoration` rounding/blur/shadow/dim_inactive, `animations` curves. First
-  step: pull stock CachyOS config + omarchy values as concrete reference
-  points, then choose. Gaps already decided Phase 2 (gaps_in 0 / gaps_out 1).
+- **looknfeel polish** ✅ done 2026-07-04 (`config/looknfeel.lua`, chosen from
+  stock-CachyOS vs omarchy side-by-side): solid blue active border `#7aa2f7` /
+  inactive fg_gutter `#3b4261`, border_size 2, rounding 0 (rounded corners
+  leave wallpaper slivers with gaps_in 0), opaque windows + light blur 2/2 for
+  translucent layers, shadow off, animations minimal (global speed 2 on `quick`
+  bezier, `workspaces` leaf disabled → workspace + special swap instant).
 - window rules (Bitwarden float, YT-Music workspace; terminal scroll_touchpad done).
+- **omarchy-style per-window opacity** (revisit, noted 2026-07-04): omarchy makes
+  every window translucent via tag-based window rules, not decoration settings —
+  all windows tagged `default-opacity` → `opacity 0.97 0.9`, chromium/firefox
+  browsers opt out to `1.0 0.97`, media apps (mpv/vlc/OBS/Zoom/YT webapp) pinned
+  `1 1` (see `dev:default/hypr/windows.lua` + `apps/browser.lua`). Global blur
+  2/2 is already in place here, so porting is just the rule set in
+  `config/windowrules.lua` — natural to fold into the window-rules task above.
 - webapp-style launchers if missed (simple `$BROWSER --app=URL` bind), waybar polish.
 
 Add each as a small commit when it earns it.
