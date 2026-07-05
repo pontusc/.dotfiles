@@ -129,9 +129,13 @@ sudo pacman -Rns noctalia-shell noctalia-qs cachyos-hypr-noctalia
   Preview variants without root: copy the theme dir somewhere user-owned,
   edit `ConfigFile=` in the copy's `metadata.desktop`, then
   `sddm-greeter-qt6 --test-mode --theme <copy>`.
-- **Clamshell (Phase 5, not yet done):** logind must ignore the lid so
-  Hyprland can handle it — `/etc/systemd/logind.conf.d/lid.conf` with
-  `HandleLidSwitch=ignore` etc. Document the exact file here when done.
+- **Clamshell (Phase 5, done 2026-07-04):** NO logind config — the old
+  `HandleLidSwitch=ignore` drop-in idea was wrong. Stock defaults already do
+  the sleep policy (`HandleLidSwitch=suspend`, `HandleLidSwitchDocked=ignore`,
+  docked = more than one display connected — logind.conf(5)): lid close
+  undocked suspends, lid close with an external doesn't. The display side
+  (eDP-1 off/on, lid-closed-at-startup, hotplug-while-closed, SUPER+M mirror
+  toggle) is all native Lua in `config/monitors.lua`.
 
 ## Rollback
 

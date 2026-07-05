@@ -60,16 +60,6 @@ layout style (`hyprland.lua` requiring small `config/*.lua` files) — it's alre
 Deploy: `mv ~/.config/hypr ~/.config/hypr.cachyos-stock && cd ~/dotfiles && stow hypr
 waybar walker`. Rollback = unstow + move back.
 
-## Phase 3 — structure the Lua for hosts
-
-Once the laptop works, refactor (no behavior change):
-
-- `config/host.lua`: detect host from `/etc/hostname` (`laptop` today; confirm desktop/
-  work names). Expose `host.name` and `host.is(...)`.
-- Host-varying config becomes Lua tables keyed by hostname (monitors, per-host
-  windowrules, envs like the desktop's NVIDIA block) — data branches, not file copies.
-- Keep modules small; a host earns its own file only when its block gets big.
-
 ## Phase 4 — testdrive, iterate
 
 Daily-drive it. Fix what annoys. Candidates in likely order:
@@ -136,8 +126,9 @@ Daily-drive it. Fix what annoys. Candidates in likely order:
   previewed via a user-owned theme copy + `sddm-greeter-qt6 --test-mode`. Both
   root-owned steps (variant `ConfigFile=` edit + `/etc/sddm.conf.d/10-theme.conf`
   drop-in) are documented in hypr/README.md "Manual system steps", incl. the
-  caveat that theme package updates reset the variant. Remaining: user runs the
-  two sudo commands, then verify the greeter after logout.
+  caveat that theme package updates reset the variant. ✅ deployed and working
+  (both root steps verified live 2026-07-04: drop-in sets
+  `Current=sddm-astronaut-theme`, `metadata.desktop` → `pixel_sakura.conf`).
 - **hypridle idle chain** ✅ done 2026-07-04: `hypridle.conf` in the hypr
   package (10min lock → 11min kbd-backlight off → 12min dpms off), wiki-pattern
   general block (`lock_cmd = pidof hyprlock || hyprlock`, `before_sleep_cmd =
@@ -193,20 +184,91 @@ Daily-drive it. Fix what annoys. Candidates in likely order:
   is lowercase `vivaldi-stable` — fixed to `[vV]ivaldi-stable` (verified via
   `hyprctl clients` tags). Desktop rules (games/steam/discord workspaces) wait
   for the Phase 3 host tables.
-- webapp-style launchers if missed (simple `$BROWSER --app=URL` bind), waybar polish.
+- ~~webapp-style launchers, waybar polish~~ closed 2026-07-04: webapps declined
+  (not wanted after all — don't re-propose), waybar judged clean as-is.
 
 Add each as a small commit when it earns it.
 
 ## Phase 5 — multimonitor & clamshell
 
-- External monitor arrangement + workspace pinning for the laptop (and later the
-  desktop's 3-monitor layout as a host table entry).
-- Clamshell: lid `bindswitch` disables/re-enables eDP-1 with the mode parameterized per
-  host; autostart lid-state check (libinput only sends edge events). Requires logind to
-  ignore the lid: `/etc/systemd/logind.conf.d/lid.conf` — system-level, manual step,
-  document it here when done. The work machine solved eDP-recovery with
-  `~/.local/bin/hypr-edp-recover` (exists only on that machine, not in the repo) —
-  reimplement simply if the problem actually shows up here.
+- Monitor arrangement: laptop keeps the anonymous catch-all (auto placement is
+  right; decided 2026-07-04). Explicit per-host layouts (desktop's 3 monitors,
+  workspace pinning) wait for the Phase 3 host tables.
+- Clamshell + lid sleep ✅ done 2026-07-04, all in `config/monitors.lua`
+  (including the SUPER+ALT+SHIFT+M mirror-to-external toggle — bind lives
+  there, not in binds.lua, because it shares the eDP rule and monitor
+  helpers):
+  - **Sleep policy = stock logind, zero config.** The old "logind must ignore
+    the lid" assumption was WRONG — verified against logind.conf(5): defaults
+    are `HandleLidSwitch=suspend` (fires undocked, charger or not — user chose
+    Mac semantics) + `HandleLidSwitchDocked=ignore` (docked = >1 display
+    connected). Nothing in Hyprland/hypridle holds a lid inhibitor, so suspend
+    really fires; hypridle `before_sleep_cmd` locks first.
+  - Display side is native Lua, no scripts: `switch:on/off:Lid Switch` binds
+    with Lua callbacks (both `{ locked = true }`), `monitor.added` (plug while
+    closed → clamshell), `monitor.removed` (last external gone → eDP-1 back
+    instantly), `hyprland.start` lid check (edge events only). Lid state read
+    via `io.open("/proc/acpi/button/lid/LID/state")` — config Lua is
+    unsandboxed (verified in 0.55.4 source: `luaL_openlibs`, only
+    `debug.set/gethook` stripped).
+  - **Load-bearing guard**: never disable eDP-1 unless an enabled external
+    exists — 0.55.4 predates the zero-monitor FALLBACK output (PR #14547,
+    file 404s at the v0.55.4 tag), so zero monitors is still a crash path.
+    Re-check when Hyprland is upgraded past 0.55.x; the guard stays correct
+    either way. The work machine's `hypr-edp-recover` stays unported —
+    the `monitor.removed` restore covers that failure mode.
+  - Verified live on 0.55.4 before writing (via `hyprctl eval`):
+    disable→re-enable eDP-1 works (PR #14447 is in); `hl.get_monitors()`
+    lists only enabled monitors and is already updated inside
+    `monitor.removed` (guards race-free); `monitor.removed` fires ~3× per
+    unplug (handlers idempotent); mirror clears only with explicit
+    `mirror = "none"` (omitting the key does NOT clear it); multiple `hl.on`
+    handlers per event coexist (autostart.lua's `hyprland.start` unaffected);
+    when a mirror's source monitor is removed the compositor un-mirrors and
+    keeps the panel enabled by itself; a monitor that is MIRRORING leaves
+    `hl.get_monitors()` entirely (externals() == 0 during mirror — handlers
+    account for it). `hyprctl keyword monitor "…"` is a silent no-op under
+    Lua config — `hyprctl eval 'hl.monitor({...})'` is the runtime mechanism.
+  - Mirror direction reworked 2026-07-05 after live testing: the EXTERNAL
+    mirrors the panel, not the other way round. First cut (panel mirrors
+    external) pulled eDP-1 out of the layout and the user-facing screen lost
+    waybar + wallpaper mid-mirror — known open upstream bugs when outputs
+    leave the layout (Alexays/Waybar #4759, hyprwm/hyprpaper #54). With the
+    panel as layout monitor its bar/wallpaper stay put and the clone carries
+    their image.
+  - Workspace→monitor pinning declared 2026-07-05: ws 1-2 → eDP-1 (1
+    default), ws 3-4 → HDMI-A-1 (3 default), rest unmanaged; external name
+    hardcoded until Phase 3 host tables (desktop layout comes then too).
+    `hl.workspace_rule` verified in 0.55.4 source; upstream is known-flaky
+    about snapping bound workspaces back on reconnect (#9580, #5464) — if it
+    shows, add a `moveworkspacetomonitor` fallback.
+  - Mirror toggle physically verified working 2026-07-05 (post direction
+    flip). Bind descriptions now mandatory on every `hl.bind` incl. switch
+    binds — convention recorded in `hypr/CLAUDE.md`.
+  - Physical tests still pending (need hands on the lid): close lid w/ HDMI →
+    clamshell; open → panel back; close lid w/o external → suspend+lock;
+    unplug HDMI while closed → panel back on (and note whether logind then
+    suspends — Mac would; decide if we add that, e.g. `systemctl suspend` in
+    the `monitor.removed` handler); SUPER+ALT+SHIFT+M mirror toggle both ways
+    (visually confirm waybar/wallpaper survive, incl. after exit); workspace
+    1-4 placement after replugging HDMI (upstream flakiness above); boot
+    docked with lid closed → panel off.
+
+## Phase 3 — structure the Lua for hosts
+
+**NEXT** (decided 2026-07-05): Phase 5 implementation is done (only physical
+lid tests + reboot-for-locale remain as loose ends above); this refactor is
+the next work item.
+
+Moved to the end 2026-07-04 (do after Phase 5; "Phase 3" name kept so existing
+cross-references like "Phase 3 host tables" stay valid). Refactor, no behavior
+change:
+
+- `config/host.lua`: detect host from `/etc/hostname` (`laptop` today; confirm desktop/
+  work names). Expose `host.name` and `host.is(...)`.
+- Host-varying config becomes Lua tables keyed by hostname (monitors, per-host
+  windowrules, envs like the desktop's NVIDIA block) — data branches, not file copies.
+- Keep modules small; a host earns its own file only when its block gets big.
 
 ## Later / cleanup
 
