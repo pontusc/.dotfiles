@@ -8,5 +8,6 @@ Notification styling with mako
 Notifications dont run out with mako?
 UI on volume changes/mute
 UI on brightness changes
+Hyprland group font/theming, header is weird
 
 # Agent written notes
