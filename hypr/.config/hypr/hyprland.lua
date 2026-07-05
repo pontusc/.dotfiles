@@ -1,6 +1,3 @@
--- Fresh Hyprland Lua config, one shared stow package for all hosts.
--- Setup guide: ~/dotfiles/hypr/README.md
-
 require("config.defaults")
 require("config.envs")
 require("config.monitors")
