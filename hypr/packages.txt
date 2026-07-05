@@ -16,6 +16,6 @@ wl-clipboard
 kitty
 ttf-jetbrains-mono-nerd
 vivaldi
-dolphin
 btop
 tmux
+yazi

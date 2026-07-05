@@ -7,3 +7,4 @@ elephant-symbols-bin
 elephant-calc-bin
 elephant-clipboard-bin
 elephant-menus-bin
+sddm-astronaut-theme

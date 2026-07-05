@@ -27,10 +27,6 @@ sudo pacman -S --needed - < packages.txt
 
 ```sh
 paru -S --needed $(< packages-aur.txt)
-
-# elephant installs its own *user* unit (no packaged unit file exists):
-elephant service enable
-systemctl --user start elephant.service
 ```
 
 ## Install on a new host
@@ -39,7 +35,7 @@ systemctl --user start elephant.service
 # 1. Get the stock config out of the way (keep it as reference)
 mv ~/.config/hypr ~/.config/hypr.stock
 
-# 2. Stow this package + kitty from the repo root
+# 2. Stow this package from the repo root
 cd ~/dotfiles && stow hypr
 
 # 3. Reload (or just log out/in)

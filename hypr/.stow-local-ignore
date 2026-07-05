@@ -2,8 +2,7 @@
 # defaults we still rely on are re-listed below. (Stow always ignores this
 # file itself.)
 ^/README.*
-^/CLAUDE\.md
-^/TODO\.md
+^/[A-Z]+\.md
 ^/packages.*\.txt
 \.gitignore
 .+~
