@@ -1,9 +1,9 @@
 # hypr — shared Hyprland Lua config
 
 Fresh, custom Hyprland config (native Lua) meant to be the one hypr package for
-all hosts. Currently laptop-only; host branching comes with `config/host.lua`
-(Phase 3), multimonitor/clamshell in Phase 5. Full plan and phase log:
-`docs/hypr-lua-migration.md`.
+all hosts. Currently laptop-only; host branching (`config/host.lua`) is
+deferred until the work laptop migrates. Known open issue — proper session
+initialization: `docs/session-issues.md`.
 
 (Stow ignores this README by default — it never gets symlinked into `~`.)
 
