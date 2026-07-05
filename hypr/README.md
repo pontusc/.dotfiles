@@ -1,53 +1,44 @@
 # hypr — shared Hyprland Lua config
 
-Fresh, custom Hyprland config (native Lua) meant to be the one hypr package for
-all hosts. Currently laptop-only; host branching (`config/host.lua`) is
-deferred until the work laptop migrates. Known open issue — proper session
-initialization: `docs/session-issues.md`.
-
-(Stow ignores this README by default — it never gets symlinked into `~`.)
+Hyprland config meant to be centralized for all consumers. Differing config should be gated behind a module checking hostname.
 
 ## Required packages
 
+```sh
+sudo pacman -S --needed - < packages.txt
 ```
-sudo pacman -S --needed stow waybar walker mako hyprpolkitagent hyprlock hypridle \
-    hyprpaper playerctl hyprshutdown tmux brightnessctl grim slurp wl-clipboard \
-    kitty ttf-jetbrains-mono-nerd vivaldi dolphin btop
-```
+
+(`packages.txt`, `packages-aur.txt`, `CLAUDE.md`, `TODO.md` and this README are
+kept out of `$HOME` by `.stow-local-ignore`.)
 
 What each is for:
 
-| Package | Role |
-|---|---|
-| waybar | bar (config in the `waybar/` stow package) |
-| walker | launcher / clipboard / emoji (config in the `walker/` stow package) |
-| mako | notifications (config in the `mako/` stow package) |
-| hyprpolkitagent | polkit auth dialogs (started via its systemd user unit) |
-| hyprlock | lock screen — SUPER+CTRL+L (`hyprlock.conf` in this package) |
-| hypridle | idle chain — 10min lock, 11min kbd backlight off, 12min display off, lock before suspend (`hypridle.conf` in this package) |
-| hyprpaper | wallpaper — omarchy tokyo-night images vendored in `wallpapers/` (`hyprpaper.conf` in this package) |
-| hyprshutdown | graceful logout — the power menu's Logout entry (no keybind) |
-| playerctl, brightnessctl, wpctl (wireplumber) | hardware keys in `config/binds.lua` |
-| grim, slurp, wl-clipboard | screenshot binds |
-| kitty, vivaldi, dolphin, btop, tmux | `config/defaults.lua` default apps + terminal binds (kitty config: the `kitty/` stow package) |
-| stow | deploys these packages (repo-wide prerequisite) |
+| Package                                       | Role                                                                                                                       |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| waybar                                        | bar (config: `.config/waybar/`)                                                                                            |
+| walker                                        | launcher / clipboard / emoji (config: `.config/walker/`)                                                                   |
+| mako                                          | notifications (config: `.config/mako/`)                                                                                    |
+| hyprpolkitagent                               | polkit auth dialogs (started via its systemd user unit)                                                                    |
+| hyprlock                                      | lock screen — SUPER+CTRL+L (`hyprlock.conf` in this package)                                                               |
+| hypridle                                      | idle chain — 10min lock, 11min kbd backlight off, 12min display off, lock before suspend (`hypridle.conf` in this package) |
+| hyprpaper                                     | wallpaper — omarchy tokyo-night images vendored in `wallpapers/` (`hyprpaper.conf` in this package)                        |
+| hyprshutdown                                  | graceful logout — the power menu's Logout entry (no keybind)                                                               |
+| playerctl, brightnessctl, wpctl (wireplumber) | hardware keys in `config/binds.lua`                                                                                        |
+| grim, slurp, wl-clipboard                     | screenshot binds                                                                                                           |
+| kitty, vivaldi, dolphin, btop, tmux           | `config/defaults.lua` default apps + terminal binds (kitty config: the `kitty/` stow package)                              |
+| stow                                          | deploys these packages (repo-wide prerequisite)                                                                            |
 
 Walker needs **elephant** (its provider daemon) which is AUR-only — the CachyOS
-walker package doesn't declare it. Install paru (`sudo pacman -S paru`, it's in
-the cachyos repo) and then the providers the walker config uses:
+walker package doesn't declare it. paru (installed above, it's in the cachyos
+repo) builds the providers the walker config uses:
 
-```
-paru -S --needed elephant-bin elephant-desktopapplications-bin \
-    elephant-websearch-bin elephant-providerlist-bin elephant-files-bin \
-    elephant-symbols-bin elephant-calc-bin elephant-clipboard-bin \
-    elephant-menus-bin
+```sh
+paru -S --needed $(< packages-aur.txt)
 
 # elephant installs its own *user* unit (no packaged unit file exists):
 elephant service enable
 systemctl --user start elephant.service
 ```
-
-Deferred (Phase 4, add when set up): `hyprsunset`.
 
 ## Install on a new host
 
@@ -55,8 +46,8 @@ Deferred (Phase 4, add when set up): `hyprsunset`.
 # 1. Get the stock config out of the way (keep it as reference)
 mv ~/.config/hypr ~/.config/hypr.stock
 
-# 2. Stow this package + its companions from the repo root
-cd ~/dotfiles && stow hypr waybar walker kitty mako
+# 2. Stow this package + kitty from the repo root
+cd ~/dotfiles && stow hypr kitty
 
 # 3. Reload (or just log out/in)
 hyprctl reload
@@ -69,7 +60,7 @@ the CachyOS Hyprland session has no uwsm, so XDG autostart entries never run.
 
 Noctalia provides bar, launcher, OSD, notifications, lock, polkit agent — all
 stock keybinds are `qs ... ipc call` and die with it. Install the packages
-above and stow *before* removing:
+above and stow _before_ removing:
 
 ```sh
 sudo pacman -Rns noctalia-shell noctalia-qs cachyos-hypr-noctalia
@@ -79,7 +70,7 @@ sudo pacman -Rns noctalia-shell noctalia-qs cachyos-hypr-noctalia
 
 - Keybinds: `config/binds.lua` — notable choices: SUPER+W close,
   SUPER+SHIFT+W force-kill mode (`hyprctl kill`), SUPER+Escape power menu
-  (walker on the custom elephant menu in the `walker/` package;
+  (walker on the custom elephant menu in `.config/elephant/menus/`;
   SUPER+SHIFT+Escape deliberately unbound), SUPER+F fullscreen, SUPER+E file
   manager, SUPER+O pop window out (float+pin toggle), SUPER+C/V universal
   copy/paste (CTRL+Insert / SHIFT+Insert to the focused window),
@@ -87,7 +78,8 @@ sudo pacman -Rns noctalia-shell noctalia-qs cachyos-hypr-noctalia
   dismiss notification, SUPER+P screenshot region → clipboard (no Print key
   on the laptop keyboard).
 - Default apps (terminal/browser/file manager): `config/defaults.lua`.
-- Bar: the `waybar/` stow package. Launcher: the `walker/` stow package.
+- Bar: `.config/waybar/`. Launcher: `.config/walker/` (its elephant menus:
+  `.config/elephant/`).
 - Autostarted daemons (waybar, mako, hyprpolkitagent, hypridle, hyprpaper,
   elephant, walker service): `config/autostart.lua`. Elephant is a systemd
   user service, but it still needs the explicit `systemctl --user start`
@@ -129,6 +121,7 @@ sudo pacman -Rns noctalia-shell noctalia-qs cachyos-hypr-noctalia
   Preview variants without root: copy the theme dir somewhere user-owned,
   edit `ConfigFile=` in the copy's `metadata.desktop`, then
   `sddm-greeter-qt6 --test-mode --theme <copy>`.
+
 - **Clamshell (Phase 5, done 2026-07-04):** NO logind config — the old
   `HandleLidSwitch=ignore` drop-in idea was wrong. Stock defaults already do
   the sleep policy (`HandleLidSwitch=suspend`, `HandleLidSwitchDocked=ignore`,
@@ -140,7 +133,7 @@ sudo pacman -Rns noctalia-shell noctalia-qs cachyos-hypr-noctalia
 ## Rollback
 
 ```sh
-cd ~/dotfiles && stow -D hypr waybar walker kitty mako
+cd ~/dotfiles && stow -D hypr kitty
 mv ~/.config/hypr.stock ~/.config/hypr
 hyprctl reload
 ```

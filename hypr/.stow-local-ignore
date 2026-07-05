@@ -1,0 +1,9 @@
+# This file REPLACES stow's default ignore list for this package, so the
+# defaults we still rely on are re-listed below. (Stow always ignores this
+# file itself.)
+^/README.*
+^/CLAUDE\.md
+^/TODO\.md
+^/packages.*\.txt
+\.gitignore
+.+~

@@ -1,0 +1,9 @@
+elephant-bin
+elephant-desktopapplications-bin
+elephant-websearch-bin
+elephant-providerlist-bin
+elephant-files-bin
+elephant-symbols-bin
+elephant-calc-bin
+elephant-clipboard-bin
+elephant-menus-bin
