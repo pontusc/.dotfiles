@@ -65,13 +65,15 @@ Capture: key decisions (WHY), course corrections, critical file:line refs, archi
 
 ## Working Guidelines
 
-- **Confirm before every edit.** Discuss what to change and how, get explicit approval, then
-  implement — proposals and implementations are separate steps. Never change a file
-  unprompted. _How_ it's implemented (inline or delegated to executor) is your call; _what_
-  changes is mine to approve. If scope grows mid-implementation or more work surfaces, stop
-  and surface it before continuing.
-- **[HARD] NEVER run state-changing commands.** No deploys, no git state changes, no remote/prod
-  modifications. Local files only. (Enforced by dcg hook + deny list.)
+- **Approval gate scales with plan coverage.** No approved plan → discuss what to change and
+  how, get explicit approval, then implement; proposals and implementations are separate
+  steps. An approved plan/spec that details the implementation → execute the planned changes
+  directly, no per-edit approval; anything outside its scope reverts to the gate. Never
+  change a file unprompted. _How_ it's implemented (inline or executor) is your call; _what_
+  changes is mine to approve. If scope grows mid-implementation, stop and surface it.
+- **[HARD] Never mutate remote or shared state.** No deploys, no push/pull, no history
+  rewriting (rebase/reset/merge), no remote/prod modifications. Local `git commit` on
+  explicit request is fine. (Enforced by dcg hook + deny list.)
 - **Declarative state by default.** When you author or propose a persistent change to system
   state — VPS/server config, program config, infrastructure, provisioning — express it as a
   declarative, idempotent, git-tracked artifact (Terraform, Ansible, manifests, repo config)
