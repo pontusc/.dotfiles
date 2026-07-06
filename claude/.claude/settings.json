@@ -111,16 +111,9 @@
     "command": "bash /home/pontusc/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
-    "claude@cc-marketplace": true,
     "plan@plans": true
   },
   "extraKnownMarketplaces": {
-    "cc-marketplace": {
-      "source": {
-        "source": "github",
-        "repo": "alek-ellegard/cc-marketplace"
-      }
-    },
     "plans": {
       "source": {
         "source": "github",
