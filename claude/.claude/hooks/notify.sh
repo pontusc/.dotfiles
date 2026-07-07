@@ -3,12 +3,12 @@
 #
 # ── Purpose ───────────────────────────────────────────────────────────────────
 #
-# Single relay for desktop notifications. Surfaces ONLY the two Notification
-# subtypes that need the user's attention — permission prompts and the idle
-# "waiting for input" ping. Stop/SubagentStop deliberately do not notify: Stop
-# fires at every turn end, so with background subagents it would ping "done"
-# while work is still running. Hook blocks (PreToolUse) likewise stay silent;
-# they go back to the agent which fixes and retries on its own.
+# Single relay for desktop notifications. Surfaces ONLY permission prompts —
+# the one Notification subtype that needs the user to act. idle_prompt ("waiting
+# for input") is deliberately dropped: this is a global hook, so it fires at
+# every turn end for every concurrent session, and an unanswered permission
+# prompt itself degrades into an idle_prompt after the idle threshold — both are
+# pure noise. Stop/SubagentStop and PreToolUse blocks likewise stay silent.
 #
 # ── Input ─────────────────────────────────────────────────────────────────────
 #
@@ -17,12 +17,10 @@
 #
 # ── Event routing ──────────────────────────────────────────────────────────────
 #
-#   notification_type │ Urgency  │ Icon               │ Timeout  │ Message
-#   ──────────────────┼──────────┼────────────────────┼──────────┼────────────────
-#   permission_prompt │ critical │ dialog-warning     │ 0 (stay) │ event.message
-#   idle_prompt       │ normal   │ dialog-information  │ 10s      │ "Task complete…"
-#   (other)           │ normal   │ dialog-question    │ default  │ event.message
-#   Stop/SubagentStop │ (not registered / skipped)
+#   notification_type │ Urgency  │ Icon           │ Timeout  │ Message
+#   ──────────────────┼──────────┼────────────────┼──────────┼────────────────
+#   permission_prompt │ critical │ dialog-warning │ 0 (stay) │ event.message
+#   (all others)      │ (silent — exit 0, no notification)
 #
 # ── Exit ──────────────────────────────────────────────────────────────────────
 #
@@ -51,15 +49,10 @@ Notification)
     ICON="dialog-warning"
     TIMEOUT=0
     ;;
-  idle_prompt)
-    # Task finished, Claude is waiting for input — brief, auto-dismiss.
-    MESSAGE="Task complete — waiting for input ❇️"
-    TIMEOUT=10000
-    ;;
   *)
-    # Other notification subtypes — best-effort relay.
-    MESSAGE=$(echo "$INPUT" | jq -r '.message // "Attention needed"')
-    ICON="dialog-question"
+    # idle_prompt and every other subtype are noise across concurrent
+    # sessions — stay silent. Only actionable permission prompts notify.
+    exit 0
     ;;
   esac
   ;;

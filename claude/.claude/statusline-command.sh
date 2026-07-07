@@ -9,18 +9,16 @@ agent_name=$(echo "$input" | jq -r '.agent.name // empty')
 used_pct=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
 cost_usd=$(echo "$input" | jq -r '.cost.total_cost_usd // empty')
 
-# --- Directory: truncate to last 2 parts (mirrors truncation_length = 2) ---
+# --- Directory: last path segment only, capped to 24 chars ---
 truncated_dir() {
 	local d="$1"
 	local home="$HOME"
 	d="${d/#$home/\~}"
-	IFS='/' read -ra seg <<< "$d"
-	local count=${#seg[@]}
-	if [ "$count" -le 3 ]; then
-		echo "$d"
-	else
-		echo "…/${seg[$count-2]}/${seg[$count-1]}"
+	local base="${d##*/}"
+	if [ "${#base}" -gt 24 ]; then
+		base="${base:0:23}…"
 	fi
+	echo "$base"
 }
 
 dir=$(truncated_dir "$cwd")
@@ -31,6 +29,11 @@ git_status_str=""
 if git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
 	git_branch=$(GIT_OPTIONAL_LOCKS=0 git -C "$cwd" symbolic-ref --short HEAD 2> /dev/null ||
 		GIT_OPTIONAL_LOCKS=0 git -C "$cwd" rev-parse --short HEAD 2> /dev/null)
+
+	# Cap branch name to 20 chars to keep the status line short
+	if [ "${#git_branch}" -gt 20 ]; then
+		git_branch="${git_branch:0:19}…"
+	fi
 
 	ahead=0
 	behind=0
