@@ -34,10 +34,5 @@ help: ## Show this help
 - **Tabs, not spaces**: recipe lines MUST begin with a real tab — spaces cause `missing separator`. This overrides the global 2-space indentation rule (which applies to non-recipe content only).
 - **One logical action per target** — keep recipes focused.
 - **Portable commands**: Prefer `printf` over `echo` in recipes. Avoid GNU-only flags unless the Makefile is Linux-only.
-- **Multiline**: Use backslash continuation or `.ONESHELL` when a recipe needs shared shell state.
-- **Silence**: Use `@` prefix only for output/echo lines, not for commands that might fail (hides errors).
-
-## Includes
-
-- Use `-include` (dash prefix) for optional includes so missing files don't break the build.
-- Keep shared logic in `*.mk` files and include them.
+- **Multiline**: Use backslash continuation or when a recipe needs shared shell state.
+- **Silence**: Use `@` prefix everywhere, add `|| echo` if errors need to be seen.
