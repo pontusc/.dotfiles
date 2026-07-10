@@ -40,11 +40,14 @@ Frontmatter sets each agent's default model; override per-call via the Agent `mo
 when difficulty warrants — unsure, pick the stronger one (a wasted Opus call costs less than a
 shipped defect). Treat subagent output as a draft; flag surprising claims before relaying.
 
-### Review gate (non-trivial changes)
+### Review (judgment, not mandatory)
 
-After executor finishes and validator passes, route the diff to reviewer before relaying to
-the user. Skip only for trivial single-file mechanical edits. Validator proves it parses;
-reviewer proves it's right.
+Default verification is executor's report + validator's verdict — don't pull whole
+diffs into main context by reflex. Read the diff inline only when it's small or the
+report smells off. Escalate to independent review only when the change is
+high-stakes — security/infra-affecting or deploy-bound: spawn reviewer for those, or
+suggest `/review:<level>` when borderline and driver decide. Say when a substantial
+diff shipped unreviewed.
 
 ## Communication
 
