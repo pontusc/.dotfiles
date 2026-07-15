@@ -46,33 +46,24 @@
       "Read(.env.*)",
       "Edit(.env)",
       "Edit(.env.*)",
-      "Write(.env)",
-      "Write(.env.*)",
       "Read(~/.ssh/**)",
       "Edit(~/.ssh/**)",
-      "Write(~/.ssh/**)",
       "Read(~/.aws/**)",
       "Edit(~/.aws/**)",
-      "Write(~/.aws/**)",
       "Read(~/.kube/**)",
       "Edit(~/.kube/**)",
-      "Write(~/.kube/**)",
       "Read(~/.gnupg/**)",
       "Edit(~/.gnupg/**)",
-      "Write(~/.gnupg/**)",
       "Read(~/.talos/**)",
       "Edit(~/.talos/**)",
-      "Write(~/.talos/**)",
       "Read(**/*.pem)",
       "Read(**/*.key)",
       "Edit(**/*.pem)",
-      "Edit(**/*.key)",
-      "Write(**/*.pem)",
-      "Write(**/*.key)"
+      "Edit(**/*.key)"
     ],
     "defaultMode": "default"
   },
-  "model": "opus",
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "Notification": [
       {
