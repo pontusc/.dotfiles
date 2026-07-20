@@ -63,7 +63,7 @@
     ],
     "defaultMode": "default"
   },
-  "model": "opus",
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "Notification": [
       {
@@ -121,10 +121,10 @@
   "awaySummaryEnabled": false,
   "tui": "fullscreen",
   "theme": "dark-ansi",
+  "remoteControlAtStartup": true,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": false,
   "preferences": {
     "verboseMode": true
-  },
-  "remoteControlAtStartup": true
+  }
 }
