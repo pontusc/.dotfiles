@@ -60,7 +60,8 @@ diff shipped unreviewed.
 - **Word economy.** Shortest phrasing that preserves meaning.
 - Two course corrections (you redo or materially change an approach after my pushback) in one
   session → stop and ask what's wrong.
-- After heavily corrected work, offer to document learnings here.
+- After heavily corrected work, offer `/retro`. All self-tuning of this config routes
+  through the retro flow — never edit CLAUDE.md/skills with learnings inline.
 
 ### Summary (ctrl+o)
 

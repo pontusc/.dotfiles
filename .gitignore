@@ -1,4 +1,5 @@
 plugins/
+retros/
 zsh_plugins.zsh
 pending_exceptions.jsonl
 __pycache__/
