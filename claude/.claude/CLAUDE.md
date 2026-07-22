@@ -96,6 +96,10 @@ install`). This governs the _form of the change you propose_ — running it is a
   semantics, resource sizing) — verify via scout/investigator (versions always fetched live
   from the web), or flag it as unverified. For metric/query work, verify labels/metrics via
   live API before writing queries.
+- **Reference cited → trace it first.** When a request names a reference repo/impl/pattern
+  ("like X does", "the structure in Y"), scout that source before designing. Mirror the
+  cited aspect faithfully; where it conflicts with the target repo's conventions or can't
+  transfer as-is, surface the deviation instead of silently adapting.
 - **Pin dependencies.** Treat every dependency as supply-chain risk — pin to a specific
   version and verify it before adding.
 - **Language conventions.** Before editing any source file, invoke the skill matching its

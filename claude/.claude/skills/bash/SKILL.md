@@ -24,12 +24,14 @@ set -euo pipefail
 
 ## Style
 
+- **Baseline: [Google's Shell Style Guide](https://google.github.io/styleguide/shellguide.html).** Follow it for anything this skill doesn't address — apply from trained knowledge, don't fetch the page. Where this skill deviates, the skill wins: `#!/usr/bin/env bash` shebang (env-lookup portability over Google's `#!/bin/bash`), `UPPER_SNAKE_CASE` for all script-scope variables (Google uppercases only constants/exported), and the mandatory `set -euo pipefail` header (Google doesn't adopt it — it recommends manual return checks + `PIPESTATUS` instead).
 - **Quoting**: Always double-quote expansions — `"${var}"`, `"${arr[@]}"`, `"$(cmd)"`. Leave a value unquoted only deliberately (e.g. splitting a flag string into words) — and comment why.
 - **Variable names**: `UPPER_SNAKE_CASE` for script-scope variables, constants, and exported/env vars; `snake_case` for function-local variables. Case signals scope — uppercase = top-level, lowercase = local. Don't mix the two rules within a project.
 - **Functions**: `snake_case` names with `function_name() {` syntax (no `function` keyword). Declare locals with `local`; grouping related ones on one line is fine (`local env_key="$1" secret_id="$2"`).
 - **Conditionals**: Prefer `[[ ]]` over `[ ]` for bash scripts. Use `[ ]` only in POSIX sh scripts.
 - **Command substitution**: Use `$(cmd)`, never backticks.
 - **Indentation**: 2 spaces.
+- **Inline over indirection**: keep command flags inline at the call site; don't hoist them into arrays or variables unless genuinely reused — an args array for a flag used twice reads worse than repeating the flag.
 
 ## Error Handling
 
@@ -47,6 +49,15 @@ set -euo pipefail
     ```
 - Prefer `die() { printf '%s\n' "$1" >&2; exit "${2:-1}"; }` pattern for fatal errors.
 - Redirect error messages to stderr: `echo "error: ..." >&2`
+
+## Pitfalls under `set -euo pipefail`
+
+Curation gate — an entry must meet all three bars: it actually caused a shipped bug, shellcheck cannot catch it, and it stems from a convention this skill mandates.
+
+- **Empty-match `grep` in a pipeline** exits 1 and kills the script under `pipefail`. Collect lines with `readarray -t arr < <(cmd | grep …)` — process substitution masks the pipeline's status — never a bare `var=$(cmd | grep …)`.
+- **Line collection**: `readarray -t` is the idiom — prefer the name `readarray` over its synonym `mapfile`, and prefer it over `while read` loops for simple collection.
+- **Bare `cond && action`**: `set -e` does not fire when cond is false (`&&`-list exemption), but the statement's status is 1 — as the last command of a script or function it silently becomes a failure exit. Use an explicit `if`.
+- **Capturing stderr only**: `output=$(cmd 2>&1 > /dev/null)` — order matters: `2>&1` points stderr at the captured stdout first, then `> /dev/null` discards the original stdout. ShellCheck may flag this deliberate idiom (SC2069); keep the order, don't "fix" it.
 
 ## POSIX Compatibility
 

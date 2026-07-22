@@ -16,8 +16,11 @@ suggest divergences rather than refactoring working code to match them.
 Code is read and reviewed far more than it's written — favor the choice that's obvious to the
 next reader (human or agent). Every principle below serves that.
 
-- **KISS.** Pick the most direct solution that solves the actual problem. No
-  speculative abstraction, no patterns the problem doesn't demand.
+- **KISS — and minimal first.** Pick the most direct solution that solves the actual
+  problem. No speculative abstraction, no patterns the problem doesn't demand. A new
+  script/tool's first version implements only the explicitly requested core — no
+  speculative guards, fallbacks, config knobs, or modes. Offer the omitted hardening
+  as a short menu and let the user pick.
 - **Write like an expert using only the basics.** Reach for plain language features
   and the standard library before clever constructs or extra dependencies.
 - **Modular.** Each function/module owns one responsibility and does it well, behind a
