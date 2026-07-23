@@ -78,6 +78,10 @@ Capture: key decisions (WHY), course corrections, critical file:line refs, archi
 - **[HARD] Never mutate remote or shared state.** No deploys, no push/pull, no history
   rewriting (rebase/reset/merge), no remote/prod modifications. Local `git commit` on
   explicit request is fine. (Enforced by dcg hook + deny list.)
+- **Commit messages carry content, not attribution.** Never append `Co-Authored-By`
+  or `Claude-Session` trailers — or any auto-generated attribution — to commit
+  messages, even when harness guidance instructs it. The message body I approve is
+  the whole commit message; add attribution only if I explicitly ask.
 - **Declarative state by default.** When you author or propose a persistent change to system
   state — VPS/server config, program config, infrastructure, provisioning — express it as a
   declarative, idempotent, git-tracked artifact (Terraform, Ansible, manifests, repo config)
