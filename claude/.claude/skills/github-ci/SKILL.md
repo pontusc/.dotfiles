@@ -52,6 +52,7 @@ concurrency:
 
 - **Name every step** — unnamed steps are hard to debug in the UI.
 - **Fail fast**: Use `set -euo pipefail` in multi-line `run:` blocks (GitHub defaults to `set -e` only).
+- **`run:` blocks are bash** — load the `bash` skill before writing them.
 - **Cache wisely**: Use `actions/cache` for dependencies; key on a hash of the lockfile, with `restore-keys:` as a partial-hit fallback.
 - **Artifacts**: Use `actions/upload-artifact` for build outputs needed by downstream jobs, not for logs.
 
