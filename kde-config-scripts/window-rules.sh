@@ -16,8 +16,8 @@ readonly FILE="kwinrulesrc"
 # wr <group> <key> <value>
 wr() { kwriteconfig6 --file "${FILE}" --group "$1" --key "$2" "$3"; }
 
-wr General count 2
-wr General rules "1,2"
+wr General count 3
+wr General rules "1,2,3"
 
 # --- 1: TeamSpeak 3 -> top strip of left monitor, below the top panel
 #        (1080x620 @ 0,30). The y-offset clears the docked (non-floating)
@@ -40,3 +40,26 @@ wr 2 position 0,650
 wr 2 positionrule 2
 wr 2 size 1080,1270
 wr 2 sizerule 2
+
+# --- 3: Steam games -> force real fullscreen ---
+# Proton/Steam titles get resourceClass "steam_app_<appid>" (both WM_CLASS
+# strings are the appid), so a SUBSTRING match on the shared prefix covers every
+# game with one rule. Same prefix the monitorworkspaces KWin script keys off
+# (GAME_PREFIXES in kde-kwin-scripts/.../main.js).
+#
+# Why: a game's "windowed fullscreen" mode maps a MAXIMIZED undecorated window
+# (_NET_WM_STATE_MAXIMIZED_{VERT,HORZ}), not _NET_WM_STATE_FULLSCREEN. KWin's
+# Window::belongsToLayer() only promotes to ActiveLayer when isActiveFullScreen()
+# is true, so a maximized game stays in NormalLayer -- below the panel's
+# AboveLayer -- and the top bar is drawn over it. Forcing the fullscreen state
+# puts the game in ActiveLayer, above the panel.
+#
+# Caveat: any launcher/config window a game opens under the same steam_app_
+# class is forced fullscreen too. Add a narrower exact-match rule for that appid
+# if it ever bites.
+wr 3 Description "Steam games - force fullscreen"
+wr 3 wmclass "steam_app_"
+wr 3 wmclassmatch 2           # substring (0=unimportant 1=exact 2=substring 3=regex)
+wr 3 wmclasscomplete false    # match resourceClass only
+wr 3 fullscreen true
+wr 3 fullscreenrule 2         # force
