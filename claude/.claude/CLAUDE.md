@@ -107,8 +107,8 @@ install`). This governs the _form of the change you propose_ — running it is a
   transfer as-is, surface the deviation instead of silently adapting.
 - **Pin dependencies.** Treat every dependency as supply-chain risk — pin to a specific
   version and verify it before adding.
-- **Language conventions.** Before editing any source file, invoke the skill matching its
-  language/filetype.
+- **Language conventions.** Before editing any source or documentation file, invoke the
+  skill matching its language/filetype.
 - **Code intelligence → `LSP` tool (main thread only — it never reaches subagents).** For
   symbol-level queries (definition, hover/types, targeted references) call `LSP` directly:
   its output is `path:line` pointers, cheaper and faster than a scout spawn. A large
