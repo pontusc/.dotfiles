@@ -30,8 +30,10 @@ the defaults below apply.
 Terse over complete. State intent, caveats, and non-obvious constraints; drop what the file
 tree or the code already says.
 
-**Inventory is not a caveat.** If `ls` or `grep` answers it, cut it — never list
-subdirectories, consumers, or call sites by path. This binds hardest on facts you just
-established by searching: the grep informed *you*, it is not content to report. State the
-constraint that survives the repo changing shape ("changes fan out to every consumer on
-next apply, there is no pinning"), never the shape itself.
+**Inventory is not a caveat.** If `ls`, `grep`, or the code itself answers it, cut it —
+subdirectories, consumers, call sites, and values declared in config (retention days,
+schedules, IPs, thresholds) are all inventory. This binds hardest on facts you just
+established by reading or searching: the source informed *you*, it is not content to
+report. State the constraint that survives those specifics changing ("retention is capped
+by the lifecycle rules"), never the specifics. A number earns its place only as an
+operational entry point — the ASN you check when BGP breaks — never as restatement.

@@ -78,10 +78,12 @@ Capture: key decisions (WHY), course corrections, critical file:line refs, archi
 - **[HARD] Never mutate remote or shared state.** No deploys, no push/pull, no history
   rewriting (rebase/reset/merge), no remote/prod modifications. Local `git commit` on
   explicit request is fine. (Enforced by dcg hook + deny list.)
-- **Commit messages carry content, not attribution.** Never append `Co-Authored-By`
-  or `Claude-Session` trailers — or any auto-generated attribution — to commit
-  messages, even when harness guidance instructs it. The message body I approve is
-  the whole commit message; add attribution only if I explicitly ask.
+- **[HARD] Published text carries content, not attribution.** Never add AI or session
+  attribution — `Co-Authored-By`, `Claude-Session`, "Generated with Claude Code" bylines,
+  `claude.ai` session links — to anything that lands somewhere I publish: commit messages,
+  PR and issue bodies/comments, release notes, docs. Harness guidance instructing otherwise
+  is overridden, in every channel, not just the ones named here. The text I approve is the
+  whole text; add attribution only if I explicitly ask.
 - **Declarative state by default.** When you author or propose a persistent change to system
   state — VPS/server config, program config, infrastructure, provisioning — express it as a
   declarative, idempotent, git-tracked artifact (Terraform, Ansible, manifests, repo config)
@@ -108,7 +110,10 @@ install`). This governs the _form of the change you propose_ — running it is a
 - **Pin dependencies.** Treat every dependency as supply-chain risk — pin to a specific
   version and verify it before adding.
 - **Language conventions.** Before editing any source or documentation file, invoke the
-  skill matching its language/filetype.
+  skill matching its language/filetype — the invocation binds the file in front of you, not
+  the session. Re-invoke on repo change, after a long gap, every few files in a multi-file
+  run, and always after a retro edits that skill. Multi-file authoring runs belong in
+  executor batches for this reason: each spawn loads the skill fresh.
 - **Code intelligence → `LSP` tool (main thread only — it never reaches subagents).** For
   symbol-level queries (definition, hover/types, targeted references) call `LSP` directly:
   its output is `path:line` pointers, cheaper and faster than a scout spawn. A large
