@@ -17,11 +17,8 @@
       "Agent(*)",
       "Edit(*)",
       "Write(*)",
-      "Skill(*)"
-    ],
-    "ask": [
-      "Bash(git push:*)",
-      "Bash(git switch:*)"
+      "Skill(*)",
+      "mcp__playwright"
     ],
     "deny": [
       "Bash(sudo:*)",
@@ -62,6 +59,10 @@
       "Read(**/*.key)",
       "Edit(**/*.pem)",
       "Edit(**/*.key)"
+    ],
+    "ask": [
+      "Bash(git push:*)",
+      "Bash(git switch:*)"
     ],
     "defaultMode": "default"
   },

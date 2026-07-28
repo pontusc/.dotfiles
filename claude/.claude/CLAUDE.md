@@ -35,6 +35,10 @@ research, sizable implementations, noisy command output, authenticated/live API 
 - **Authenticated / live API work → investigator.** curl with tokens, live queries against
   services. Read-only; resolves context (IDs, labels) first, absorbs noisy output. (Bump to
   opus for gnarly live-system debugging.)
+- **Browser / live-page debugging → browser.** Rendering issues, console errors, network
+  activity, visual verification, screenshots — spawn browser instead of curl/WebFetch
+  whenever runtime or visual behavior matters. Disposable unauthenticated Chromium;
+  auth-walled views are out of scope.
 
 Frontmatter sets each agent's default model; override per-call via the Agent `model` param
 when difficulty warrants — unsure, pick the stronger one (a wasted Opus call costs less than a
