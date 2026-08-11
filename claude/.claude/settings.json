@@ -97,6 +97,17 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/pontusc/.claude/hooks/suggest-skill.sh"
+          }
+        ]
+      }
     ]
   },
   "disableWorkflows": true,
@@ -120,6 +131,7 @@
     "enabled": false
   },
   "syntaxHighlightingDisabled": false,
+  "autoCompactWindow": 400000,
   "promptSuggestionEnabled": false,
   "awaySummaryEnabled": false,
   "tui": "fullscreen",

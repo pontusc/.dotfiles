@@ -23,6 +23,12 @@ next reader (human or agent). Every principle below serves that.
   as a short menu and let the user pick.
 - **Write like an expert using only the basics.** Reach for plain language features
   and the standard library before clever constructs or extra dependencies.
+- **Comments serve the next reader, not the reviewer.** A comment earns its place only by
+  stating what the code can't show — a constraint, an invariant, a runtime property. Change
+  rationale, provenance ("mirrors X", "same as Y"), comparisons to other files, and answers
+  to review questions are addressed to *me*: they go in chat or the plan doc, never into the
+  file. A construct that needs excusing in a comment is the signal to verify the assumption
+  behind it, not to annotate it.
 - **Modular.** Each function/module owns one responsibility and does it well, behind a
   clear boundary. All interaction with a module goes through its public interface — never
   reach into another module's internals or reimplement logic that lives behind its

@@ -19,6 +19,7 @@ Security is enforced via hooks rather than sandbox — the sandbox is disabled.
 | `notify.sh`          | Notification | —                        | Single entry point for all desktop notifications |
 | `guard-sensitive.sh` | PreToolUse   | `Read\|Bash\|Grep\|Glob` | Blocks access to sensitive files/dirs            |
 | `dcg` (binary)       | PreToolUse   | `Bash`                   | Blocks destructive shell commands                |
+| `suggest-skill.sh`   | PostToolUse  | `Write\|Edit`            | Tells the agent to load the file's language skill |
 
 ## Design Rules
 
@@ -47,6 +48,30 @@ them would be noise.
 
 Never call `notify-send` directly from a hook. If you need to add a new
 attention event, route it through `notify.sh` and add a case branch there.
+
+### Subagents
+
+Hooks fire inside subagents too, with `agent_id`/`agent_type` added to the input —
+but `transcript_path` is the **parent's** transcript, while the subagent's own tool
+calls land in `<session-id>/subagents/agent-<agent_id>.jsonl`, derivable by stripping
+`.jsonl` off the parent path. Both files are written incrementally during a turn, so
+a hook can see what the current agent did moments ago. A hook that inspects the
+transcript must switch to the derived path when `agent_id` is set — reading the
+parent's sees nothing the subagent itself did — and stay silent if that file
+doesn't exist yet. The in-flight assistant message is not on disk when its own
+tools fire, so a `Skill` call batched into the same message as an `Edit` is
+invisible to that edit's hook.
+
+### Inspecting the transcript
+
+`suggest-skill.sh` greps the transcript for `"skill":"<name>"` (a `Skill` tool call)
+and `"text":"<command-message><name></command-message>"` (a skill preloaded via agent
+frontmatter `skills:`), windowed on the last `"isCompactSummary":true`. All three are
+internal JSONL details, and they rot differently: a change to either skill marker
+makes the hook nudge for skills that are loaded (loud), while a change to the
+compaction marker silently widens the window to the whole file (quiet false
+negatives). A tool_use entry also only proves the call was made — a `Skill`
+invocation that was denied or errored still reads as loaded.
 
 ### Self-Protection
 

@@ -29,7 +29,8 @@ research, sizable implementations, noisy command output, authenticated/live API 
 - **Implement → executor.** Multi-file or sizable implementations once the design is
   settled. Small single-file edits may go inline once approved — but batch them: during design dialogue on
   a plan doc, collect decisions and apply one batched edit, not one inline edit per message
-  (that's what burns context to the /compact limit).
+  (that's what burns context to the /compact limit). Briefs specify behavior, never
+  commentary — never instruct an agent to document a choice in a comment.
 - **Validate → validator.** After any edit with a lint/validate/plan path, or any
   correctness check (stale refs, path validation). Absorbs noisy output, returns a verdict.
 - **Authenticated / live API work → investigator.** curl with tokens, live queries against
@@ -114,10 +115,11 @@ install`). This governs the _form of the change you propose_ — running it is a
 - **Pin dependencies.** Treat every dependency as supply-chain risk — pin to a specific
   version and verify it before adding.
 - **Language conventions.** Before editing any source or documentation file, invoke the
-  skill matching its language/filetype — the invocation binds the file in front of you, not
-  the session. Re-invoke on repo change, after a long gap, every few files in a multi-file
-  run, and always after a retro edits that skill. Multi-file authoring runs belong in
-  executor batches for this reason: each spawn loads the skill fresh.
+  skill matching its language/filetype, plus `coding-principles` for code — the invocation
+  binds the file in front of you, not the session; re-invoke after a compaction, a repo
+  change, or a retro that edits the skill. (The suggest-skill hook catches the unloaded case
+  after the fact, on mapped filetypes only — it is a backstop, not the rule.) Multi-file
+  authoring belongs in executor batches: each spawn loads the skill fresh.
 - **Code intelligence → `LSP` tool (main thread only — it never reaches subagents).** For
   symbol-level queries (definition, hover/types, targeted references) call `LSP` directly:
   its output is `path:line` pointers, cheaper and faster than a scout spawn. A large

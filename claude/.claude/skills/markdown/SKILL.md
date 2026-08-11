@@ -37,3 +37,7 @@ established by reading or searching: the source informed *you*, it is not conten
 report. State the constraint that survives those specifics changing ("retention is capped
 by the lifecycle rules"), never the specifics. A number earns its place only as an
 operational entry point — the ASN you check when BGP breaks — never as restatement.
+
+**Document the end state, not the route to it.** Migration, import, refactor — how the thing
+got here is changelog material, dead the moment it ships. Write what is true now and what a
+reader must not break.
