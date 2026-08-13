@@ -4,12 +4,14 @@
 
 1. **This package.** `hypr/` reaches 1:1 parity with the `hypr-work` conf overlay on the
    quattro Lua contract. Undeployed until Omarchy 4 ships.
-2. **Desktop/laptop host ports.** Port `hypr-desktop` (triple monitor, gaming rules) into
-   `hosts/desktop.lua` and `hypr-laptop` into `hosts/laptop.lua`, replacing the stub headers.
+2. **Desktop/laptop host ports.** Port the retired `hypr-desktop` (triple monitor, gaming
+   rules) into `hosts/desktop.lua` and `hypr-laptop` into `hosts/laptop.lua`, replacing the
+   stub headers. Both packages are deleted from the tree — recover their confs from git
+   history.
 3. **Daemon confs + retirement.** Absorb `hypridle.conf`, `hyprlock.conf`, `hyprsunset.conf`,
    and `xdph.conf` (currently left as `.conf` in `hypr-work`) into this package, move
    `omarchy-reminder-at` from `hypr-work/.local/bin` into `hypr/.local/bin` and restow, then
-   retire `hypr-work`, `hypr-desktop`, `hypr-laptop`, and `hypr-shared`.
+   retire `hypr-work`.
 
 ## Cutover checklist
 
@@ -38,7 +40,7 @@
 - [ ] `Hyprland --verify-config`
 - [ ] `hyprctl reload`
 - [ ] Verify binds, monitors, and theme
-- [ ] Retire `hypr-work` (and `hypr-desktop`/`hypr-laptop`/`hypr-shared` once phases 2-3 land)
+- [ ] Retire `hypr-work`
 
 ## Known risks
 
@@ -87,20 +89,21 @@ intentionally not ported, with the reason given.
 | `bindings.conf:15` | `bindings.lua` | `SUPER + SHIFT + A` → Claude (unbind default ChatGPT bind) |
 | `bindings.conf:16` | `bindings.lua` | `SUPER + SHIFT + C` → Google Calendar (unbind default hey.com bind) |
 | `bindings.conf:17` | `bindings.lua` | `SUPER + SHIFT + E` → Gmail (unbind default hey.com bind) |
-| `bindings.conf:19` | `bindings.lua` | New `SUPER + M` Youtube Music bind (no default collision) |
-| `bindings.conf:20-27` | `hosts/pc-framework.lua` | Lid switch unbind/rebind relocated (monitor state, not a keybinding choice); rewritten as a docked-aware clamshell state machine |
-| `bindings.conf:29-30` | — | Inactive instructional comment (mirrors quattro's own template) |
-| `bindings.conf:34-44` | `bindings.lua` | Vim-style focus nav (H/J/K/L), replacing `SUPER + Arrow` |
-| `bindings.conf:46-54` | `bindings.lua` | Vim-style window swap (H/J/K/L), replacing `SUPER + SHIFT + Arrow` |
-| `bindings.conf:56-64` | `bindings.lua` | Vim-style window resize (H/J/K/L), replacing `SUPER + ALT + Arrow` |
-| `bindings.conf:66-68` | `bindings.lua` | Displaced defaults → `SUPER + CTRL + J/K` |
-| `bindings.conf:71-73` | `bindings.lua` | Youtube Music media-key pass-through (unverified `hl.dsp.pass` shape, see known risks) |
-| `bindings.conf:76-78` | — | Already commented out in the source |
-| `bindings.conf:80` | `bindings.lua` | `SUPER + SLASH` disabled, no replacement |
-| `bindings.conf:83-86` | — | Duplicate of the `bindings.conf:57-60` unbind; redundant in the source, not duplicated here |
-| `bindings.conf:89-92` | `bindings.lua` | `SUPER + TAB` repurposed to cycle group windows |
-| `bindings.conf:94-96` | — | Commented out in the source |
-| `bindings.conf:98-100` | `bindings.lua` | Reminder bind carryover (required) |
+| `bindings.conf:18` | — | **Not yet ported** — Slack launch-or-focus bind added after the parity pass; needs a `bindings.lua` port plus unbind of the preinstall-only Google Maps default (`applications.lua:31`) |
+| `bindings.conf:20` | `bindings.lua` | New `SUPER + M` Youtube Music bind (no default collision) |
+| `bindings.conf:21-28` | `hosts/pc-framework.lua` | Lid switch unbind/rebind relocated (monitor state, not a keybinding choice); rewritten as a docked-aware clamshell state machine |
+| `bindings.conf:30-31` | — | Inactive instructional comment (mirrors quattro's own template) |
+| `bindings.conf:35-45` | `bindings.lua` | Vim-style focus nav (H/J/K/L), replacing `SUPER + Arrow` |
+| `bindings.conf:47-55` | `bindings.lua` | Vim-style window swap (H/J/K/L), replacing `SUPER + SHIFT + Arrow` |
+| `bindings.conf:57-65` | `bindings.lua` | Vim-style window resize (H/J/K/L), replacing `SUPER + ALT + Arrow` |
+| `bindings.conf:67-69` | `bindings.lua` | Displaced defaults → `SUPER + CTRL + J/K` |
+| `bindings.conf:72-74` | `bindings.lua` | Youtube Music media-key pass-through (unverified `hl.dsp.pass` shape, see known risks) |
+| `bindings.conf:77-79` | — | Already commented out in the source |
+| `bindings.conf:81` | `bindings.lua` | `SUPER + SLASH` disabled, no replacement |
+| `bindings.conf:84-87` | — | Duplicate of the `bindings.conf:58-61` unbind; redundant in the source, not duplicated here |
+| `bindings.conf:90-93` | `bindings.lua` | `SUPER + TAB` repurposed to cycle group windows |
+| `bindings.conf:95-97` | — | Commented out in the source |
+| `bindings.conf:99-101` | `bindings.lua` | Reminder bind carryover (required) |
 | `input.conf:4-44` (active settings) | `input.lua` | `hl.config({ input = ... })` port |
 | `input.conf:48-49` | `input.lua` | `o.window` scroll_touchpad rules |
 | `input.conf:51-57` | — | Commented-out gesture examples, not active |
