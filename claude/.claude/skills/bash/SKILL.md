@@ -1,13 +1,13 @@
 ---
 name: bash
-description: Shell scripting conventions — applied when writing or editing .sh/.bash files or inline shell scripts.
+description: Shell scripting conventions, applied when writing or editing .sh/.bash files or inline shell scripts.
 user-invocable: false
 allowed-tools: Read, Glob, Grep, Bash
 ---
 
 # Bash / Shell Scripting Conventions
 
-Conventions for new files and the lines you're changing — on existing files stay surgical and suggest divergences rather than migrating.
+Conventions for new files and the lines you're changing. On existing files stay surgical and suggest divergences rather than migrating.
 
 ## Script Header
 
@@ -18,20 +18,20 @@ Every script starts with:
 set -euo pipefail
 ```
 
-- Caveat: `set -e` does not fire inside `if`/`while`/`until` conditions or `&&`/`||` chains — don't rely on it catching failures there. If you add an `ERR` trap, also set `-E` so it's inherited by functions and subshells.
-- After the header, add a short comment block stating what the script does and how it's invoked (args, where it's run from) — the *why* and the contract, not line-by-line narration.
+- Caveat: `set -e` does not fire inside `if`/`while`/`until` conditions or `&&`/`||` chains. Don't rely on it catching failures there. If you add an `ERR` trap, also set `-E` so it's inherited by functions and subshells.
+- After the header, add a short comment block stating what the script does and how it's invoked (args, where it's run from): the *why* and the contract, not line-by-line narration.
 - **Sourced libraries are the exception.** A file meant to be `source`d, not executed, omits `set -euo pipefail` (it would mutate the caller's shell) and says so up top: `# Source this file; it is not meant to be executed directly.`
 
 ## Style
 
-- **Baseline: [Google's Shell Style Guide](https://google.github.io/styleguide/shellguide.html).** Follow it for anything this skill doesn't address — apply from trained knowledge, don't fetch the page. Where this skill deviates, the skill wins: `#!/usr/bin/env bash` shebang (env-lookup portability over Google's `#!/bin/bash`), `UPPER_SNAKE_CASE` for all script-scope variables (Google uppercases only constants/exported), and the mandatory `set -euo pipefail` header (Google doesn't adopt it — it recommends manual return checks + `PIPESTATUS` instead).
-- **Quoting**: Always double-quote expansions — `"${var}"`, `"${arr[@]}"`, `"$(cmd)"`. Leave a value unquoted only deliberately (e.g. splitting a flag string into words) — and comment why.
-- **Variable names**: `UPPER_SNAKE_CASE` for script-scope variables, constants, and exported/env vars; `snake_case` for function-local variables. Case signals scope — uppercase = top-level, lowercase = local. Don't mix the two rules within a project.
-- **Functions**: `snake_case` names with `function_name() {` syntax (no `function` keyword). Declare locals with `local`; grouping related ones on one line is fine (`local env_key="$1" secret_id="$2"`).
+- **Baseline: [Google's Shell Style Guide](https://google.github.io/styleguide/shellguide.html).** Follow it for anything this skill doesn't address: apply from trained knowledge, don't fetch the page. Where this skill deviates, the skill wins: `#!/usr/bin/env bash` shebang (env-lookup portability over Google's `#!/bin/bash`), `UPPER_SNAKE_CASE` for all script-scope variables (Google uppercases only constants/exported), and the mandatory `set -euo pipefail` header (Google doesn't adopt it: it recommends manual return checks + `PIPESTATUS` instead).
+- **Quoting**: Always double-quote expansions: `"${var}"`, `"${arr[@]}"`, `"$(cmd)"`. Leave a value unquoted only deliberately (e.g. splitting a flag string into words), and comment why.
+- **Variable names**: `UPPER_SNAKE_CASE` for script-scope variables, constants, and exported/env vars. `snake_case` for function-local variables. Case signals scope: uppercase = top-level, lowercase = local. Don't mix the two rules within a project.
+- **Functions**: `snake_case` names with `function_name() {` syntax (no `function` keyword). Declare locals with `local`. Grouping related ones on one line is fine (`local env_key="$1" secret_id="$2"`).
 - **Conditionals**: Prefer `[[ ]]` over `[ ]` for bash scripts. Use `[ ]` only in POSIX sh scripts.
 - **Command substitution**: Use `$(cmd)`, never backticks.
 - **Indentation**: 2 spaces.
-- **Inline over indirection**: keep command flags inline at the call site; don't hoist them into arrays or variables unless genuinely reused — an args array for a flag used twice reads worse than repeating the flag.
+- **Inline over indirection**: keep command flags inline at the call site. Don't hoist them into arrays or variables unless genuinely reused: an args array for a flag used twice reads worse than repeating the flag.
 
 ## Error Handling
 
@@ -52,12 +52,12 @@ set -euo pipefail
 
 ## Pitfalls under `set -euo pipefail`
 
-Curation gate — an entry must meet all three bars: it actually caused a shipped bug, shellcheck cannot catch it, and it stems from a convention this skill mandates.
+Curation gate. An entry must meet all three bars: it actually caused a shipped bug, shellcheck cannot catch it, and it stems from a convention this skill mandates.
 
-- **Empty-match `grep` in a pipeline** exits 1 and kills the script under `pipefail`. Collect lines with `readarray -t arr < <(cmd | grep …)` — process substitution masks the pipeline's status — never a bare `var=$(cmd | grep …)`.
-- **Line collection**: `readarray -t` is the idiom — prefer the name `readarray` over its synonym `mapfile`, and prefer it over `while read` loops for simple collection.
-- **Bare `cond && action`**: `set -e` does not fire when cond is false (`&&`-list exemption), but the statement's status is 1 — as the last command of a script or function it silently becomes a failure exit. Use an explicit `if`.
-- **Capturing stderr only**: `output=$(cmd 2>&1 > /dev/null)` — order matters: `2>&1` points stderr at the captured stdout first, then `> /dev/null` discards the original stdout. ShellCheck may flag this deliberate idiom (SC2069); keep the order, don't "fix" it.
+- **Empty-match `grep` in a pipeline** exits 1 and kills the script under `pipefail`. Collect lines with `readarray -t arr < <(cmd | grep …)` (process substitution masks the pipeline's status), never a bare `var=$(cmd | grep …)`.
+- **Line collection**: `readarray -t` is the idiom: prefer the name `readarray` over its synonym `mapfile`, and prefer it over `while read` loops for simple collection.
+- **Bare `cond && action`**: `set -e` does not fire when cond is false (`&&`-list exemption), but the statement's status is 1: as the last command of a script or function it silently becomes a failure exit. Use an explicit `if`.
+- **Capturing stderr only**: `output=$(cmd 2>&1 > /dev/null)`. Order matters: `2>&1` points stderr at the captured stdout first, then `> /dev/null` discards the original stdout. ShellCheck may flag this deliberate idiom (SC2069). Keep the order, don't "fix" it.
 
 ## POSIX Compatibility
 
@@ -65,9 +65,9 @@ Curation gate — an entry must meet all three bars: it actually caused a shippe
 
 ## Best Practices
 
-- **ShellCheck compliant**: All scripts must pass `shellcheck`. Satisfy the rule rather than disabling it — e.g., for SC2155, separate declaration and assignment instead of adding a disable directive.
+- **ShellCheck compliant**: All scripts must pass `shellcheck`. Satisfy the rule rather than disabling it: e.g., for SC2155, separate declaration and assignment instead of adding a disable directive.
 - **No useless cat**: Use `< file` instead of `cat file |`.
-- **Avoid needless subprocesses**: use parameter expansion over forking — `${var%pattern}` not `sed`/`cut` for simple string ops.
+- **Avoid needless subprocesses**: use parameter expansion over forking: `${var%pattern}` not `sed`/`cut` for simple string ops.
 - **Temp files**: Use `mktemp` and clean up via trap.
-- **Readonly**: realize the immutability principle with `readonly` (or `declare -r`). Assign first, then mark — `GIT_ROOT="$(cmd)"` then `readonly GIT_ROOT` — so command-substitution failures aren't masked under `set -e`. Skip it in sourced libraries, where re-sourcing a `readonly` var errors out.
+- **Readonly**: realize the immutability principle with `readonly` (or `declare -r`). Assign first, then mark (`GIT_ROOT="$(cmd)"` then `readonly GIT_ROOT`) so command-substitution failures aren't masked under `set -e`. Skip it in sourced libraries, where re-sourcing a `readonly` var errors out.
 - **Comment the non-obvious**: explain *why* above a block and decode unusual constructs (yq operators, scratch-image `docker cp`, parameter-expansion idioms). Don't narrate self-evident lines.

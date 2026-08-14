@@ -5,7 +5,7 @@ description: Generate or edit a project's CLAUDE.md memory file. Use whenever as
 
 # Create CLAUDE.md
 
-The output must be concise, navigational, and general-purpose — useful across sessions without going stale.
+The output must be concise, navigational, and general-purpose, useful across sessions without going stale.
 
 ## Discovery Phase
 

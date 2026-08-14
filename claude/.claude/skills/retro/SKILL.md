@@ -1,10 +1,10 @@
 ---
 name: retro
-description: Post-incident config tuning in a separate Claude session — replaces
-  session-retrospective. Trigger when the user has materially corrected your work
+description: Post-incident config tuning in a separate Claude session (replaces
+  session-retrospective). Trigger when the user has materially corrected your work
   (redone/reverted approach, "no, that's wrong" repeatedly, two course corrections),
   or asks to "review the session" / "analyze what went wrong". Offer first
-  ("spawn a retro session?"); invoke on confirmation or when the user runs /retro.
+  ("spawn a retro session?"). Invoke on confirmation or when the user runs /retro.
 ---
 
 # Retro: spawn a config-tuning session
@@ -24,11 +24,11 @@ Check the invocation args:
 
 - `dispatcher` → follow [instructions/dispatcher.md](instructions/dispatcher.md)
 - a `retros/*.md` doc path → follow [instructions/retro-agent.md](instructions/retro-agent.md)
-- neither → you are the main thread; continue below.
+- neither → you are the main thread. Continue below.
 
 ## Main thread
 
-You hold the judgment about what went wrong; the log holds the evidence. Your
+You hold the judgment about what went wrong. The log holds the evidence. Your
 job is a quick handoff, nothing more.
 
 1. Derive the session log path: `~/.claude/projects/<cwd-slug>/<session-id>.jsonl`

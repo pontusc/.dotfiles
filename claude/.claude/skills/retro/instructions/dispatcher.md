@@ -1,11 +1,11 @@
 # Dispatcher (sonnet subagent)
 
 Turn the incident description + session log into a handoff doc, then spawn the
-retro agent. Facts only — root-causing is the retro agent's job.
+retro agent. Facts only: root-causing is the retro agent's job.
 
 ## 1. Extract facts from the log
 
-The log is JSONL and can be large — filter, don't read whole:
+The log is JSONL and can be large. Filter, don't read whole:
 
 ```bash
 # user turns (content is a string or an array of blocks — flatten to text)
@@ -15,13 +15,13 @@ grep -n '<phrase from incident>' <log>                     # locate the correcti
 ```
 
 Pull: the original request, the assistant's approach around the incident,
-the user's correction messages — verbatim quotes, with file:line refs where
-the log shows edits.
+the user's correction messages (verbatim quotes, with file:line refs where
+the log shows edits).
 
 ## 2. Write the handoff doc
 
 Path: `~/dotfiles/retros/YYYY-MM-DD-<slug>.md` (slug: 2-4 words naming the
-failure, not the task — lowercase, hyphen-joined). Create the dir if missing.
+failure, not the task: lowercase, hyphen-joined). Create the dir if missing.
 
 ```markdown
 # Retro: <slug>
@@ -42,7 +42,7 @@ failure, not the task — lowercase, hyphen-joined). Create the dir if missing.
 
 ## Correction
 
-<user's correction messages, quoted; how the corrected version differed>
+<user's correction messages, quoted, and how the corrected version differed>
 ```
 
 ## 3. Spawn the retro agent
@@ -58,4 +58,4 @@ slash command and the doc path routes it to the retro-agent instructions.
 
 ## 4. Report
 
-Return exactly one line: `Retro doc: <path> — session at retros:<slug>`.
+Return exactly one line: `Retro doc: <path>, session at retros:<slug>`.

@@ -1,13 +1,13 @@
 ---
 name: kubernetes
-description: Kubernetes manifest conventions — applied when writing or editing Kubernetes resource YAML (Deployments, Services, ConfigMaps, Ingress, etc.).
+description: Kubernetes manifest conventions, applied when writing or editing Kubernetes resource YAML (Deployments, Services, ConfigMaps, Ingress, etc.).
 user-invocable: false
 allowed-tools: Read, Glob, Grep
 ---
 
 # Kubernetes Manifest Conventions
 
-Conventions for new files and the lines you're changing — on existing files stay surgical and suggest divergences rather than migrating.
+Conventions for new files and the lines you're changing: on existing files stay surgical and suggest divergences rather than migrating.
 
 ## General
 
@@ -20,17 +20,17 @@ Conventions for new files and the lines you're changing — on existing files st
   `app.kubernetes.io/*` recommended set (`name`, `instance`, `version`, `component`,
   `part-of`, `managed-by`), nor `app:`, `tier:`, or `environment:`, by default.
 - Add **only** the minimal label pair a selector requires to function (a Deployment's
-  `spec.selector.matchLabels` and the matching pod-template label) — nothing more.
+  `spec.selector.matchLabels` and the matching pod-template label), nothing more.
 - On existing manifests, never introduce a label/annotation key that isn't already present.
 
 ## Images
 
-- **No `latest` tag** — always pin to a specific version or digest.
+- **No `latest` tag**: always pin to a specific version or digest.
 - **`imagePullPolicy`**: Set explicitly. Use `IfNotPresent` for tagged images, `Always` only for mutable tags (which should be avoided).
 
 ## Security
 
-- **Security contexts**: not added by default — pods run unhardened unless hardening is asked for. When it is requested, set fields at the correct level: `runAsNonRoot` is pod-level; `allowPrivilegeEscalation`, `readOnlyRootFilesystem`, and `capabilities` are **container-level** and are silently ignored if set only on the pod:
+- **Security contexts**: not added by default. Pods run unhardened unless hardening is asked for. When it is requested, set fields at the correct level: `runAsNonRoot` is pod-level. `allowPrivilegeEscalation`, `readOnlyRootFilesystem`, and `capabilities` are **container-level** and are silently ignored if set only on the pod:
 
 ```yaml
 # spec.securityContext (pod)
@@ -50,14 +50,14 @@ securityContext:
 
 ## Resource Management
 
-- **Always set `requests` (CPU + memory)** — reflect actual usage.
-- Propose a memory `limit` to cap burst. Don't set a CPU `limit` (it throttles via CFS even with spare node capacity); set limits equal to requests only when you specifically want Guaranteed QoS.
+- **Always set `requests` (CPU + memory)**: reflect actual usage.
+- Propose a memory `limit` to cap burst. Don't set a CPU `limit` (it throttles via CFS even with spare node capacity). Set limits equal to requests only when you specifically want Guaranteed QoS.
 - Use `LimitRange` and `ResourceQuota` at namespace level as guardrails.
 
 ## Probes
 
-- **Liveness probe**: Detects deadlocks — should check internal health, not dependencies.
-- **Readiness probe**: Detects readiness to serve — should check that the app can handle requests.
+- **Liveness probe**: Detects deadlocks. Should check internal health, not dependencies.
+- **Readiness probe**: Detects readiness to serve. Should check that the app can handle requests.
 - **Startup probe**: Use for slow-starting containers to avoid premature liveness kills.
 - Set sensible `initialDelaySeconds`, `periodSeconds`, `timeoutSeconds`, and `failureThreshold`.
 

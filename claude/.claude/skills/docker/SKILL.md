@@ -1,6 +1,6 @@
 ---
 name: docker
-description: Container build conventions — applied when writing or editing Dockerfiles and .dockerignore.
+description: Container build conventions, applied when writing or editing Dockerfiles and .dockerignore.
 user-invocable: false
 allowed-tools: Read, Glob, Grep
 ---
@@ -17,14 +17,14 @@ When editing an existing file:
 - **Stay surgical.** A minor fix applies to the changed lines only. Do not rewrite a working
   Dockerfile to conform to these conventions.
 - **Suggest, don't migrate.** If the surrounding file diverges (e.g. runs as root, uses
-  `latest`, single-stage), note it as a suggestion — don't fold an unrequested refactor into
+  `latest`, single-stage), note it as a suggestion: don't fold an unrequested refactor into
   the edit. Migrate only when the user explicitly asks.
 
 ## Base Images
 
-- **Pin the base** — specific tag, or `@sha256:...` digest for immutability. Never `latest`.
+- **Pin the base**: specific tag, or `@sha256:...` digest for immutability. Never `latest`.
 - **Verified-publisher / official images only.** If a base is from an unverified or community
-  publisher, **flag it loudly** — call out the supply-chain risk and the publisher before
+  publisher, **flag it loudly**: call out the supply-chain risk and the publisher before
   using it.
 - **Prefer minimal bases**: `-slim`, `alpine`, or `distroless` where the toolchain allows.
 
@@ -39,13 +39,13 @@ When editing an existing file:
   shrink the image.
 - **BuildKit mounts** over manual cache juggling: `--mount=type=cache` for package caches,
   `--mount=type=bind` to read build inputs without persisting them in a layer.
-- **`COPY` over `ADD`** — use `ADD` only for tar auto-extraction. `ADD <url>` does no checksum verification; fetch remote files via a `RUN` with an explicit `sha256sum` check instead.
+- **`COPY` over `ADD`**: use `ADD` only for tar auto-extraction. `ADD <url>` does no checksum verification. Fetch remote files via a `RUN` with an explicit `sha256sum` check instead.
 - **`WORKDIR`** with an absolute path instead of `cd` in `RUN`.
 
 ## Secrets
 
-- **Only ever via Bake secret mounts.** Never `COPY` a secret or pass one through `ARG`/`ENV`
-  — those persist in image history. Define the secret in `docker-bake.hcl`, sourced from a
+- **Only ever via Bake secret mounts.** Never `COPY` a secret or pass one through `ARG`/`ENV`:
+  those persist in image history. Define the secret in `docker-bake.hcl`, sourced from a
   host env var, and consume it with `RUN --mount=type=secret`:
 
   ```hcl
@@ -63,7 +63,7 @@ When editing an existing file:
 
 ## Security
 
-- **Run as non-root**: create a dedicated user and set `USER` before the entrypoint;
+- **Run as non-root**: create a dedicated user and set `USER` before the entrypoint.
   `COPY --chown` to give it ownership.
 - **Pin package versions** where the package manager supports it.
 - **`.dockerignore`**: deny-all first (`**`), then explicitly re-include what the build needs with `!` patterns.
@@ -72,7 +72,7 @@ When editing an existing file:
 
 - **Exec form** for `ENTRYPOINT`/`CMD` (`["bin", "arg"]`) so the process runs as PID 1 and
   receives signals (SIGTERM) directly. `ENTRYPOINT` = executable, `CMD` = default args.
-- **`EXPOSE`** documents ports only — it does not publish them (that's `-p` / `ports:` at run time).
+- **`EXPOSE`** documents ports only: it does not publish them (that's `-p` / `ports:` at run time).
 
 ## Parser directive
 
@@ -81,7 +81,7 @@ When editing an existing file:
 ## Installing CLI tools
 
 - **`COPY --from` the tool's official image, pinned by digest**, rather than curling an
-  installer in a `RUN`. It extracts just the binary — no `curl`, no CA certs, no network call
+  installer in a `RUN`. It extracts just the binary, with no `curl`, no CA certs, no network call
   in a layer, and digest-pinned:
   `COPY --from=ghcr.io/astral-sh/uv:0.11.23@sha256:... /uv /usr/local/bin/uv`
 - Installer-script route is a fallback only when an image reference must be avoided.

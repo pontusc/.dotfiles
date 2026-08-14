@@ -1,13 +1,13 @@
 ---
 name: makefile
-description: Makefile conventions — applied when writing or editing Makefiles and .mk includes.
+description: Makefile conventions, applied when writing or editing Makefiles and .mk includes.
 user-invocable: false
 allowed-tools: Read, Glob, Grep
 ---
 
 # Makefile Conventions
 
-Conventions for new files and the lines you're changing — on existing files stay surgical and suggest divergences rather than migrating.
+Conventions for new files and the lines you're changing. On existing files stay surgical and suggest divergences rather than migrating.
 
 ## Targets
 
@@ -31,8 +31,8 @@ help: ## Show this help
 
 ## Recipes
 
-- **Tabs, not spaces**: recipe lines MUST begin with a real tab — spaces cause `missing separator`. This overrides the global 2-space indentation rule (which applies to non-recipe content only).
-- **One logical action per target** — keep recipes focused.
+- **Tabs, not spaces**: recipe lines MUST begin with a real tab: spaces cause `missing separator`. This overrides the global 2-space indentation rule (which applies to non-recipe content only).
+- **One logical action per target**: keep recipes focused.
 - **Portable commands**: Prefer `printf` over `echo` in recipes. Avoid GNU-only flags unless the Makefile is Linux-only.
 - **Multiline**: Use backslash continuation or when a recipe needs shared shell state.
 - **Silence**: Use `@` prefix everywhere, add `|| echo` if errors need to be seen.
