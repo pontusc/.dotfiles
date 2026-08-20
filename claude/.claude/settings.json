@@ -67,6 +67,7 @@
     "defaultMode": "default"
   },
   "model": "opus",
+  "outputStyle": "Concise",
   "hooks": {
     "Notification": [
       {
