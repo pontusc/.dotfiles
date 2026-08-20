@@ -28,15 +28,18 @@ o.bind("SUPER + SHIFT + C", "Calendar", { webapp = "https://calendar.google.com/
 hl.unbind("SUPER + SHIFT + E")
 o.bind("SUPER + SHIFT + E", "Gmail", { webapp = "https://mail.google.com/mail/", focus = true })
 
+hl.unbind("SUPER + SHIFT + S") -- quattro default: Google Maps (preinstall-only)
+o.bind("SUPER + SHIFT + S", "Slack", { focus = "^Slack$", launch = "slack.desktop" })
+
 hl.unbind("SUPER + SHIFT + SLASH")
 o.bind("SUPER + SHIFT + SLASH", "Passwords", { launch = "bitwarden" })
 
 -- Pass Youtube Music's media keys straight to its window. Quattro's global
 -- media-key handlers stay bound too — both fire.
-local youtube_music_class = "^.*-music\\.youtube.*$"
-o.bind("XF86AudioNext", "Pass to Youtube Music", hl.dsp.pass({ class = youtube_music_class }))
-o.bind("XF86AudioPause", "Pass to Youtube Music", hl.dsp.pass({ class = youtube_music_class }))
-o.bind("XF86AudioPlay", "Pass to Youtube Music", hl.dsp.pass({ class = youtube_music_class }))
+local youtube_music_window = "class:^.*-music\\.youtube.*$"
+o.bind("XF86AudioNext", "Pass to Youtube Music", hl.dsp.pass({ window = youtube_music_window }))
+o.bind("XF86AudioPause", "Pass to Youtube Music", hl.dsp.pass({ window = youtube_music_window }))
+o.bind("XF86AudioPlay", "Pass to Youtube Music", hl.dsp.pass({ window = youtube_music_window }))
 
 -- Vim-style window focus/swap/resize, replacing SUPER+Arrow. (Lid switch
 -- rebinding lives in hosts/pc-framework.lua — it's monitor state, not a

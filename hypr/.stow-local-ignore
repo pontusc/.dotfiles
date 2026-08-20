@@ -7,10 +7,3 @@
 \.gitignore
 .+~
 ^/\.stylua\.toml
-
-# Blocks `stow hypr` until the quattro cutover: without this, stow succeeds
-# conflict-free (per-entry unfold) against the live conf-based ~/.config/hypr,
-# Hyprland 0.56 prefers hyprland.lua over hyprland.conf with no fallback on
-# Lua error, and this package errors today (no bootstrap.lua at omarchy 3.8.4)
-# — the result is emergency mode. Remove at cutover (see TODO.md).
-^/\.config(/|$)

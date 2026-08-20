@@ -12,7 +12,7 @@ mirrors the destination relative to `$HOME` (`claude/.claude/settings.json` →
 - **Tree folding**: stow links the highest directory it can own outright — a package whose
   target doesn't exist gets one symlink for the whole tree. When the target already exists as
   a real directory, stow *unfolds* and links each entry inside it individually.
-- Packages are machine/role-specific (`bash-linux` vs `bash-work`, `hypr-work`, `kde-*`) —
+- Packages are machine/role-specific (`bash-linux` vs `bash-work`, `hypr`, `kde-*`) —
   install only what applies to the host.
 
 ## The claude package (partially folded — read before adding files)

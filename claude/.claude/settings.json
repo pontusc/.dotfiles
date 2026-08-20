@@ -66,8 +66,7 @@
     ],
     "defaultMode": "default"
   },
-  "model": "opus",
-  "outputStyle": "Concise",
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "Notification": [
       {
@@ -128,6 +127,7 @@
       }
     }
   },
+  "outputStyle": "Concise",
   "sandbox": {
     "enabled": false
   },
