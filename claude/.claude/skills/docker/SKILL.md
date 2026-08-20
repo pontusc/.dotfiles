@@ -38,7 +38,8 @@ When editing an existing file:
   (e.g. `apt-get clean && rm -rf /var/lib/apt/lists/*`). A separate cleanup `RUN` doesn't
   shrink the image.
 - **BuildKit mounts** over manual cache juggling: `--mount=type=cache` for package caches,
-  `--mount=type=bind` to read build inputs without persisting them in a layer.
+  `--mount=type=bind` to read build inputs without persisting them in a layer. A cache mount
+  earns its place on a heavy dependency install: measure before adding one.
 - **`COPY` over `ADD`**: use `ADD` only for tar auto-extraction. `ADD <url>` does no checksum verification. Fetch remote files via a `RUN` with an explicit `sha256sum` check instead.
 - **`WORKDIR`** with an absolute path instead of `cd` in `RUN`.
 

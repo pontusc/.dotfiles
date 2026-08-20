@@ -20,7 +20,9 @@ next reader (human or agent). Every principle below serves that.
   problem. No speculative abstraction, no patterns the problem doesn't demand. A new
   script/tool's first version implements only the explicitly requested core: no
   speculative guards, fallbacks, config knobs, or modes. Offer the omitted hardening
-  as a short menu and let the user pick.
+  as a short menu and let the user pick. Configuration counts as code here: a key whose
+  value is already the tool's default, or an optimization you haven't measured, is noise.
+  Check the default, measure the win, or omit the line.
 - **Write like an expert using only the basics.** Reach for plain language features
   and the standard library before clever constructs or extra dependencies.
 - **Comments serve the next reader, not the reviewer.** A comment earns its place only by

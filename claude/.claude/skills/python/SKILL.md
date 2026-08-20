@@ -49,13 +49,15 @@ When editing an existing project:
 
 ## pyproject.toml
 
-- **Build**: hatchling. Map each `src/<pkg>` to its import name under
-  `[tool.hatch.build.targets.wheel]`.
+- **Build**: `uv_build`, uv's own backend and `uv init`'s default, bounded to the uv minor in
+  use: `requires = ["uv_build>=0.12.5,<0.13"]`, `build-backend = "uv_build"`. Hatchling only
+  for extension modules, build scripts, or a layout uv_build can't express.
 - **Entry points**: `[project.scripts]` point at a `module:function` callable.
-- **ruff**: set `src = ["src", "tests"]` and `[tool.ruff.lint] select`. Omit `target-version`:
-  ruff infers it from `requires-python`.
+- **ruff**: `[tool.ruff.lint] select`. Omit `target-version` (inferred from `requires-python`)
+  and `src` (already defaults to `[".", "src"]`).
 - **pytest**: `testpaths = ["tests"]`, `pythonpath = ["src"]`, `asyncio_mode = "auto"` for async.
-- **ty**: point its environment root at `./src` (the src-layout import root).
+- **Nothing else.** Every key must change behavior: check the default before adding one. `ty`
+  needs no environment root for a src layout.
 
 ## Code style
 

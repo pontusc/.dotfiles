@@ -70,4 +70,4 @@ securityContext:
 
 - One resource per file, or group tightly related resources (e.g., Deployment + Service + HPA for a single workload).
 - Use `---` separator when combining multiple resources in one file.
-- File naming: `<resource-kind>-<name>.yaml` (e.g., `deployment-api.yaml`, `service-api.yaml`).
+- File naming: `<resource-kind>-<name>.yml` (e.g., `deployment-api.yml`, `service-api.yml`).
