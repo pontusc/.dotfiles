@@ -1,4 +1,4 @@
--- pc-framework: Samsung Odyssey G95C ultrawide as the primary external.
+-- pontusc-framework: Samsung Odyssey G95C ultrawide as the primary external.
 --
 -- Lid/clamshell handling is Omarchy 4 native and must not be duplicated here:
 -- the default switch:*:Lid Switch binds drive omarchy-hyprland-monitor-clamshell,
