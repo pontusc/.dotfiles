@@ -7,19 +7,28 @@ Security is enforced via hooks rather than sandbox — the sandbox is disabled.
 
 ### Hook Types
 
-| Event       | When                 | Exit 0       | Exit 2                                                 |
-| ----------- | -------------------- | ------------ | ------------------------------------------------------ |
-| PreToolUse  | Before tool executes | Allow        | Block (stderr sent to agent)                           |
-| PostToolUse | After tool executes  | Pass through | Tool already ran; stderr shown, agent fixes & retries  |
+| Event            | When                                                   | Exit 0                       | Exit 2                        |
+| ---------------- | ------------------------------------------------------ | ----------------------------- | ------------------------------ |
+| PreToolUse       | Before tool executes                                   | Allow                          | Block (stderr sent to agent)                          |
+| PostToolUse      | After tool executes                                    | Pass through                   | Tool already ran; stderr shown, agent fixes & retries |
+| SessionStart     | New session begins (startup, resume, clear, compact, fork) | Context injected via `additionalContext` | No effect |
+| UserPromptSubmit | Before each prompt is processed                        | Context injected via `additionalContext` | Prompt is erased entirely |
+
+SessionStart and UserPromptSubmit inject context rather than gate a tool call, so their
+exit codes don't allow or block anything the way PreToolUse/PostToolUse do.
 
 ### Active Hooks
 
-| Hook                 | Event        | Matcher                  | Purpose                                          |
-| -------------------- | ------------ | ------------------------ | ------------------------------------------------ |
-| `notify.sh`          | Notification | —                        | Single entry point for all desktop notifications |
-| `guard-sensitive.sh` | PreToolUse   | `Read\|Bash\|Grep\|Glob` | Blocks access to sensitive files/dirs            |
-| `dcg` (binary)       | PreToolUse   | `Bash`                   | Blocks destructive shell commands                |
-| `suggest-skill.sh`   | PostToolUse  | `Write\|Edit`            | Tells the agent to load the file's language skill |
+| Hook                 | Event                          | Matcher                                     | Purpose                                            |
+| -------------------- | ------------------------------ | -------------------------------------------- | --------------------------------------------------- |
+| `notify.sh`          | Notification                   | —                                             | Single entry point for all desktop notifications   |
+| `guard-sensitive.sh` | PreToolUse                     | `Read\|Bash\|Grep\|Glob`                     | Blocks access to sensitive files/dirs              |
+| `dcg` (binary)       | PreToolUse                     | `Bash`                                        | Blocks destructive shell commands                  |
+| `suggest-skill.sh`   | PostToolUse                    | `Write\|Edit`                                | Tells the agent to load the file's language skill  |
+
+The peer roster (SessionStart roster injection plus UserPromptSubmit delta) lives in the
+`peer-roster` plugin under `claude-plugins/` in this repo, not here. It registers its own
+hooks via the plugin's `hooks/hooks.json`.
 
 ## Design Rules
 
@@ -28,6 +37,27 @@ Security is enforced via hooks rather than sandbox — the sandbox is disabled.
 - `0` — allow / pass
 - `2` — block (PreToolUse) / feedback (PostToolUse, can't block — tool already ran). Only **stderr** is sent to the agent; stdout and JSON are ignored on exit 2
 - `1` — avoid (ignored by Claude Code, neither blocks nor provides feedback)
+
+### Context injection
+
+SessionStart and UserPromptSubmit hooks return JSON with
+`hookSpecificOutput.additionalContext`, which reaches Claude, and a top-level
+`systemMessage`, which reaches the user instead. A hook can emit either, both, or
+neither.
+
+SessionStart matchers (`startup`, `resume`, `clear`, `compact`, `fork`) can be
+pipe-combined in one entry, the same syntax as tool matchers.
+
+UserPromptSubmit has no matcher and fires on every prompt with a 30 second timeout, so
+a hook here must be cheap and must never exit 2, since that erases the prompt entirely.
+
+`~/.claude/sessions/*.json` is undocumented internal Claude Code state with no
+stability guarantee. A hook that reads it must degrade to silence on a missing,
+malformed, or reshaped record rather than break.
+
+The peer-roster plugin also depends on a machine-local `~/.claude/peers.json`, which is
+deliberately untracked and outside the stow package, so a fresh machine warns once
+per session until it is created.
 
 ### Input
 

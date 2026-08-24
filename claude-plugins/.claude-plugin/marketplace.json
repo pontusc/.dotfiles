@@ -1,0 +1,15 @@
+{
+  "name": "dotfiles",
+  "description": "Personal plugins shipped from the dotfiles repo",
+  "owner": {
+    "name": "Pontus Curtsson"
+  },
+  "plugins": [
+    {
+      "name": "peer-roster",
+      "source": "./peer-roster",
+      "description": "Injects a roster of related Claude Code sessions grouped by ticket key",
+      "version": "0.1.0"
+    }
+  ]
+}

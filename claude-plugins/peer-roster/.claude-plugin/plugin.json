@@ -1,0 +1,8 @@
+{
+  "name": "peer-roster",
+  "version": "0.1.0",
+  "description": "Makes Claude Code sessions in related git worktrees aware of each other. SessionStart injects a roster of peer sessions grouped by ticket key parsed from the worktree path, UserPromptSubmit injects deltas when peers appear or exit.",
+  "author": {
+    "name": "Pontus Curtsson"
+  }
+}

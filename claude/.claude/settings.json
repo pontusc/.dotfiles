@@ -116,7 +116,8 @@
     "command": "bash /home/pontusc/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
-    "plan@plans": true
+    "plan@plans": true,
+    "peer-roster@dotfiles": true
   },
   "extraKnownMarketplaces": {
     "plans": {
@@ -124,6 +125,12 @@
         "source": "github",
         "repo": "pontusc-alchemy/claudeplans",
         "ref": "v0.0.6"
+      }
+    },
+    "dotfiles": {
+      "source": {
+        "source": "directory",
+        "path": "/home/pontusc/dotfiles/claude-plugins"
       }
     }
   },
@@ -136,8 +143,10 @@
   "promptSuggestionEnabled": false,
   "awaySummaryEnabled": false,
   "tui": "fullscreen",
+  "skipDangerousModePermissionPrompt": true,
   "theme": "dark-ansi",
   "remoteControlAtStartup": true,
+  "crossSessionInbound": "accept",
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": false,
   "preferences": {
