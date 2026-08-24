@@ -3,9 +3,12 @@
 Lua Hyprland config for Omarchy 4 (quattro), layered on the `hl.*`/`o.*` defaults.
 Deployed with `stow hypr`.
 
-Per-host monitor rules live in `.config/hypr/hosts/<hostname>.lua`, resolved at load by
+Per-host monitor rules live in `.config/hypr/monitors/<hostname>.lua`, resolved at load by
 `monitors.lua` from `/etc/hostname`. A host without a module falls back to the baseline
 rule and gets a notification.
+
+Per-host window rules live in `.config/hypr/windowrules/<hostname>.lua`, resolved the same
+way. A host without one is silently skipped. `host.lua` is the shared resolver both use.
 
 Lid/clamshell handling is Omarchy native (`switch:*:Lid Switch` binds plus the
 `omarchy-hyprland-monitor-watch` daemon). Host modules must not rebind the lid switch or

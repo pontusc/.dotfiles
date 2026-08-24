@@ -8,7 +8,7 @@ history before this commit.
 ## Remaining
 
 - [ ] Phase 2: port the retired `hypr-desktop` (triple monitor, gaming rules) into
-      `hosts/desktop.lua` and `hypr-laptop` into `hosts/laptop.lua`. Both packages are
+      `monitors/desktop.lua` and `hypr-laptop` into `monitors/laptop.lua`. Both packages are
       deleted from the tree, recover their confs from git history.
 - [ ] Consider replacing `~/.local/bin/omarchy-reminder-at` with Omarchy 4's native
       `omarchy reminder` if the day/time scheduling it adds is no longer worth the custom
@@ -20,7 +20,7 @@ history before this commit.
   `~/.config/hypr/monitors.lua` only. Host modules are invisible to it, so it falls back
   to `~/.local/state/omarchy/toggles/hypr/internal-monitor-scale`. That file is
   re-captured from the live monitor on every clamshell disable and must agree with the
-  host module's eDP scale. See `hosts/pc-framework.lua`.
+  host module's eDP scale. See `monitors/pontusc-framework.lua`.
 - The quattro mirror toggle assumed in the original plan does not exist. Omarchy 4 ships
   `internal-monitor-mirror` and `internal-monitor-disable` toggle files managed by
   `omarchy-hyprland-monitor-internal`, and the clamshell flag at

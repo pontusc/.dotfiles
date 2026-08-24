@@ -1,0 +1,9 @@
+-- Host-specific window rules for pontusc-framework. Loaded after
+-- windowrules.lua, so rules here override the general layer; the same
+-- rule-order constraint from windowrules.lua applies.
+--
+-- Display context (see monitors/pontusc-framework.lua): Samsung Odyssey G95C
+-- 5120x1440 ultrawide as the primary external, plus the eDP-1 2256x1504
+-- internal panel. Host-specific sizing would key off those dimensions.
+--
+-- No rules yet.

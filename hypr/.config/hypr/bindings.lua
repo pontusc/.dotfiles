@@ -42,7 +42,7 @@ o.bind("XF86AudioPause", "Pass to Youtube Music", hl.dsp.pass({ window = youtube
 o.bind("XF86AudioPlay", "Pass to Youtube Music", hl.dsp.pass({ window = youtube_music_window }))
 
 -- Vim-style window focus/swap/resize, replacing SUPER+Arrow. (Lid switch
--- rebinding lives in hosts/pc-framework.lua — it's monitor state, not a
+-- rebinding lives in monitors/pontusc-framework.lua — it's monitor state, not a
 -- keybinding choice.)
 hl.unbind("SUPER + LEFT")
 hl.unbind("SUPER + RIGHT")
