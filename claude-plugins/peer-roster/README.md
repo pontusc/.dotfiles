@@ -17,17 +17,18 @@ peer-roster/
 
 ## Requirements
 
-A machine-local file at `~/.claude/peers.json` maps repo directory name to a short
-description, used to label peers from other repos. It is not part of this repo.
+The `[repos]` table of the machine-local `~/.config/tmux/workspaces.toml` maps repo directory
+name to a short description, used to label peers from other repos. It is not part of this
+repo. Reading it needs `python3` 3.11+ on PATH for `tomllib`.
 
-```json
-{
-  "dotfiles": "Personal dotfiles",
-  "billing-service": "Billing microservice"
-}
+```toml
+[repos]
+dotfiles = "Personal dotfiles"
+billing-service = "Billing microservice"
 ```
 
-If the file is missing or malformed, the roster still works, just without descriptions.
+If the file or the table is missing or unreadable, the roster still works, just without
+descriptions.
 
 ## Install
 
@@ -35,13 +36,6 @@ If the file is missing or malformed, the roster still works, just without descri
 /plugin marketplace add /home/pontusc/dotfiles/claude-plugins
 /plugin install peer-roster@dotfiles
 ```
-
-## Migration from loose hooks
-
-If the SessionStart and UserPromptSubmit entries for `peer-roster.sh` remain in
-`claude/.claude/settings.json` while this plugin is installed, both fire and the roster is
-duplicated. The swap must be atomic: install the plugin, then delete those hook entries from
-`settings.json` and remove `claude/.claude/hooks/peer-roster.sh`.
 
 ## Development notes
 

@@ -18,4 +18,5 @@ lazydocker
 fzf  
 ripgrep  
 zoxide  
-eza
+eza  
+uv

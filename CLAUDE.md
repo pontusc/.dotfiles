@@ -14,6 +14,9 @@ mirrors the destination relative to `$HOME` (`claude/.claude/settings.json` →
   a real directory, stow *unfolds* and links each entry inside it individually.
 - Packages are machine/role-specific (`bash-linux` vs `bash-work`, `hypr`, `kde-*`) —
   install only what applies to the host.
+- **The tmux package**: `~/.config/tmux/workspace` is one folded symlink, so the workspace
+  tool's `__pycache__` is written inside the repo tree (gitignored). Its config
+  `~/.config/tmux/workspaces.toml` is machine-local and must never enter the repo.
 
 ## The claude package (partially folded — read before adding files)
 

@@ -14,7 +14,7 @@ trap 'exit 0' EXIT
 # delta of peers that appeared/exited since the last prompt.
 #
 # Must always exit 0: a UserPromptSubmit hook exiting 2 erases the prompt.
-# work_root, self_repo, self_ticket, and peers_json are set once in main()
+# work_root, self_repo, self_ticket, and repos_json are set once in main()
 # and read by the functions below via bash's dynamic scoping.
 
 # Extracts repo, ticket, and branch label from a cwd. Prints fields joined by
@@ -91,7 +91,7 @@ classify_peer() {
 
   if [[ -n "$ticket" && -n "$self_ticket" && "$ticket" == "$self_ticket" ]]; then
     local note
-    note="$(jq -r --arg repo "$repo" '.[$repo] // empty' <<<"$peers_json")"
+    note="$(jq -r --arg repo "$repo" '.[$repo] // empty' <<<"$repos_json")"
     printf 'sibling\x1f%s\x1f%s\x1f%s\n' "$self_ticket" "$repo" "$note"
     return 0
   fi
@@ -203,7 +203,7 @@ main() {
   IFS=$'\x1f' read -r self_repo self_ticket _ <<<"$self_context"
 
   local registry_dir="${config_root}/sessions"
-  local peers_file="${config_root}/peers.json"
+  local repos_file="${HOME}/.config/tmux/workspaces.toml"
   local snapshot_dir
   if [[ -n "${XDG_RUNTIME_DIR:-}" ]]; then
     snapshot_dir="${XDG_RUNTIME_DIR}/cc-peer-roster"
@@ -219,16 +219,25 @@ main() {
   local snapshot_file="${snapshot_dir}/${session_id}"
   local warned_marker="${snapshot_dir}/${session_id}.warned"
 
-  local peers_json="{}" peers_status="ok"
-  if [[ -f "$peers_file" ]]; then
+  # The [repos] table of workspaces.toml maps repo directory name to a short
+  # description. Converted to JSON here so the lookups stay in jq. A missing
+  # python3, unreadable file, TOML syntax error, or a [repos] table that is
+  # absent, empty, or not all strings land as "unusable" and degrade to a
+  # roster without notes.
+  local repos_json="{}" repos_status="ok"
+  local repos_to_json='import json, sys, tomllib
+with open(sys.argv[1], "rb") as handle:
+    print(json.dumps(tomllib.load(handle).get("repos", {})))'
+  if [[ -f "$repos_file" ]]; then
     local loaded
-    if loaded="$(jq -e -c 'if type == "object" then . else empty end' "$peers_file" 2>/dev/null)" && [[ -n "$loaded" ]]; then
-      peers_json="$loaded"
+    if loaded="$(python3 -c "$repos_to_json" "$repos_file" 2>/dev/null \
+      | jq -e -c 'if type == "object" and length > 0 and all(.[]; type == "string") then . else empty end' 2>/dev/null)" && [[ -n "$loaded" ]]; then
+      repos_json="$loaded"
     else
-      peers_status="malformed"
+      repos_status="unusable"
     fi
   else
-    peers_status="missing"
+    repos_status="missing"
   fi
 
   local -a sibling_name=() sibling_repo=() sibling_note=() sibling_status=()
@@ -354,16 +363,16 @@ main() {
   fi
 
   local warning=""
-  if [[ "$peers_status" != "ok" ]]; then
+  if [[ "$repos_status" != "ok" ]]; then
     local should_warn=1
     if [[ "$mode" == "prompt-submit" && "$snapshot_usable" -eq 1 && -f "$warned_marker" ]]; then
       should_warn=0
     fi
     if [[ "$should_warn" -eq 1 ]]; then
-      if [[ "$peers_status" == "malformed" ]]; then
-        warning="peer-roster: ${peers_file} is malformed - peer repo descriptions unavailable. It must be a JSON object mapping repo directory name to a short description."
+      if [[ "$repos_status" == "unusable" ]]; then
+        warning="peer-roster: ${repos_file} has no [repos] entries usable as descriptions - repo descriptions unavailable. It must map repo directory name to a short description string."
       else
-        warning="peer-roster: ${peers_file} not found - peer repo descriptions unavailable. Create it as a JSON object mapping repo directory name to a short description."
+        warning="peer-roster: ${repos_file} not found - repo descriptions unavailable. Its [repos] table maps repo directory name to a short description string."
       fi
       if [[ "$mode" == "prompt-submit" && "$snapshot_usable" -eq 1 ]]; then
         : > "$warned_marker" || true

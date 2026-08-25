@@ -55,8 +55,9 @@ a hook here must be cheap and must never exit 2, since that erases the prompt en
 stability guarantee. A hook that reads it must degrade to silence on a missing,
 malformed, or reshaped record rather than break.
 
-The peer-roster plugin also depends on a machine-local `~/.claude/peers.json`, which is
-deliberately untracked and outside the stow package, so a fresh machine warns once
+The peer-roster plugin also depends on the `[repos]` table in the machine-local
+`~/.config/tmux/workspaces.toml` (shared with the tmux workspace tool), which is
+deliberately untracked and outside the stow packages, so a fresh machine warns once
 per session until it is created.
 
 ### Input
