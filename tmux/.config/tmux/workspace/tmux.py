@@ -30,6 +30,11 @@ class SessionWindow(NamedTuple):
     tagged: bool
 
 
+class SessionInfo(NamedTuple):
+    name: str
+    created: int
+
+
 def _session_target(session: str) -> str:
     # "=" is exact-match (a bare name matches by prefix) and the trailing colon
     # is required: without it tmux reads the first "." in the name as the pane
@@ -91,6 +96,19 @@ def session_exists(name: str) -> bool:
 
 def list_session_names() -> list[str]:
     return [line for line in _lines("list-sessions", "-F", "#{session_name}") if line]
+
+
+def list_sessions() -> list[SessionInfo]:
+    # session_created is always numeric; session_name may hold anything but a
+    # tab, so it goes last.
+    output = _lines("list-sessions", "-F", "#{session_created}\t#{session_name}")
+    sessions: list[SessionInfo] = []
+    for line in output:
+        if not line:
+            continue
+        created, name = line.split("\t", 1)
+        sessions.append(SessionInfo(name=name, created=int(created)))
+    return sessions
 
 
 def session_worktrees(session: str) -> list[Path]:

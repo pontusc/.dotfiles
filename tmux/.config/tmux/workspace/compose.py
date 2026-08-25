@@ -167,6 +167,8 @@ def flow_workspace() -> None:
                 "tmux",
                 "display-popup",
                 "-E",
+                "-s",
+                "bg=terminal",
                 "-w",
                 "80",
                 "-h",
@@ -187,7 +189,18 @@ def flow_workspace() -> None:
     for template_name in selection["templates"]:
         argv += ["--template", template_name]
     subprocess.run(
-        ["tmux", "display-popup", "-E", "-w", "64", "-h", "5", shlex.join(argv)],
+        [
+            "tmux",
+            "display-popup",
+            "-E",
+            "-s",
+            "bg=terminal",
+            "-w",
+            "64",
+            "-h",
+            "5",
+            shlex.join(argv),
+        ],
         check=False,
     )
 

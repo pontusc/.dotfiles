@@ -14,6 +14,7 @@ from pathlib import Path
 import compose
 import maintain
 import report
+import switch
 import ui
 from errors import Cancelled, WorkspaceError
 
@@ -68,6 +69,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "list", help="show workspaces and materialized sessions"
     )
     listing.set_defaults(func=lambda _: report.list_workspaces())
+
+    switch_session = subparsers.add_parser(
+        "switch", help="pick a session by slot number or fuzzy find"
+    )
+    switch_session.set_defaults(func=lambda _: switch.switch_session())
 
     return parser
 

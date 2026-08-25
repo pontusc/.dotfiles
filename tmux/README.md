@@ -23,6 +23,8 @@ folded symlink.
 - **leader+X** closes every window in the current session that loses nothing (repo-root
   windows, worktrees with a clean tree, ignored files count as loss). The worktree is
   removed, its branch kept. Dirty windows stay open and are reported.
+- **leader+s** picks another session: digits jump straight to a slot, letters fuzzy-find.
+  Slots stick to a session for its lifetime and free up when it dies.
 - `list` prints templates, discovered repos, and the materialized sessions.
 - Cancelling any prompt (fzf abort, escape, ctrl-d) exits silently. Re-running the flow
   for an existing ticket attaches and fills in only what is missing.

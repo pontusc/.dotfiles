@@ -1,0 +1,3 @@
+# Ruff ignores the PEP 723 script header, so the target lives here: py311
+# matches main.py's requires-python and marks tomllib as stdlib.
+target-version = "py311"

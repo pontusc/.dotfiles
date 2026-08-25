@@ -14,6 +14,10 @@ from typing import NoReturn
 
 from errors import Cancelled, WorkspaceError
 
+# Terminal-default background and gutter, so fzf paints no opaque cells and
+# the popup keeps the terminal's translucency.
+_FZF_STYLE = ("--color=bg:-1,gutter:-1",)
+
 
 def _wait_for_keypress() -> None:
     # Runs inside a tmux display-popup that closes on exit, so callers hold
@@ -44,7 +48,7 @@ def notice(message: str) -> None:
 
 def _run_fzf(options: Sequence[str], *args: str) -> list[str]:
     result = subprocess.run(
-        ["fzf", *args],
+        ["fzf", *_FZF_STYLE, *args],
         input="\n".join(options),
         capture_output=True,
         text=True,
@@ -58,8 +62,11 @@ def _run_fzf(options: Sequence[str], *args: str) -> list[str]:
     return [line for line in result.stdout.splitlines() if line]
 
 
-def pick(options: Sequence[str], prompt: str) -> str | None:
-    selected = _run_fzf(options, "--prompt", prompt)
+def pick(options: Sequence[str], prompt: str, binds: Sequence[str] = ()) -> str | None:
+    args = ["--prompt", prompt]
+    for bind in binds:
+        args += ["--bind", bind]
+    selected = _run_fzf(options, *args)
     return selected[0] if selected else None
 
 
