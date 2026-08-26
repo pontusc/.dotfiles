@@ -75,6 +75,17 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     switch_session.set_defaults(func=lambda _: switch.switch_session())
 
+    slots_save = subparsers.add_parser(
+        "slots-save", help="write session slots to disk (tmux-resurrect save hook)"
+    )
+    slots_save.set_defaults(func=lambda _: switch.save_slots())
+
+    slots_restore = subparsers.add_parser(
+        "slots-restore",
+        help="reapply saved slots after a restore (tmux-resurrect restore hook)",
+    )
+    slots_restore.set_defaults(func=lambda _: switch.restore_slots())
+
     return parser
 
 

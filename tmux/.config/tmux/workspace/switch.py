@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import json
+import os
 from collections.abc import Sequence
+from pathlib import Path
 from typing import NamedTuple
 
 import tmux
@@ -10,6 +13,11 @@ import ui
 
 _SLOT_OPTION = "@slot"
 _MAX_BOUND_DIGIT = 9
+_STATE_PATH = (
+    Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local" / "state"))
+    / "tmux-workspace"
+    / "slots.json"
+)
 
 
 class SessionRecord(NamedTuple):
@@ -68,6 +76,32 @@ def _digit_binds(rows: Sequence[SlottedSession]) -> list[str]:
             f' || echo "put({digit})"'
         )
     return binds
+
+
+def save_slots() -> None:
+    """Mirror live slots to disk: session options die with the server."""
+    slots = {
+        record.name: record.slot
+        for record in _current_records()
+        if record.slot is not None
+    }
+    _STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    _STATE_PATH.write_text(json.dumps(slots))
+
+
+def restore_slots() -> None:
+    """Reapply saved slots by session name, leaving live slots untouched."""
+    try:
+        saved: dict[str, int] = json.loads(_STATE_PATH.read_text())
+    except FileNotFoundError:
+        return
+    records = _current_records()
+    taken = {record.slot for record in records if record.slot is not None}
+    for record in records:
+        slot = saved.get(record.name)
+        if record.slot is None and slot is not None and slot not in taken:
+            taken.add(slot)
+            tmux.set_session_option(record.name, _SLOT_OPTION, str(slot))
 
 
 def switch_session() -> None:
