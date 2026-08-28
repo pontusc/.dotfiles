@@ -13,6 +13,7 @@ from pathlib import Path
 
 import compose
 import maintain
+import persist
 import report
 import switch
 import ui
@@ -75,16 +76,17 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     switch_session.set_defaults(func=lambda _: switch.switch_session())
 
-    slots_save = subparsers.add_parser(
-        "slots-save", help="write session slots to disk (tmux-resurrect save hook)"
+    state_save = subparsers.add_parser(
+        "state-save",
+        help="write session and window tags to disk (tmux-resurrect save hook)",
     )
-    slots_save.set_defaults(func=lambda _: switch.save_slots())
+    state_save.set_defaults(func=lambda _: persist.save_state())
 
-    slots_restore = subparsers.add_parser(
-        "slots-restore",
-        help="reapply saved slots after a restore (tmux-resurrect restore hook)",
+    state_restore = subparsers.add_parser(
+        "state-restore",
+        help="reapply saved tags after a restore (tmux-resurrect restore hook)",
     )
-    slots_restore.set_defaults(func=lambda _: switch.restore_slots())
+    state_restore.set_defaults(func=lambda _: persist.restore_state())
 
     return parser
 

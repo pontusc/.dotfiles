@@ -69,9 +69,12 @@ same override.
 
 ## Constraints
 
-- Every window the tool creates is tagged `@worktree` with its path. The tags are the only
-  state: idempotent re-open, cleanup scope, and de-dupe against the old leader+W flow all
-  read them. Nothing else may kill or retag those windows.
+- Every window the tool creates is tagged `@worktree` with its path. The tags are the
+  runtime truth: idempotent re-open, cleanup scope, and de-dupe against the old leader+W
+  flow all read them. Nothing else may kill or retag those windows. tmux-resurrect drops
+  all user options on restore, so the resurrect hooks mirror the tags plus `@slot` and
+  `@ticket_slug` to a state file and reapply them by session and window name. A session or
+  window renamed after the last periodic save comes back untagged.
 - The leader+T binding must stay `run-shell -b` into `flow`: a `display-popup` opened from
   inside another popup modifies the popup that is already up, so the picker and prompt
   popups have to be opened server-side, one after the other.
