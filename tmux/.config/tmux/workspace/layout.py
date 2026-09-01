@@ -8,7 +8,9 @@ from pathlib import Path
 import tmux
 
 
-def arrange(window_id: str, cwd: Path, claude_session: str) -> None:
+def arrange(
+    window_id: str, cwd: Path, claude_session: str, extra_dir: Path | None = None
+) -> None:
     """Split into nvim top-left, terminal bottom-left, claude right."""
     tmux.split_window(window_id, cwd, horizontal=True, size="34%")
     tmux.select_pane(window_id, "left")
@@ -16,6 +18,10 @@ def arrange(window_id: str, cwd: Path, claude_session: str) -> None:
     tmux.select_pane(window_id, "up")
     tmux.send_keys(window_id, "nvim")
     tmux.select_pane(window_id, "right")
-    tmux.send_keys(window_id, f"claude -n {shlex.quote(claude_session)}")
+    claude_args = ["claude", "--model", "opus", "-n", claude_session]
+    if extra_dir is not None:
+        # --add-dir is variadic in the claude CLI, so it must stay last.
+        claude_args += ["--add-dir", str(extra_dir)]
+    tmux.send_keys(window_id, shlex.join(claude_args))
     tmux.select_pane(window_id, "left")
     tmux.select_pane(window_id, "up")

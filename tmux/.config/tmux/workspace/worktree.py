@@ -2,10 +2,18 @@
 
 from __future__ import annotations
 
+import contextlib
 import subprocess
 from pathlib import Path
+from typing import NamedTuple
 
 WORKTREES_SUFFIX = ".worktrees"
+TICKETS_DIR = "tickets"
+
+
+class Status(NamedTuple):
+    changes: tuple[str, ...]
+    ignored: tuple[str, ...]
 
 
 def _git(cwd: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -35,8 +43,18 @@ def _base_ref(repo_root: Path) -> str:
     return "HEAD"
 
 
-def path_for(repo_root: Path, branch: str) -> Path:
-    return Path(f"{repo_root}{WORKTREES_SUFFIX}") / branch.replace("/", "-")
+def path_for(work_root: Path, session: str, repo_name: str) -> Path:
+    return work_root / TICKETS_DIR / session / repo_name
+
+
+def main_repo_root(path: Path) -> Path | None:
+    """The root of the main repo path belongs to, whether path is the main
+    checkout or a linked worktree.
+    """
+    result = _git(path, "rev-parse", "--path-format=absolute", "--git-common-dir")
+    if result.returncode != 0 or not result.stdout.strip():
+        return None
+    return Path(result.stdout.strip()).parent
 
 
 def create(repo_root: Path, branch: str, path: Path) -> str | None:
@@ -77,15 +95,28 @@ def branch_at(path: Path) -> str | None:
     return result.stdout.strip() or None
 
 
-def is_clean(path: Path) -> bool:
-    """True when removing the worktree loses nothing, ignored files included."""
+def status(path: Path) -> Status | None:
+    """What removing the worktree would lose, or None if git status failed."""
     result = _git(path, "status", "--porcelain", "--ignored")
-    return result.returncode == 0 and not result.stdout.strip()
+    if result.returncode != 0:
+        return None
+    changes: list[str] = []
+    ignored: list[str] = []
+    for line in result.stdout.splitlines():
+        if line.startswith("!! "):
+            ignored.append(line[3:])
+        elif line:
+            changes.append(line[3:])
+    return Status(changes=tuple(changes), ignored=tuple(ignored))
 
 
 def remove(repo_root: Path, path: Path) -> str | None:
     """Remove a worktree, returning an error message on failure."""
     result = _git(repo_root, "worktree", "remove", str(path))
-    if result.returncode == 0:
-        return None
-    return result.stderr.strip() or f"git worktree remove exited {result.returncode}"
+    if result.returncode != 0:
+        return (
+            result.stderr.strip() or f"git worktree remove exited {result.returncode}"
+        )
+    with contextlib.suppress(OSError):
+        path.parent.rmdir()
+    return None

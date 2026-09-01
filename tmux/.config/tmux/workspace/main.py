@@ -25,7 +25,7 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="workspace",
         description=(
             "Compose tmux ticket sessions from the repos discovered under the work"
-            " root. workspaces.toml only adds optional shortcuts and descriptions."
+            " root. workspaces.toml only adds optional descriptions."
         ),
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -36,7 +36,7 @@ def _build_parser() -> argparse.ArgumentParser:
     flow.set_defaults(func=lambda _: compose.flow_workspace())
 
     open_workspace = subparsers.add_parser(
-        "open", help="pick repos and templates and materialize a session"
+        "open", help="pick repos and materialize a session"
     )
     open_workspace.add_argument(
         "--chain-out", type=Path, default=None, dest="chain_out", help=argparse.SUPPRESS
@@ -49,11 +49,8 @@ def _build_parser() -> argparse.ArgumentParser:
     # help=SUPPRESS literally for a subparser.
     materialize = subparsers.add_parser("materialize")
     materialize.add_argument("--repo", action="append", default=[], dest="repos")
-    materialize.add_argument(
-        "--template", action="append", default=[], dest="templates"
-    )
     materialize.set_defaults(
-        func=lambda args: compose.materialize_workspace(args.repos, args.templates)
+        func=lambda args: compose.materialize_workspace(args.repos)
     )
 
     add = subparsers.add_parser(
@@ -67,7 +64,7 @@ def _build_parser() -> argparse.ArgumentParser:
     cleanup.set_defaults(func=lambda _: maintain.cleanup_session())
 
     listing = subparsers.add_parser(
-        "list", help="show workspaces and materialized sessions"
+        "list", help="show discovered repos and materialized sessions"
     )
     listing.set_defaults(func=lambda _: report.list_workspaces())
 

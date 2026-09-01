@@ -10,12 +10,6 @@ import tmux
 
 def list_workspaces() -> None:
     workspace_config = config.load()
-    for name in sorted(workspace_config.workspaces):
-        print(name)
-        for line in compose.repo_lines(
-            workspace_config.workspaces[name].repos, workspace_config.repos
-        ):
-            print(f"  {line}")
     print("repos:")
     discovered = repo.discover(workspace_config.settings.work_root)
     for line in compose.repo_lines(discovered, workspace_config.repos):

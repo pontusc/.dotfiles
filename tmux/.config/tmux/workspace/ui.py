@@ -46,6 +46,15 @@ def notice(message: str) -> None:
     _wait_for_keypress()
 
 
+def confirm(question: str) -> bool:
+    """True only on an explicit yes: empty input and Escape both decline."""
+    try:
+        answer = prompt_line(f"{question} [y/N] ")
+    except Cancelled:
+        return False
+    return answer.strip().lower() in ("y", "yes")
+
+
 def _run_fzf(options: Sequence[str], *args: str) -> list[str]:
     result = subprocess.run(
         ["fzf", *_FZF_STYLE, *args],

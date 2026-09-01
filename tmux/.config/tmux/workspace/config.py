@@ -22,14 +22,8 @@ class Settings:
 
 
 @dataclass(frozen=True)
-class Workspace:
-    repos: tuple[str, ...]
-
-
-@dataclass(frozen=True)
 class Config:
     settings: Settings
-    workspaces: dict[str, Workspace]
     repos: dict[str, str]
 
 
@@ -62,24 +56,6 @@ def _parse_settings(table: object) -> Settings:
     )
 
 
-def _parse_workspaces(table: object) -> dict[str, Workspace]:
-    if not isinstance(table, dict):
-        raise WorkspaceError(f"{CONFIG_PATH}: [workspaces] must be a table")
-    workspaces: dict[str, Workspace] = {}
-    for name, entry in table.items():
-        repos = entry.get("repos") if isinstance(entry, dict) else None
-        if (
-            not isinstance(repos, list)
-            or not repos
-            or not all(isinstance(repo, str) for repo in repos)
-        ):
-            raise WorkspaceError(
-                f'{CONFIG_PATH}: [workspaces.{name}] needs repos = ["<dir>", ...]'
-            )
-        workspaces[name] = Workspace(repos=tuple(repos))
-    return workspaces
-
-
 def _parse_repos(table: object) -> dict[str, str]:
     if not isinstance(table, dict) or not all(
         isinstance(description, str) for description in table.values()
@@ -92,13 +68,12 @@ def _parse_repos(table: object) -> dict[str, str]:
 
 def load() -> Config:
     if not CONFIG_PATH.is_file():
-        return Config(settings=_parse_settings({}), workspaces={}, repos={})
+        return Config(settings=_parse_settings({}), repos={})
     try:
         raw = tomllib.loads(CONFIG_PATH.read_text())
     except (OSError, tomllib.TOMLDecodeError) as error:
         raise WorkspaceError(f"cannot read {CONFIG_PATH}: {error}") from error
     return Config(
         settings=_parse_settings(raw.get("settings", {})),
-        workspaces=_parse_workspaces(raw.get("workspaces", {})),
         repos=_parse_repos(raw.get("repos", {})),
     )

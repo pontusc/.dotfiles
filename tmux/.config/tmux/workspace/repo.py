@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import worktree
 from worktree import WORKTREES_SUFFIX
 
 
@@ -22,8 +23,9 @@ def discover(work_root: Path) -> list[str]:
 
 
 def owner_of(path: Path, work_root: Path, repos: list[str]) -> str | None:
-    for name in repos:
-        repo_root = work_root / name
-        if path == repo_root or path.is_relative_to(f"{repo_root}{WORKTREES_SUFFIX}"):
-            return name
+    root = worktree.main_repo_root(path)
+    if root is None:
+        return None
+    if root.parent == work_root and root.name in repos:
+        return root.name
     return None

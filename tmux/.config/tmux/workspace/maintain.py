@@ -6,6 +6,7 @@ import re
 
 import compose
 import config
+import persist
 import repo
 import ticket
 import tmux
@@ -52,6 +53,7 @@ def add_repo() -> None:
     if failures:
         raise WorkspaceError("\n".join(failures))
     skipped = compose.ensure_windows(session, specs)
+    persist.save_state()
     if skipped:
         ui.notice("\n".join(skipped))
 
@@ -82,8 +84,17 @@ def cleanup_session() -> None:
         if owner is None:
             kept.append(f"{window.name}: no discovered repo owns {window.path}, kept")
             continue
-        if not worktree.is_clean(window.path):
-            kept.append(f"{owner}: uncommitted or ignored files, kept")
+        status = worktree.status(window.path)
+        if status is None:
+            kept.append(f"{owner}: git status failed, kept")
+            continue
+        if status.changes:
+            kept.append(f"{owner}: uncommitted changes, kept")
+            continue
+        if status.ignored and not ui.confirm(
+            f"{owner}: only ignored files ({', '.join(status.ignored)})\nremove anyway?"
+        ):
+            kept.append(f"{owner}: declined, kept")
             continue
         branch = worktree.branch_at(window.path) or "unknown"
         error = worktree.remove(work_root / owner, window.path)
@@ -92,5 +103,6 @@ def cleanup_session() -> None:
             continue
         tmux.kill_window(window.window_id)
         removed.append(f"{owner}: removed worktree (branch {branch} kept)")
+    persist.save_state()
     if removed or kept:
         ui.notice("\n".join(removed + kept))

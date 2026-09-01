@@ -1,4 +1,4 @@
-"""Compose a tmux session out of picked repos and templates."""
+"""Compose a tmux session out of picked repos."""
 
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ from pathlib import Path
 
 import config
 import layout
+import persist
 import repo
 import ticket
 import tmux
@@ -22,14 +23,13 @@ import ui
 import worktree
 from errors import WorkspaceError
 
-_TEMPLATE_PREFIX = "◆ "
-
 
 @dataclass(frozen=True)
 class WindowSpec:
     repo: str
     path: Path
     claude_session: str
+    group_dir: Path | None
 
 
 def repo_lines(repos: Sequence[str], descriptions: dict[str, str]) -> list[str]:
@@ -49,11 +49,7 @@ def prioritized(repos: list[str], descriptions: dict[str, str]) -> list[str]:
 
 def row_name(row: str) -> str:
     """The name a picker row stands for, dropping padding and the description."""
-    return row.removeprefix(_TEMPLATE_PREFIX).split()[0]
-
-
-def _template_row(name: str, members: Sequence[str]) -> str:
-    return f"{_TEMPLATE_PREFIX}{name}  ({', '.join(members)})"
+    return row.split()[0]
 
 
 def prepare_windows(
@@ -71,12 +67,15 @@ def prepare_windows(
         if session_ticket is None:
             specs.append(
                 WindowSpec(
-                    repo=repo_name, path=repo_root, claude_session=claude_session
+                    repo=repo_name,
+                    path=repo_root,
+                    claude_session=claude_session,
+                    group_dir=None,
                 )
             )
             continue
         branch = session_ticket.branch
-        path = worktree.path_for(repo_root, branch)
+        path = worktree.path_for(work_root, session, repo_name)
         if path.is_dir():
             # The path is derived from the branch name, so an existing one is
             # only ours to reuse when it really is that branch's worktree.
@@ -94,14 +93,19 @@ def prepare_windows(
                 failures.append(f"{repo_name}: {error}")
                 continue
         specs.append(
-            WindowSpec(repo=repo_name, path=path, claude_session=claude_session)
+            WindowSpec(
+                repo=repo_name,
+                path=path,
+                claude_session=claude_session,
+                group_dir=path.parent,
+            )
         )
     return specs, failures
 
 
 def _configure_window(window_id: str, spec: WindowSpec) -> None:
     tmux.set_window_option(window_id, "@worktree", str(spec.path))
-    layout.arrange(window_id, spec.path, spec.claude_session)
+    layout.arrange(window_id, spec.path, spec.claude_session, spec.group_dir)
 
 
 def ensure_windows(session: str, specs: list[WindowSpec]) -> list[str]:
@@ -130,9 +134,7 @@ def ensure_windows(session: str, specs: list[WindowSpec]) -> list[str]:
     return skipped
 
 
-def _session_name(templates: list[str], repos: list[str]) -> str | None:
-    if len(templates) == 1:
-        return templates[0]
+def _session_name(repos: list[str]) -> str | None:
     if len(repos) == 1:
         return repos[0]
     return ui.prompt_line("Session name ❯ ").strip() or None
@@ -186,8 +188,6 @@ def flow_workspace() -> None:
     argv = [sys.argv[0], "materialize"]
     for repo_name in selection["repos"]:
         argv += ["--repo", repo_name]
-    for template_name in selection["templates"]:
-        argv += ["--template", template_name]
     subprocess.run(
         [
             "tmux",
@@ -209,30 +209,13 @@ def open_workspace(chain_out: Path | None) -> None:
     workspace_config = config.load()
     work_root = workspace_config.settings.work_root
     discovered = repo.discover(work_root)
-    options = [
-        _template_row(name, workspace_config.workspaces[name].repos)
-        for name in sorted(workspace_config.workspaces)
-    ] + repo_lines(
+    options = repo_lines(
         prioritized(discovered, workspace_config.repos), workspace_config.repos
     )
     selection = ui.pick_multi(options, "Repos ❯ ")
     if not selection:
         return
-    templates: list[str] = []
-    picked_repos: set[str] = set()
-    for row in selection:
-        name = row_name(row)
-        if row.startswith(_TEMPLATE_PREFIX) and name in workspace_config.workspaces:
-            templates.append(name)
-        else:
-            picked_repos.add(name)
-    repos = sorted(
-        picked_repos.union(
-            repo_name
-            for template_name in templates
-            for repo_name in workspace_config.workspaces[template_name].repos
-        )
-    )
+    repos = sorted({row_name(row) for row in selection})
     missing = [
         str(work_root / repo_name)
         for repo_name in repos
@@ -241,12 +224,12 @@ def open_workspace(chain_out: Path | None) -> None:
     if missing:
         raise WorkspaceError("missing repo directories:\n  " + "\n  ".join(missing))
     if chain_out is not None:
-        chain_out.write_text(json.dumps({"repos": repos, "templates": templates}))
+        chain_out.write_text(json.dumps({"repos": repos}))
         return
-    materialize_workspace(repos, templates)
+    materialize_workspace(repos)
 
 
-def materialize_workspace(repos: list[str], templates: list[str]) -> None:
+def materialize_workspace(repos: list[str]) -> None:
     workspace_config = config.load()
     work_root = workspace_config.settings.work_root
     session_ticket = _resolve_ticket(
@@ -256,7 +239,7 @@ def materialize_workspace(repos: list[str], templates: list[str]) -> None:
     if session_ticket is not None:
         session = session_ticket.session_name
     else:
-        session = _session_name(templates, repos)
+        session = _session_name(repos)
         if session is None:
             return
     specs, failures = prepare_windows(repos, work_root, session_ticket, session)
@@ -266,5 +249,6 @@ def materialize_workspace(repos: list[str], templates: list[str]) -> None:
     if session_ticket is not None:
         tmux.set_session_option(session, "@ticket_slug", session_ticket.slug)
     tmux.focus_session(session)
+    persist.save_state()
     if failures or skipped:
         ui.notice("some repos were skipped:\n  " + "\n  ".join(failures + skipped))
