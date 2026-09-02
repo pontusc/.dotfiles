@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Summarizes last week's Claude Code sessions into ~/work-summaries/<monday date>.md and
+# notifies until clicked, the click opens the file. Run by claude-weekly.timer on Monday
+# mornings, or by hand with no arguments.
+
+THIS_MONDAY="$(date -d "today -$(($(date +%u) - 1)) days" +%F)"
+LAST_MONDAY="$(date -d "${THIS_MONDAY} -7 days" +%F)"
+START="$(date -u -d "${LAST_MONDAY}" +%FT%TZ)"
+END="$(date -u -d "${THIS_MONDAY}" +%FT%TZ)"
+WEEK="$(date -d "${LAST_MONDAY}" +%G-W%V)"
+OUT_DIR="${HOME}/work-summaries"
+OUT="${OUT_DIR}/${LAST_MONDAY}.md"
+MAX_BYTES=600000
+
+fail() {
+  notify-send -u critical "Weekly summary failed" "$1, see journalctl --user -u claude-weekly"
+  exit 1
+}
+
+digest() {
+  local file project
+  while IFS= read -r file; do
+    project="$(basename "$(dirname "$file")")"
+    printf '\n## %s\n' "${project#-home-pontusc-}"
+    jq -r --arg s "$START" --arg e "$END" '
+      select(.timestamp != null and .timestamp >= $s and .timestamp < $e)
+      | if .type == "user" and (.message.content | type) == "string" and (.message.content | startswith("<") | not)
+        then "U: " + .message.content[:400]
+        elif .type == "assistant" and (.message.content | type) == "array"
+        then (.message.content | map(select(.type == "text").text) | join(" ") | select(length > 0) | "A: " + .[:300])
+        else empty end' "$file" 2>/dev/null || true
+  done < <(find "${HOME}/.claude/projects" -mindepth 2 -maxdepth 2 -name '*.jsonl' -newermt "$LAST_MONDAY")
+}
+
+PROMPT="Below is a digest of my Claude Code sessions from ${START} to ${END}, one section per project directory, U is me and A is the assistant. Write a weekly summary in markdown. Start with the heading '# Week ${WEEK}'. Then '## Overview', at most ten bullets covering the overarching work of the week across all tickets and sidework, one line each. Then '## Tickets' with one '### <ticket id>' subsection per ticket, found in directory names like worktrees-ALC-1030 or mentioned in the text. Then '## Sidework' with one subsection per repo for everything without a ticket. Bullet points, one line each, what was done and its outcome. Merge duplicate sessions on the same topic. Skip trivia and abandoned one-liners. Plain punctuation, no semicolons, no em or en dashes. Output only the markdown, no preamble."
+
+mkdir -p "$OUT_DIR"
+SUMMARY="$(digest | head -c "$MAX_BYTES" | claude -p "$PROMPT" --model sonnet --setting-sources "" --tools "" --output-format text)" || fail "claude exited non-zero"
+[[ -n "$SUMMARY" ]] || fail "empty summary"
+printf '%s\n' "$SUMMARY" >"$OUT"
+
+if [[ "$(notify-send -u critical -A default=Open "Weekly summary ${WEEK}" "$OUT")" == "default" ]]; then
+  xdg-open "$OUT"
+fi

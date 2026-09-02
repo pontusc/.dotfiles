@@ -1,0 +1,6 @@
+[Unit]
+Description=Weekly Claude Code session summary
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/claude-weekly
