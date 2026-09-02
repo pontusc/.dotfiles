@@ -71,10 +71,18 @@ def _run_fzf(options: Sequence[str], *args: str) -> list[str]:
     return [line for line in result.stdout.splitlines() if line]
 
 
-def pick(options: Sequence[str], prompt: str, binds: Sequence[str] = ()) -> str | None:
+def pick(
+    options: Sequence[str],
+    prompt: str,
+    binds: Sequence[str] = (),
+    delimiter: str | None = None,
+) -> str | None:
+    """delimiter splits each option into a hidden return value and the text fzf displays."""
     args = ["--prompt", prompt]
     for bind in binds:
         args += ["--bind", bind]
+    if delimiter is not None:
+        args += ["--delimiter", delimiter, "--with-nth", "2.."]
     selected = _run_fzf(options, *args)
     return selected[0] if selected else None
 

@@ -208,6 +208,21 @@ def set_window_option(window_id: str, option: str, value: str) -> None:
     _run_checked("set-option", "-w", "-t", window_id, option, value)
 
 
+def flagged_sessions() -> dict[str, str]:
+    """Session name to @claude flag ("ask" or "done"); "ask" outranks "done" for a session with both."""
+    output = _lines("list-windows", "-a", "-F", "#{session_name}\t#{@claude}")
+    flags: dict[str, str] = {}
+    for line in output:
+        if "\t" not in line:
+            continue
+        session, flag = line.split("\t", 1)
+        if not flag:
+            continue
+        if flag == "ask" or session not in flags:
+            flags[session] = flag
+    return flags
+
+
 def session_windows(session: str) -> list[SessionWindow]:
     # window_name is renameable and may contain tabs, so it goes last.
     output = _lines(

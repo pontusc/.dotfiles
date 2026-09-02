@@ -11,6 +11,7 @@ import ui
 
 _SLOT_OPTION = "@slot"
 _MAX_BOUND_DIGIT = 9
+_FLAG_MARKERS = {"ask": " ?", "done": " ✓"}
 
 
 class SessionRecord(NamedTuple):
@@ -87,12 +88,15 @@ def switch_session() -> None:
         ),
         key=lambda row: row.slot,
     )
+    flags = tmux.flagged_sessions()
     lines = [
-        f"{row.slot:>2}  {row.name}{' *' if row.name == current else ''}"
+        f"{row.name}\t{row.slot:>2}  {row.name}"
+        f"{_FLAG_MARKERS.get(flags.get(row.name), '')}"
+        f"{' *' if row.name == current else ''}"
         for row in rows
     ]
-    choice = ui.pick(lines, "Switch ❯ ", binds=_digit_binds(rows))
+    choice = ui.pick(lines, "Switch ❯ ", binds=_digit_binds(rows), delimiter="\t")
     if choice is None:
         return
-    name = choice.split("  ", 1)[1].removesuffix(" *")
+    name = choice.split("\t", 1)[0]
     tmux.focus_session(name)

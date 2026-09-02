@@ -60,15 +60,55 @@
       "Edit(**/*.pem)",
       "Edit(**/*.key)"
     ],
-    "ask": ["Bash(git push:*)", "Bash(git switch:*)"],
+    "ask": [
+      "Bash(git push:*)",
+      "Bash(git switch:*)"
+    ],
     "defaultMode": "default"
   },
-  "model": "opus",
+  "model": "claude-fable-5-1[1m]",
   "hooks": {
-    "Notification": [{ "matcher": "permission_prompt", "hooks": [{ "type": "command", "command": "/home/pontusc/.claude/hooks/notify.sh" }] }],
-    "Stop": [{ "hooks": [{ "type": "command", "command": "/home/pontusc/.claude/hooks/notify.sh" }] }],
-    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "/home/pontusc/.claude/hooks/notify.sh" }] }],
-    "PostToolUse": [{ "hooks": [{ "type": "command", "command": "/home/pontusc/.claude/hooks/notify.sh" }] }],
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/pontusc/.claude/hooks/notify.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/pontusc/.claude/hooks/notify.sh"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/pontusc/.claude/hooks/notify.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/pontusc/.claude/hooks/notify.sh"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
@@ -76,6 +116,15 @@
           {
             "type": "command",
             "command": "/home/pontusc/.local/bin/dcg"
+          }
+        ]
+      },
+      {
+        "matcher": "AskUserQuestion|ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/pontusc/.claude/hooks/notify.sh"
           }
         ]
       },
