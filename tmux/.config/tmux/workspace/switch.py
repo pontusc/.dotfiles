@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import NamedTuple
 
+import persist
 import tmux
 import ui
 
@@ -74,9 +75,11 @@ def switch_session() -> None:
     current = tmux.current_session()
     records = _current_records()
     slots = assign_slots(records)
-    for record in records:
-        if record.slot is None:
-            tmux.set_session_option(record.name, _SLOT_OPTION, str(slots[record.name]))
+    unslotted = [record for record in records if record.slot is None]
+    for record in unslotted:
+        tmux.set_session_option(record.name, _SLOT_OPTION, str(slots[record.name]))
+    if unslotted:
+        persist.save_state()
     rows = sorted(
         (
             SlottedSession(slot=slots[record.name], name=record.name)

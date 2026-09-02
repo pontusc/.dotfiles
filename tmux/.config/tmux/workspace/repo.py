@@ -26,6 +26,8 @@ def owner_of(path: Path, work_root: Path, repos: list[str]) -> str | None:
     root = worktree.main_repo_root(path)
     if root is None:
         return None
-    if root.parent == work_root and root.name in repos:
+    # git hands back a realpath, so the candidate is resolved too: either the
+    # work root or the repo directory itself may be a symlink.
+    if root.name in repos and (work_root / root.name).resolve() == root:
         return root.name
     return None

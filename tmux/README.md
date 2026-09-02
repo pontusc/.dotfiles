@@ -14,8 +14,9 @@ folded symlink.
   session, one window per repo with a worktree on branch `KEY/slug` at
   `tickets/<session>/<repo>` under the work root, the 3-pane layout, and a named claude in
   each, pinned to opus with the ticket directory passed via `--add-dir`. A ticket owns one
-  worktree per repo, so reopening it with a different slug fails per repo until leader+X
-  removes the old ones.
+  worktree per repo, so reopening it with a different slug fails per repo until the old
+  worktrees are gone. leader+X only reaches the windows of a live session, so a worktree
+  whose session is already gone needs a manual `git worktree remove` until `done` exists.
 - Empty ticket with a branch given: worktrees on the bare branch, session named by the
   branch. Both prompts empty: windows at repo roots, no worktrees, session named by the
   sole repo or a prompt.
@@ -33,8 +34,9 @@ folded symlink.
   for an existing ticket attaches and fills in only what is missing.
 
 Naming: session = ticket key (or workspace name when ticketless), window = repo, claude
-session = `<KEY>-<repo>`. Renaming a ticket session breaks `add`, which derives the ticket
-and the `tickets/<session>` directory from the session name.
+session = `<KEY>-<repo>`. Renaming a ticket session makes `add` refuse with an error until
+it is renamed back, since it derives the ticket and the `tickets/<session>` directory from
+the session name.
 
 ## Config
 

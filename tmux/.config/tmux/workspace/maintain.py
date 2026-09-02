@@ -16,12 +16,13 @@ from errors import WorkspaceError
 
 
 def _session_ticket(session: str, pattern: re.Pattern[str]) -> ticket.Ticket | None:
+    key = tmux.session_option(session, "@ticket_key")
     slug = tmux.session_option(session, "@ticket_slug")
     if not slug and pattern.fullmatch(session):
         slug = ui.prompt_line(f"Slug for {session} ❯ ").strip()
         if slug:
             tmux.set_session_option(session, "@ticket_slug", slug)
-    return ticket.from_session(session, slug or None, pattern)
+    return ticket.from_session(session, key or None, slug or None, pattern)
 
 
 def add_repo() -> None:
@@ -52,10 +53,10 @@ def add_repo() -> None:
     )
     if failures:
         raise WorkspaceError("\n".join(failures))
-    skipped = compose.ensure_windows(session, specs)
+    result = compose.ensure_windows(session, specs)
     persist.save_state()
-    if skipped:
-        ui.notice("\n".join(skipped))
+    if result.skipped:
+        ui.notice("\n".join(result.skipped))
 
 
 def cleanup_session() -> None:

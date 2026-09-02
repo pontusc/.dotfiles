@@ -17,6 +17,8 @@ _PANE_FLAGS: dict[PaneDirection, str] = {
     "down": "-D",
 }
 
+_FORBIDDEN_NAME_CHARS = (".", ":")
+
 
 class WindowRef(NamedTuple):
     window_id: str
@@ -88,6 +90,17 @@ def _client_size_args() -> list[str]:
     if not width or not height:
         return []
     return ["-x", width, "-y", height]
+
+
+def validate_session_name(name: str) -> None:
+    """Reject a name tmux will not carry: it reads "." and ":" as target separators."""
+    if not name:
+        raise WorkspaceError("session name is empty")
+    if any(char in name for char in _FORBIDDEN_NAME_CHARS):
+        forbidden = " and ".join(f"'{char}'" for char in _FORBIDDEN_NAME_CHARS)
+        raise WorkspaceError(
+            f"'{name}' cannot be a session name: tmux forbids {forbidden}"
+        )
 
 
 def session_exists(name: str) -> bool:

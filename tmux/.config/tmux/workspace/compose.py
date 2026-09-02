@@ -12,6 +12,7 @@ import tempfile
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import NamedTuple
 
 import config
 import layout
@@ -30,6 +31,11 @@ class WindowSpec:
     path: Path
     claude_session: str
     group_dir: Path | None
+
+
+class ComposeResult(NamedTuple):
+    skipped: list[str]
+    session_live: bool
 
 
 def repo_lines(repos: Sequence[str], descriptions: dict[str, str]) -> list[str]:
@@ -108,8 +114,8 @@ def _configure_window(window_id: str, spec: WindowSpec) -> None:
     layout.arrange(window_id, spec.path, spec.claude_session, spec.group_dir)
 
 
-def ensure_windows(session: str, specs: list[WindowSpec]) -> list[str]:
-    """Open a window per spec in session, returning the ones left alone."""
+def ensure_windows(session: str, specs: list[WindowSpec]) -> ComposeResult:
+    """Open a window per spec in session, reporting the ones left alone."""
     pending: list[WindowSpec] = []
     skipped: list[str] = []
     for spec in specs:
@@ -127,11 +133,13 @@ def ensure_windows(session: str, specs: list[WindowSpec]) -> list[str]:
                 tmux.start_session(session, first.repo, first.path), first
             )
             pending = pending[1:]
+        elif skipped:
+            return ComposeResult(skipped=skipped, session_live=False)
         else:
             tmux.start_empty_session(session)
     for spec in pending:
         _configure_window(tmux.new_window(session, spec.repo, spec.path), spec)
-    return skipped
+    return ComposeResult(skipped=skipped, session_live=True)
 
 
 def _session_name(repos: list[str]) -> str | None:
@@ -196,9 +204,9 @@ def flow_workspace() -> None:
             "-s",
             "bg=terminal",
             "-w",
-            "64",
+            "80",
             "-h",
-            "5",
+            "24",
             shlex.join(argv),
         ],
         check=False,
@@ -242,13 +250,21 @@ def materialize_workspace(repos: list[str]) -> None:
         session = _session_name(repos)
         if session is None:
             return
+    # Checked before prepare_windows: a name tmux rejects would otherwise leave
+    # the freshly created branches and worktrees behind.
+    tmux.validate_session_name(session)
     specs, failures = prepare_windows(repos, work_root, session_ticket, session)
     if failures and not specs:
         raise WorkspaceError("no repo could be prepared:\n  " + "\n  ".join(failures))
-    skipped = ensure_windows(session, specs)
-    if session_ticket is not None:
-        tmux.set_session_option(session, "@ticket_slug", session_ticket.slug)
-    tmux.focus_session(session)
-    persist.save_state()
-    if failures or skipped:
-        ui.notice("some repos were skipped:\n  " + "\n  ".join(failures + skipped))
+    result = ensure_windows(session, specs)
+    if result.session_live:
+        if session_ticket is not None:
+            tmux.set_session_option(session, "@ticket_slug", session_ticket.slug)
+            if session_ticket.key is not None:
+                tmux.set_session_option(session, "@ticket_key", session_ticket.key)
+        tmux.focus_session(session)
+        persist.save_state()
+    if failures or result.skipped:
+        ui.notice(
+            "some repos were skipped:\n  " + "\n  ".join(failures + result.skipped)
+        )
