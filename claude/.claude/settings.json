@@ -43,22 +43,33 @@
       "Bash(talosctl etcd leave:*)",
       "Read(.env)",
       "Read(.env.*)",
-      "Edit(.env)",
-      "Edit(.env.*)",
       "Read(~/.ssh/**)",
-      "Edit(~/.ssh/**)",
       "Read(~/.aws/**)",
-      "Edit(~/.aws/**)",
       "Read(~/.kube/**)",
-      "Edit(~/.kube/**)",
       "Read(~/.gnupg/**)",
-      "Edit(~/.gnupg/**)",
       "Read(~/.talos/**)",
-      "Edit(~/.talos/**)",
       "Read(**/*.pem)",
       "Read(**/*.key)",
-      "Edit(**/*.pem)",
-      "Edit(**/*.key)"
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/*.pfx)",
+      "Read(**/*.p12)",
+      "Read(**/credentials)",
+      "Read(**/credentials.json)",
+      "Read(**/application_default_credentials.json)",
+      "Read(**/kubeconfig)",
+      "Read(**/*.kubeconfig)",
+      "Read(**/.talos/**)",
+      "Read(**/*.tfstate)",
+      "Read(**/*.tfstate.backup)",
+      "Read(**/.npmrc)",
+      "Read(**/.netrc)",
+      "Read(**/authorized_keys)",
+      "Read(**/id_rsa)",
+      "Read(**/id_ed25519)",
+      "Read(**/id_ecdsa)",
+      "Read(**/id_dsa)",
+      "Read(**/.secret/**)"
     ],
     "ask": [
       "Bash(git push:*)",
@@ -125,15 +136,6 @@
           {
             "type": "command",
             "command": "/home/pontusc/.claude/hooks/notify.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Read|Bash|Grep|Glob",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/home/pontusc/.claude/hooks/guard-sensitive.sh"
           }
         ]
       }
