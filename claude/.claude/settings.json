@@ -65,16 +65,10 @@
   },
   "model": "opus",
   "hooks": {
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/home/pontusc/.claude/hooks/notify.sh"
-          }
-        ]
-      }
-    ],
+    "Notification": [{ "matcher": "permission_prompt", "hooks": [{ "type": "command", "command": "/home/pontusc/.claude/hooks/notify.sh" }] }],
+    "Stop": [{ "hooks": [{ "type": "command", "command": "/home/pontusc/.claude/hooks/notify.sh" }] }],
+    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "/home/pontusc/.claude/hooks/notify.sh" }] }],
+    "PostToolUse": [{ "hooks": [{ "type": "command", "command": "/home/pontusc/.claude/hooks/notify.sh" }] }],
     "PreToolUse": [
       {
         "matcher": "Bash",

@@ -1,81 +1,40 @@
 #!/usr/bin/env bash
-# notify — Claude Code notification entry point.
-#
-# ── Purpose ───────────────────────────────────────────────────────────────────
-#
-# Single relay for desktop notifications. Surfaces ONLY permission prompts —
-# the one Notification subtype that needs the user to act. idle_prompt ("waiting
-# for input") is deliberately dropped: this is a global hook, so it fires at
-# every turn end for every concurrent session, and an unanswered permission
-# prompt itself degrades into an idle_prompt after the idle threshold — both are
-# pure noise. Stop/SubagentStop and PreToolUse blocks likewise stay silent.
-#
-# ── Input ─────────────────────────────────────────────────────────────────────
-#
-# Claude Code native event JSON on stdin:
-#   { "hook_event_name": "Notification", "notification_type": "...", "message": "...", ... }
-#
-# ── Event routing ──────────────────────────────────────────────────────────────
-#
-#   notification_type │ Urgency  │ Icon           │ Timeout  │ Message
-#   ──────────────────┼──────────┼────────────────┼──────────┼────────────────
-#   permission_prompt │ critical │ dialog-warning │ 0 (stay) │ event.message
-#   (all others)      │ (silent — exit 0, no notification)
-#
-# ── Exit ──────────────────────────────────────────────────────────────────────
-#
-# Always 0. Notifications are best-effort and must never block the agent.
+set -euo pipefail
+# Claude Code notification relay, the only desktop notifier. Registered in settings.json for
+# Notification (permission_prompt), Stop, UserPromptSubmit, and PostToolUse. Hook event JSON
+# on stdin. Notifies on prompts and stops, dismisses the session's popup when the user responds.
 
-set -uo pipefail
+INPUT="$(cat)"
+EVENT="$(jq -r '.hook_event_name // empty' <<<"$INPUT")"
+SESSION_ID="$(jq -r '.session_id // "unknown"' <<<"$INPUT")"
+MARK_DIR="${XDG_RUNTIME_DIR:-/tmp}/claude-notify"
+MARK="${MARK_DIR}/${SESSION_ID}"
+QS_SHELL=/usr/share/omarchy/shell
 
-INPUT=$(cat)
+LOCATION="${SESSION_ID:0:8}"
+if [[ -n "${TMUX:-}" ]]; then
+  LOCATION="$(tmux display-message -p -t "${TMUX_PANE:-}" '#S:#{=12:window_name}' 2>/dev/null || printf '%s' "$LOCATION")"
+fi
+TITLE="Claude Code, ${LOCATION}"
 
-EVENT=$(echo "$INPUT" | jq -r '.hook_event_name // empty')
-[[ -n "$EVENT" ]] || exit 0
+dismiss() {
+  [[ -f "$MARK" ]] || return 0
+  rm -f "$MARK"
+  if [[ -d "$QS_SHELL" ]] && command -v qs >/dev/null; then
+    qs -p "$QS_SHELL" ipc call notifications dismiss "$LOCATION" >/dev/null 2>&1 || true
+  fi
+}
 
-URGENCY="normal"
-ICON="dialog-information"
-TITLE="Claude Code"
-MESSAGE=""
-TIMEOUT="" # notify-send -t (ms); empty leaves the daemon default
+notify() {
+  dismiss
+  mkdir -p "$MARK_DIR"
+  : >"$MARK"
+  notify-send -u "$1" -t "$2" "$TITLE" "$3" 2>/dev/null || true
+}
 
 case "$EVENT" in
-Notification)
-  case "$(echo "$INPUT" | jq -r '.notification_type // empty')" in
-  permission_prompt)
-    # Approval required — high priority, persists until manually dismissed.
-    MESSAGE=$(echo "$INPUT" | jq -r '.message // "Approval needed"')
-    URGENCY="critical"
-    ICON="dialog-warning"
-    TIMEOUT=0
-    ;;
-  *)
-    # idle_prompt and every other subtype are noise across concurrent
-    # sessions — stay silent. Only actionable permission prompts notify.
-    exit 0
-    ;;
-  esac
-  ;;
-SubagentStop)
-  # Subagent completions are too frequent to surface
-  exit 0
-  ;;
-*)
-  # Unknown event — best-effort relay
-  TITLE="Claude Code: $EVENT"
-  MESSAGE=$(echo "$INPUT" | jq -r '.message // empty')
-  ;;
+  Notification) notify critical 0 "$(jq -r '.message // "Approval needed"' <<<"$INPUT")" ;;
+  Stop) notify normal 8000 "Waiting for input" ;;
+  UserPromptSubmit | PostToolUse) dismiss ;;
 esac
-
-[[ -n "$MESSAGE" ]] || exit 0
-
-# Append tmux location when running inside tmux (best-effort, no-op otherwise).
-if [[ -n "${TMUX:-}" ]] && command -v tmux &> /dev/null; then
-  LOCATION=$(tmux display-message -p -t "${TMUX_PANE:-}" '#S:#{=12:window_name}' 2> /dev/null)
-  [[ -n "$LOCATION" ]] && TITLE="$TITLE — $LOCATION"
-fi
-
-NOTIFY_ARGS=(-u "$URGENCY" -i "$ICON")
-[[ -n "$TIMEOUT" ]] && NOTIFY_ARGS+=(-t "$TIMEOUT")
-notify-send "${NOTIFY_ARGS[@]}" "$TITLE" "$MESSAGE" 2> /dev/null || true
 exit 0
