@@ -1,76 +1,46 @@
 ---
 name: coding-principles
-description: Cross-cutting code-quality principles (KISS, modularity, descriptive naming, test-file organization, env-var configuration, minimal guarding), apply whenever writing, editing, refactoring, or reviewing source code, configuration, or infrastructure definitions, in any language, alongside any language-specific skill.
+description: Cross-cutting rules for any code, config, or infrastructure definition, in any language. Apply alongside the language skill whenever writing, editing, or reviewing.
 user-invocable: false
 ---
 
 # Coding Principles
 
-General principles for any code you write or edit. Language-specific conventions
-(terraform, bash, kubernetes, …) are owned by their own skills: defer to those for
-syntax and idiom. This skill covers the cross-cutting practice.
+Less is more. The smallest change that satisfies the request, with structure and names carrying the meaning, and almost no comments. Language skills own syntax and idiom.
 
-These apply to new code and the lines you're changing. On existing code stay surgical and
-suggest divergences rather than refactoring working code to match them.
+## Scope
 
-Code is read and reviewed far more than it's written: favor the choice that's obvious to the
-next reader (human or agent). Every principle below serves that.
+- Implement only what was asked. No guards, fallbacks, flags, modes, config keys, or hardening beyond the request. Offer omissions as a one-line menu afterwards.
+- Standard mechanism before custom code: the platform or tool feature first, then the standard library, then your own code. Say which you checked.
+- A config key set to the tool's default is noise. Check the default, or omit the line.
+- A passing remark from the user is not a requirement. Confirm before building on it.
 
-- **KISS and minimal first.** Pick the most direct solution that solves the actual
-  problem. No speculative abstraction, no patterns the problem doesn't demand. A new
-  script/tool's first version implements only the explicitly requested core: no
-  speculative guards, fallbacks, config knobs, or modes. Offer the omitted hardening
-  as a short menu and let the user pick. Configuration counts as code here: a key whose
-  value is already the tool's default, or an optimization you haven't measured, is noise.
-  Check the default, measure the win, or omit the line.
-- **Write like an expert using only the basics.** Reach for plain language features
-  and the standard library before clever constructs or extra dependencies.
-- **Comments serve the next reader, not the reviewer.** A comment earns its place only by
-  stating what the code can't show: a constraint, an invariant, a runtime property. Change
-  rationale, provenance ("mirrors X", "same as Y"), comparisons to other files, and answers
-  to review questions are addressed to *me*: they go in chat or the plan doc, never into the
-  file. A construct that needs excusing in a comment is the signal to verify the assumption
-  behind it, not to annotate it.
-- **Modular.** Each function/module owns one responsibility and does it well, behind a
-  clear boundary. All interaction with a module goes through its public interface: never
-  reach into another module's internals or reimplement logic that lives behind its
-  interface. Compose small pieces rather
-  than growing one large unit. Compartmentalize and document each module's interface so
-  independent contributors or agents can work on separate modules in parallel without
-  conflict.
-- **Structure by domain.** Mirror the logical decomposition in the file tree: group files
-  by the concern they serve, and split a file along the same lines (by subdomain) once it
-  grows into a catch-all. A reader should locate a concern by its path, not by scrolling one
-  giant file.
-- **Test files are organized by covered behavior.** Name and split test files by the
-  feature/behavior under test, never by the mechanism that drives them: a file named for
-  its harness ("e2e", "cli-runner") has no axis to narrow along, grows without bound, and
-  every branch collides in it. Shared test plumbing (fixtures, helpers, constants) lives in
-  the language's shared location, never pinned inside one test module, so any test file can
-  split along feature lines. Size is the symptom, not the rule: one file spanning many
-  independent feature groups is the signal to split.
-- **Descriptive names, never shorthand.** Name variables, functions, and types for
-  their purpose, spelled out in full (not `connTo` or `ct` for a connection timeout).
-  Case follows the language. Conventional loop indices (`i`, `j`) and established
-  acronyms (`id`, `url`, `http`, `ctx`) are fine.
-- **Indentation.** Match the language or file convention, where none is dictated, default to 2 spaces. Never mix tabs and
-  spaces in one file.
-- **Configuration via environment variables.** Anything that varies by environment
-  (ports, hosts, paths, feature flags) is read from env vars, not hardcoded, with
-  sensible defaults where appropriate. Secrets are the exception: prefer a secret
-  manager or mounted secret file over env vars, and never ship a default credential.
-- **Immutable by default.** Bind every value as a constant (`const`, `final`, `readonly`,
-  `val`, whatever the language provides). Mutability is an explicit opt-in, used only where
-  you genuinely reassign. A value that is never reassigned must never be left mutable.
-- **Type the boundaries.** Give function signatures, public APIs, and data structures
-  explicit types. Don't restate types the language can already see for obvious locals. Parse
-  external data into typed structures at the boundary rather than threading raw dicts/JSON
-  inward: the typed value is what lets inner code trust its invariants. Prefer precise types
-  over escape hatches (`Any`, `any`, `interface{}`, unchecked casts).
-- **Don't over-guard.** Validate at trust boundaries (external input, untrusted
-  callers). Inside that boundary, trust your own invariants. Skip defensive checks
-  for conditions that can't occur, but where you rely on an invariant, fail loud
-  (assert/panic) rather than silently omitting the check.
-- **Security first.** Secrets hygiene: never expose or commit credentials.
-  Least-privilege by default (IAM, tokens, file perms). Supply-chain care: pinned,
-  verified dependencies. Standard injection/XSS defenses apply to all application code.
+## Structure and names
+
+- One responsibility per function and module, reached only through its public interface.
+- Group files by the concern they serve. Split a file along the same lines when it becomes a catch-all. A reader locates a concern by its path.
+- Test files are split by the behavior under test, never by the harness that drives them. Shared fixtures live in the language's shared location.
+- Names spell out purpose in full. Case follows the language. `i`, `j`, `id`, `url`, `ctx` are fine.
+- Match the file's indentation. Default to 2 spaces. Never mix tabs and spaces.
+
+## Comments
+
+- Default is none. Names and placement carry intent.
+- A comment stays only for what code cannot express: a constraint, an invariant, a runtime property. One line.
+- Never: rationale for a choice, provenance ("mirrors X"), tool basics, restating the line below, section banners, TODO scaffolding, docstrings that repeat the signature. Rationale goes in chat or the plan doc.
+- A construct you want to excuse in a comment is a signal to verify the assumption, not to annotate it.
+
+## Correctness
+
+- Explicit types on signatures, public APIs, and data structures. Do not restate types the language infers for obvious locals. Parse external data into typed values at the boundary. No `Any`, `interface{}`, or unchecked casts.
+- Immutable by default. Reassignment is an explicit opt-in.
+- Validate at trust boundaries only. Inside, trust your invariants and fail loud where one is relied on.
+- Environment-specific values come from env vars with sane defaults. Secrets come from a secret manager or mounted file, never a default credential, never exposed or committed.
+- Fix the cause a linter or type checker names. Never suppress, loosen config, or add scaffolding to quiet a tool.
+- Least privilege, pinned and verified dependencies, standard injection defenses.
+
+## Before reporting
+
+- List every comment you added. Delete any that is not a constraint, invariant, or runtime property.
+- Name the purpose of every new symbol, parameter, and config key. Delete what you cannot name.
+- Confirm the change is the minimal form. If a simpler standard mechanism exists, say so instead of shipping the custom one.

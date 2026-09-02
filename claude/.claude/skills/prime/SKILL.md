@@ -10,7 +10,7 @@ Load context by delegating the reads to a Haiku agent: never read large files in
 
 ## Procedure
 
-Target = the path given as an argument (e.g. `@some/dir`), else the cwd. Prime context from the target.
+Target = the path given as an argument (e.g. `@some/dir`), else the cwd.
 
 Spawn one `Agent` (`general-purpose`, `haiku`) to gather and summarize:
 

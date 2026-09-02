@@ -8,7 +8,7 @@ retro agent. Facts only: root-causing is the retro agent's job.
 The log is JSONL and can be large. Filter, don't read whole:
 
 ```bash
-# user turns (content is a string or an array of blocks — flatten to text)
+# user turns (content is a string or an array of blocks, flatten to text)
 jq -r 'select(.type == "user") | .message.content
        | if type == "array" then (.[] | select(.type == "text").text) else . end' <log>
 grep -n '<phrase from incident>' <log>                     # locate the correction

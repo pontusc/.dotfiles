@@ -9,7 +9,7 @@ description: Post-incident config tuning in a separate Claude session (replaces
 
 # Retro: spawn a config-tuning session
 
-Three tiers, so the main thread stays clean:
+Three tiers:
 
 1. **Main thread**: offer → on confirm, fire one background sonnet dispatcher
    and return to the real task.
@@ -27,9 +27,6 @@ Check the invocation args:
 - neither → you are the main thread. Continue below.
 
 ## Main thread
-
-You hold the judgment about what went wrong. The log holds the evidence. Your
-job is a quick handoff, nothing more.
 
 1. Derive the session log path: `~/.claude/projects/<cwd-slug>/<session-id>.jsonl`
    where `<cwd-slug>` is the cwd with `/` → `-` and `<session-id>` is the UUID

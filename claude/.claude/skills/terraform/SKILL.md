@@ -1,77 +1,48 @@
 ---
 name: terraform
-description: Terraform/Terragrunt conventions, applied when writing or editing .tf, .hcl, and terragrunt.hcl files.
+description: Terraform and Terragrunt conventions, applied when writing or editing .tf, .tfvars, .hcl, and terragrunt.hcl files.
 user-invocable: false
 allowed-tools: Read, Glob, Grep
+paths:
+  - "**/*.tf"
+  - "**/*.tfvars"
+  - "**/*.hcl"
 ---
 
-# Terraform / Terragrunt Conventions
+# Terraform and Terragrunt Conventions
 
-Conventions for new files and the lines you're changing. On existing files stay surgical and suggest divergences rather than migrating.
+## Module layout
 
-## File Structure
+- `main.tf` for resources, `variables.tf` for inputs, `outputs.tf` for outputs, `locals.tf` for locals, `data.tf` once there are more than two data sources, otherwise inline them in `main.tf`.
 
-Standard module layout:
+## Variables and resources
 
-- `main.tf`: primary resources
-- `variables.tf`: all input variables
-- `outputs.tf`: all outputs
-- `locals.tf`: local values (if needed, keep minimal)
-- `data.tf`: data sources (if more than 1-2, otherwise inline in `main.tf`)
-
-## Variables
-
-- **Every variable MUST have a `description`**.
-- Use `type` constraints: prefer specific types (`string`, `number`, `list(string)`) over `any`.
-- Use `validation` blocks for input constraints (e.g., regex for naming patterns).
-- **No hardcoded values**: Projects, regions, zones, account IDs must be variables or locals derived from variables.
-- Defaults should be sensible for the most common use case.
-
-## Resources
-
-- **Naming**: Use `snake_case`. Resource names should describe purpose, not repeat the resource type (e.g., `google_storage_bucket.artifacts`, not `google_storage_bucket.google_storage_bucket_artifacts`).
-- **`prevent_destroy`**: Add `lifecycle { prevent_destroy = true }` on stateful resources (databases, storage buckets, clusters).
-- **`for_each` over `count`**: default to `for_each` (keyed by a stable map/set) so adding/removing one element doesn't reindex the rest. Use `count` only for a simple on/off toggle (`count = var.enabled ? 1 : 0`).
-
-## Security
-
-- **No wide IAM bindings**: Never use `roles/owner`, `roles/editor`, `allUsers`, or `allAuthenticatedUsers` unless explicitly justified.
-- **Least privilege**: Prefer granular roles over broad ones.
-- **No secrets in state**: Use `sensitive = true` on outputs containing secrets. Reference secrets from a secret manager, never inline.
+- Every variable carries a `description` and a specific `type` (`string`, `number`, `list(string)`), never `any`. Add a `validation` block for input constraints such as naming patterns.
+- `lifecycle { prevent_destroy = true }` on stateful resources: databases, storage buckets, clusters.
+- `for_each` keyed by a stable map or set by default, so adding or removing one element does not reindex the rest. `count` only for an on/off toggle (`count = var.enabled ? 1 : 0`).
 
 ## Terragrunt
 
-- Keep `terragrunt.hcl` DRY: use `include` blocks to inherit common config.
-- Use `dependency` blocks to reference outputs from other modules.
-- Generate the provider block (with a pinned provider version) via a terragrunt `generate` block, rather than a per-module `versions.tf`.
-- Inputs should be flat and explicit: avoid deep nesting.
-- When calling a module and resources have to be added (e.g. a firewall to a GKE Cluster module), don't edit the module itself. Utilize the fact that terragrunt just copies all files to a folder and define a new firewall.tf file in the calling directory instead to extend the module.
+- `include` blocks inherit common config, `dependency` blocks reference another module's outputs. Inputs stay flat and explicit.
+- Generate the provider block, with a pinned provider version, in a `generate` block rather than a per-module `versions.tf`.
+- To attach a resource to a called module, a firewall for a GKE cluster module, define a new `firewall.tf` in the calling directory. Terragrunt copies every file there, so the module itself stays untouched.
 
-## State Changes
+## Addressing and destruction
 
-- **Additive by default**: Never remove existing resources unless explicitly instructed. Removing a managed resource triggers a destroy. New resources go alongside existing ones.
-- **Addressing changes**: When converting `count` → `for_each`, renaming a resource, or moving it between modules, ALWAYS emit a `moved {}` block in the same change. Without it, Terraform destroys and recreates.
-- **Stateful + `prevent_destroy`**: `prevent_destroy` is evaluated at plan time and cannot be programmatically bypassed. If a change requires destruction of a `prevent_destroy` resource, stop and flag it: don't propose removing the lifecycle block as a workaround.
-- **Coupled resources**: When a resource's existence depends on another (e.g., a DNS record pointing to an external IP, a firewall rule scoped to a target tag), check both sides before proposing an edit. Flag the dependency explicitly.
-- **`-target` flag**: Don't suggest `terraform apply -target=...` except for genuine recovery from broken state. It bypasses the dependency graph and is a smell, not a workflow.
+- Additive by default. Removing a managed resource triggers a destroy, so never remove one unless instructed.
+- Converting `count` to `for_each`, renaming a resource, or moving it between modules ships a `moved {}` block in the same change. Without it Terraform destroys and recreates.
+- `prevent_destroy` is evaluated at plan time and cannot be bypassed programmatically. A change that requires destroying such a resource stops and gets flagged, never a removed lifecycle block.
+- Check both sides of coupled resources before editing, a DNS record pointing at an external IP or a firewall rule scoped to a target tag, and flag the dependency.
+- Do not suggest `apply -target=...` outside genuine recovery from broken state.
 
-## State
+## Plan verification
 
-- Remote state only: never commit `.tfstate` files.
-- State bucket must have versioning enabled.
+- For a change touching stateful resources (databases, clusters, buckets, load balancers, DNS) or resource addressing, state the expected plan impact as counts of create, update, destroy, and replace before editing.
+- After editing, delegate to the `validator` agent with the sequence `fmt -check`, `validate`, `plan` plus the stated change intent. Use `terragrunt` in a Terragrunt module, `terraform` otherwise. The task is not done until that plan is reviewed.
+- On an unintended destroy or replace, a `prevent_destroy` conflict, or out-of-scope drift, stop and wait for the user.
 
-## Plan Verification
+## Before reporting
 
-For changes that touch stateful resources (databases, clusters, buckets, load balancers, DNS) or alter resource addressing:
-
-**Before editing:**
-
-- Summarize the expected plan impact: how many resources create / update / destroy / replace.
-- If unsure, propose running `terragrunt plan` (or `terraform plan`) first and ask the user to confirm the diff matches intent.
-- Never propose an edit that would silently destroy a `prevent_destroy` resource: surface the conflict and stop.
-
-**After editing (required):**
-
-- The task is not done until plan has been run and reviewed.
-- Delegate to the `validator` agent (Agent tool, `subagent_type: "validator"`). Hand it the sequence `fmt -check` → `validate` → `plan`, run via `terragrunt` in a Terragrunt module (it wraps Terraform), or `terraform` directly otherwise, plus the stated change intent so it can flag mismatches.
-- Report the validator's structured verdict to the user. If it flags an issue (unintended destroy/replace, `prevent_destroy` conflict, out-of-scope drift), stop and wait for user input.
+- Name every resource the plan would destroy or replace, or state that there are none.
+- Every addressing change has a matching `moved {}` block.
+- Every new variable has both `description` and `type`.

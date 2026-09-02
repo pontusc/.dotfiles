@@ -8,8 +8,8 @@ effort: high
 
 # review:high (thorough independent audit)
 
-Six or more independent reviewers in an audit pattern. For high-stakes changes
-where you want maximum scrutiny before calling it done.
+Six or more independent reviewers in an audit pattern, for high-stakes changes
+needing maximum scrutiny.
 
 ## Run it
 

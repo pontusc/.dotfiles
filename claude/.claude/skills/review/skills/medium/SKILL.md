@@ -9,8 +9,7 @@ effort: high
 # review:medium (multi-lens independent review)
 
 Three independent reviewers, each looking at the recent changes through a
-different lens. Broader than a single pass: catches what a reviewer fixated on
-correctness would miss on security, and vice versa.
+different lens.
 
 ## Run it
 

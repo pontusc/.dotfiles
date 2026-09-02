@@ -3,36 +3,22 @@ name: makefile
 description: Makefile conventions, applied when writing or editing Makefiles and .mk includes.
 user-invocable: false
 allowed-tools: Read, Glob, Grep
+paths:
+  - "**/Makefile"
+  - "**/makefile"
+  - "**/GNUmakefile"
+  - "**/*.mk"
 ---
 
-# Makefile Conventions
+# Makefile
 
-Conventions for new files and the lines you're changing. On existing files stay surgical and suggest divergences rather than migrating.
+- Declare every non-file target `.PHONY`, either grouped above the target or in one block at the top.
+- `kebab-case` target names (`docker-build`, `run-tests`), `UPPER_SNAKE_CASE` variables.
+- `?=` for anything the caller may override (`IMAGE_TAG ?= latest`), `:=` for internal immediate expansion.
+- `printf` over `echo`. No GNU-only flags unless the Makefile is Linux-only.
+- `@` prefix on recipe lines, plus `|| echo` where a failure must stay visible.
 
-## Targets
+## Before reporting
 
-- **`.PHONY`**: Declare all non-file targets as `.PHONY`. Group the declaration above the target, or use a single block at the top.
-- **Naming**: Use `kebab-case` for target names (e.g., `docker-build`, `run-tests`).
-- **Default target**: First target should be `help` or `all`. If `help`, auto-generate from comments:
-
-```makefile
-.PHONY: help
-help: ## Show this help
-	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*##"}; {printf "  %-20s %s\n", $$1, $$2}'
-```
-
-- **Target comments**: Use `## Description` after the target/deps for self-documenting targets.
-
-## Variables
-
-- **User-overridable**: Use `?=` for variables the caller might override (e.g., `IMAGE_TAG ?= latest`).
-- **Internal**: Use `:=` for immediately expanded variables.
-- **Naming**: `UPPER_SNAKE_CASE` for all variables.
-
-## Recipes
-
-- **Tabs, not spaces**: recipe lines MUST begin with a real tab: spaces cause `missing separator`. This overrides the global 2-space indentation rule (which applies to non-recipe content only).
-- **One logical action per target**: keep recipes focused.
-- **Portable commands**: Prefer `printf` over `echo` in recipes. Avoid GNU-only flags unless the Makefile is Linux-only.
-- **Multiline**: Use backslash continuation or when a recipe needs shared shell state.
-- **Silence**: Use `@` prefix everywhere, add `|| echo` if errors need to be seen.
+- Confirm every recipe line starts with a tab character, not spaces.
+- Confirm every non-file target appears in a `.PHONY` declaration.

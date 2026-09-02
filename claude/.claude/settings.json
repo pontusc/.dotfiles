@@ -60,10 +60,7 @@
       "Edit(**/*.pem)",
       "Edit(**/*.key)"
     ],
-    "ask": [
-      "Bash(git push:*)",
-      "Bash(git switch:*)"
-    ],
+    "ask": ["Bash(git push:*)", "Bash(git switch:*)"],
     "defaultMode": "default"
   },
   "model": "opus",
@@ -94,17 +91,6 @@
           {
             "type": "command",
             "command": "/home/pontusc/.claude/hooks/guard-sensitive.sh"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/home/pontusc/.claude/hooks/suggest-skill.sh"
           }
         ]
       }

@@ -13,21 +13,21 @@ plugin. LSP servers are **always defined per project, never globally**.
 ## Why per-project (don't relitigate)
 
 - A globally installed LSP plugin roots its server at the launch directory and cannot
-  re-root to subfolders: broken in multi-service monorepos.
+  re-root to subfolders, broken in multi-service monorepos.
 - Disabling a marketplace plugin per-project (`"…@marketplace": false`) corrupts the global
-  install registry: it re-scopes the plugin to that project on every restart, breaking it
-  in other repos. So globals aren't disabled: they're never installed.
-- The global prerequisite (`ENABLE_LSP_TOOL=1`) is already set in `~/.claude/settings.json`.
+  install registry, it re-scopes the plugin to that project on every restart and breaks it
+  in other repos. Globals are never installed rather than disabled.
+- The global prerequisite `ENABLE_LSP_TOOL=1` is already set in `~/.claude/settings.json`.
   The variable is undocumented (accurate as of 2026-07, CC 2.1.19x). Re-verify if LSP
   stops appearing after an update.
 - The LSP tool is **main-thread-only**: as of 2026-07 (CC 2.1.196, no fix in changelog) it
-  never reaches subagents. Don't try to fix that via agent `tools:` frontmatter (proven
-  futile, see cc-lsp/subagent-lsp-inheritance).
+  never reaches subagents. Agent `tools:` frontmatter does not fix that (proven futile,
+  see cc-lsp/subagent-lsp-inheritance).
 
 ## Loading conditions
 
 - Skills-dir plugins load only from the **launch directory's** `.claude/skills/` (and
-  `~/.claude/skills/`): no walking up, no recursing down. Start CC from the repo root.
+  `~/.claude/skills/`), no walking up, no recursing down. Start CC from the repo root.
 - The workspace must be trusted. A restart is needed after creating the plugin.
 
 ## Scaffold
@@ -49,7 +49,7 @@ plugin. LSP servers are **always defined per project, never globally**.
 ## .lsp.json rules
 
 - Routing is `extension → language → ONE server`. A second server for an already-mapped
-  extension collides: never register two.
+  extension collides, never register two.
 - **One service owns the language** → pin the server to it:
   `"workspaceFolder": "${CLAUDE_PROJECT_DIR}/services/<svc>"`.
 - **Several services share a language** → drop `workspaceFolder`, root at the repo root
@@ -60,8 +60,8 @@ plugin. LSP servers are **always defined per project, never globally**.
   - Python: `ty` handles multiple `pyproject.toml` as a workspace.
 
   These multi-root wirings come from the reference repo's README and the servers' own
-  documented multi-project support, but are unverified through the CC LSP tool: confirm
-  on first use (as with gopls below).
+  documented multi-project support, but are unverified through the CC LSP tool. Confirm
+  on first use, as with gopls below.
 
 ## Server catalog (verified blocks)
 
@@ -95,7 +95,7 @@ plugin. LSP servers are **always defined per project, never globally**.
 ```
 
 Rust/Python/TS single-service blocks are verified live (three-service monorepo, 2026-06).
-The gopls entry and all multi-root variants are unverified: confirm on first use.
+The gopls entry and all multi-root variants are unverified, confirm on first use.
 
 ## What does NOT work
 

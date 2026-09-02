@@ -5,23 +5,23 @@ description: Generate or edit a project's CLAUDE.md memory file. Use whenever as
 
 # Create CLAUDE.md
 
-The output must be concise, navigational, and general-purpose, useful across sessions without going stale.
+Output is concise, navigational, and general-purpose, useful across sessions without going stale.
 
 ## Discovery Phase
 
-Before writing anything, gather project context. Run these in parallel where possible:
+Gather project context before writing. Run these in parallel where possible:
 
-1. **Project identity**: Read README.md, package.json, Cargo.toml, pyproject.toml, go.mod, or equivalent
+1. **Project identity**: README.md, package.json, Cargo.toml, pyproject.toml, go.mod, or equivalent
 2. **Directory structure**: `find . -maxdepth 2 -type d` (meta-structure, not full tree)
-3. **Build/test/lint**: Read Makefile, justfile, package.json scripts, CI configs (.github/workflows/, .gitlab-ci.yml)
-4. **Existing conventions**: Check for .editorconfig, .prettierrc, eslint configs, rustfmt.toml, .clang-format
-5. **Existing CLAUDE.md**: Read if present (preserve user customizations)
+3. **Build/test/lint**: Makefile, justfile, package.json scripts, CI configs (.github/workflows/, .gitlab-ci.yml)
+4. **Existing conventions**: .editorconfig, .prettierrc, eslint configs, rustfmt.toml, .clang-format
+5. **Existing CLAUDE.md**: read if present, preserve user customizations
 6. **Git context**: `git log --oneline -10` for recent activity patterns
-7. **Dependency management**: Lock files, .tool-versions, mise.toml, .nvmrc, rust-toolchain.toml
+7. **Dependency management**: lock files, .tool-versions, mise.toml, .nvmrc, rust-toolchain.toml
 
 ## Output Structure
 
-The generated CLAUDE.md should follow this section order. Omit sections that don't apply. Every section should be 2-8 lines.
+Follow this section order. Omit sections that don't apply. Every section is 2 to 8 lines.
 
 ### 1. Project Overview
 
@@ -29,7 +29,7 @@ One paragraph: what this project is, what problem it solves, who it serves. No m
 
 ### 2. Architecture
 
-Describe the **meta-structure**, not individual files:
+The **meta-structure**, not individual files:
 
 - "src/ contains application code organized by domain (auth/, billing/, api/)"
 - "Infrastructure lives in infra/ as Terraform modules, one per service"
@@ -39,7 +39,7 @@ State the key boundaries: what talks to what, where the entry points are, how da
 
 ### 3. Tech Stack
 
-List language, framework, and major dependencies. For versions:
+Language, framework, and major dependencies. For versions:
 
 - **DO**: "Node version is pinned in .nvmrc"
 - **DO**: "Terraform version defined in .terraform-version"
@@ -47,13 +47,13 @@ List language, framework, and major dependencies. For versions:
 
 ### 4. Development Workflow
 
-Commands to build, test, lint, format, and run locally. Reference the source of truth:
+Commands to build, test, lint, format, and run locally, each pointing at the source of truth:
 
 - "Build commands are in the Makefile"
 - "CI pipeline defined in .github/workflows/ci.yml"
 - "Test runner config in jest.config.ts"
 
-Include only commands a developer runs frequently. Not setup guides.
+Only commands a developer runs frequently. Not setup guides.
 
 ### 5. Conventions & Patterns
 
@@ -65,22 +65,20 @@ Project-specific patterns Claude should follow:
 - Testing patterns (unit vs integration, fixture locations)
 - Code organization rules
 
-Only include patterns that are non-obvious or project-specific. Skip universal best practices.
+Only patterns that are non-obvious or project-specific. Skip universal best practices.
 
 ### 6. Key Files & Entry Points
 
-Point to files that matter for navigation:
+Files that matter for navigation, relative paths, brief annotation each:
 
 - Main entry point(s)
 - Configuration files that control behavior
-- Where environment variables are defined/documented
-- Where types/interfaces/schemas live
-
-Use relative paths. Brief annotation per file.
+- Where environment variables are defined or documented
+- Where types, interfaces, and schemas live
 
 ### 7. Gotchas & Context
 
-Things that would surprise or trip up Claude (or a new developer):
+Things that would surprise or trip up Claude or a new developer:
 
 - Non-obvious dependencies between components
 - Legacy patterns that differ from the rest of the codebase
@@ -89,24 +87,20 @@ Things that would surprise or trip up Claude (or a new developer):
 
 ## Writing Rules
 
-Apply these rules to all generated CLAUDE.md content:
-
-- **Pointers over content**: Reference where information lives, don't duplicate it
-- **No version pinning**: Say where versions are defined, not what they are
-- **No full file trees**: Describe structure patterns, not every file
-- **Dense formatting**: Use bold, short bullets, tables where they compress information
+- **Pointers over content**: reference where information lives, don't duplicate it
+- **No version pinning**: say where versions are defined, not what they are
+- **No full file trees**: describe structure patterns, not every file
+- **Dense formatting**: bold, short bullets, tables where they compress information
 - **Imperative tone**: "Run `make test`" not "You can run `make test`"
-- **Under 200 lines**: If exceeding, split into supplementary docs and reference them
+- **Under 200 lines**: if exceeding, split into supplementary docs and reference them
 - **Present tense**: "The API validates input at the controller layer"
-- **No hedging**: State facts. If uncertain, investigate first or omit.
+- **No hedging**: state facts. If uncertain, investigate first or omit.
 
 ## Edit Mode
 
-When editing an existing CLAUDE.md:
-
 1. Read the entire file first
 2. Preserve user customizations and sections not covered by this template
-3. Merge new discoveries with existing content (don't overwrite wholesale)
+3. Merge new discoveries with existing content, don't overwrite wholesale
 4. Flag sections that appear stale: "This section may need updating: [reason]"
 5. Maintain the existing file's style if it differs from this template
 

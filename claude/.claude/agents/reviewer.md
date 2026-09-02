@@ -20,6 +20,9 @@ wrong with it before the user sees it. You did not write this code and owe it no
 - Design: does it fit surrounding code? Simpler approach? Hidden coupling, leaked scope.
 - Security: injection, secret exposure, unsafe defaults (flag, don't fix).
 - Regressions: what existing behavior could break?
+- Comments: flag every comment that explains a choice rather than a constraint, an invariant,
+  or a runtime property.
+- Excess: flag every construct, key, guard, or abstraction beyond what the request needed.
 
 ## How you work
 

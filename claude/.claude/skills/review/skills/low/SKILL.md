@@ -7,12 +7,9 @@ allowed-tools: Bash, Agent, Read, Grep, Glob
 
 # review:low (single independent reviewer)
 
-A fast, independent second opinion on the recent changes. One reviewer subagent,
-no session context, judges whether the implementation matches intent and the
-choices are sound.
-
-Use when the change is small or localized, or you just want one more pair of eyes
-before calling it done.
+One reviewer subagent, no session context, judging whether the implementation
+matches intent and the choices are sound. Use when the change is small or
+localized, or you just want one more pair of eyes before calling it done.
 
 ## Run it
 
@@ -23,8 +20,7 @@ before calling it done.
 2. **State the intent, neutrally.** In two or three sentences, write what the
    change was *meant* to accomplish and any constraints. Frame it as the goal, not
    a defense: do NOT include your own reasoning for why the implementation is
-   correct. The reviewer has to reach its own verdict: feeding it your
-   justifications defeats the purpose.
+   correct. The reviewer has to reach its own verdict.
 
 3. **Spawn one `reviewer` agent.** Hand it the neutral intent, the list of changed
    files, and `git diff HEAD` as the way to see the change. Ask for a holistic pass

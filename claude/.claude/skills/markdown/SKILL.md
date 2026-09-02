@@ -1,55 +1,35 @@
 ---
 name: markdown
-description: Markdown authoring conventions (wrapping, structure, terseness), applied when writing or editing .md files (READMEs, docs, plan docs, CLAUDE.md).
+description: Markdown authoring rules for READMEs, docs, plan docs, and CLAUDE.md. Apply when writing or editing any .md file.
 user-invocable: false
 allowed-tools: Read, Glob, Grep
+paths:
+  - "**/*.md"
 ---
 
-# Markdown Conventions
+# Markdown
 
-Apply when authoring or editing any `.md` file.
+A README holds what an operator needs to know and the final state of the thing. Nothing else.
 
-## Match the target before writing
+## Content
 
-Read a sibling `.md` in the same repo/dir first. Wrapping, heading depth, tone, and section
-naming are per-repo conventions, not personal defaults. A new file that reads unlike its
-neighbours is a defect even when its content is right. Where the target has no markdown yet,
-the defaults below apply.
+- Operator knowledge: how to run it, what must not be broken, unenforced constraints, the entry point you check when it breaks.
+- Final state: what is true now. Never how it got here, migration notes, or "considerations" describing the current setup.
+- Delete anything `ls`, `grep`, or the code answers: directory tables, file-tree narration, consumers and call sites, values declared in config, defaults, what deploys the thing, status readable from manifests (RBAC, probes, replicas).
+- A constraint the code enforces is inventory too. Only unenforced constraints earn a sentence.
+- Write about your own level only. A README covers its directory. Children document themselves.
+- Mechanics of a file belong in that file as a comment, not in the README.
+- Plan docs and CLAUDE.md record decisions, state, and route by design. They follow the form and punctuation rules only.
+- Terse over complete. Short sentences and commas. No semicolons, no em or en dashes, no hyphen standing in for one.
 
-## Wrapping
+## Form
 
-- **Let the renderer wrap.** One line per paragraph and per bullet, never breaking
-  mid-sentence to hit a column.
-- **A consistently hard-wrapped target wins.** Match its column and continuation-line
-  indentation (agent-instruction trees are often wrapped this way).
-- **Never reflow what you weren't asked to change.** Rewrapping turns a one-word fix into a
-  whole-paragraph diff.
+- Read a sibling `.md` first. Heading depth, tone, wrapping, and section names follow the repo, not this skill.
+- One line per paragraph and bullet, unless the target is consistently hard-wrapped. Then match its column.
+- Never reflow lines you were not asked to change.
 
-## Prose
+## Before reporting
 
-Terse over complete. State intent, caveats, and non-obvious constraints, and drop what the
-file tree or the code already says.
-
-**Plain punctuation.** No semicolons, no em or en dashes, no hyphen standing in for one.
-Commas and short sentences carry the same meaning without reading as generated text.
-Hyphens inside compound words are fine.
-
-**Inventory is not a caveat.** If `ls`, `grep`, or the code itself answers it, cut it:
-subdirectories, consumers, call sites, and values declared in config (retention days,
-schedules, IPs, thresholds) are all inventory. This binds hardest on facts you just
-established by reading or searching: the source informed *you*, it is not content to
-report. State the constraint that survives those specifics changing ("retention is capped
-by the lifecycle rules"), never the specifics. A number earns its place only as an
-operational entry point, the ASN you check when BGP breaks, never as restatement.
-
-A constraint the code already enforces is inventory too: a version floor in the config, a
-pattern the module makes impossible. The reader cannot violate it, so prose about it is only
-a second copy to maintain. Only unenforced constraints earn a sentence.
-
-**Write about your own level only.** A README covers the directory it sits in. Anything true
-of a subdirectory belongs to that subdirectory's README. A parent explaining its children
-duplicates docs that then drift apart.
-
-**Document the end state, not the route to it.** Migration, import, refactor: how the thing
-got here is changelog material, dead the moment it ships. Write what is true now and what a
-reader must not break.
+- Reread every sentence. Delete it if removing it costs an operator nothing, or if the code answers it.
+- Grep the file for `;`, `—`, `–`, and a spaced hyphen mid-sentence. Fix every hit.
+- Compare heading depth and wrapping with the sibling you read.

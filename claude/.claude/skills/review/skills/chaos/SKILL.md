@@ -8,19 +8,18 @@ effort: high
 
 # review:chaos (adversarial stress test)
 
-Turn the recent changes over to the attacker. One or more `chaos` agents try to
-*break* the intended behavior (not review its design) and report reproducible
-failures. Use when correctness or security matters more than style.
+One or more `chaos` agents try to *break* the recent changes' intended behavior
+(not review its design) and report reproducible failures. Use when correctness or
+security matters more than style.
 
 ## Run it
 
 1. **Build the change set.** `git diff HEAD --stat`, then `git diff HEAD` (or
    `git diff HEAD~1 HEAD` if the tree is clean). Note the touched files.
 
-2. **State the intended behavior, concretely.** Chaos needs to know what "working"
-   means to know what counts as broken: the contract, invariants, valid input
-   ranges, and the trust / security assumptions. Be specific: vague intent yields
-   vague attacks.
+2. **State the intended behavior, concretely.** Give the contract, invariants,
+   valid input ranges, and the trust / security assumptions. Be specific: vague
+   intent yields vague attacks.
 
 3. **Pick the attack surfaces** that fit the change, e.g.:
    - **Input / parsing**: malformed, oversized, empty, Unicode, boundary values.

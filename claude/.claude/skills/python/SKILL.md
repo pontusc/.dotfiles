@@ -3,102 +3,41 @@ name: python
 description: Python project conventions, applied when writing or editing Python projects (pyproject.toml, src/, tests/) or .py files.
 user-invocable: false
 allowed-tools: Read, Glob, Grep
+paths:
+  - "**/*.py"
+  - "**/pyproject.toml"
 ---
 
 # Python Project Conventions
 
-Apply when writing or editing Python projects: `pyproject.toml`, `src/`, `tests/`, or `.py` files.
-
-## Scope of changes (read first)
-
-These are conventions for **new** projects and for the code you are **already changing**.
-When editing an existing project:
-
-- **Stay surgical.** Match the project's existing tooling, layout, and style. A fix applies to
-  the lines you're changing: don't restructure the project or swap its toolchain to match this
-  skill.
-- **Suggest, don't migrate.** If the project diverges (pip/poetry, flat layout, floating
-  versions), note it as a suggestion: don't fold an unrequested migration into the edit.
-  Migrate only when the user explicitly asks.
-- **Use the structure below for greenfield projects, or where no convention is established.**
-
 ## Tooling
 
-- **uv** manages dependencies, the lockfile (`uv.lock`), and the venv. Prefer it over `poetry` / `pip-tools`.
-- **ty** is the type checker (+ LSP). **ruff** is both the linter (`ruff check`) and the
-  formatter (`ruff format`).
-- `uv sync` provisions the env from `uv.lock`, so local and CI run identical tool versions (see Quality gate).
-- **If a preferred tool isn't available in the project**, fall back to this structure with
-  whatever it has: don't block on the exact toolchain.
+- **uv** manages dependencies, the `uv.lock` lockfile, and the venv, over `poetry` or `pip-tools`. `uv sync` provisions the env.
+- **ty** is the type checker and LSP. **ruff** is both linter (`ruff check`) and formatter (`ruff format`).
+- Where a preferred tool is absent from the project, fall back to this structure with whatever it has rather than blocking on the toolchain.
 
-## Dependencies & pinning
+## Layout
 
-- **Pin every direct dependency to an exact version** (`==`). `uv.lock` pins transitives.
-  Nothing floats (`>=` / `~=` / `@latest`). Bumps are deliberate.
-- **Bound `requires-python` on both ends** (cap to a single minor, e.g. `>=3.12,<3.13`) so
-  the local resolve matches CI and the image (applications only). Libraries shouldn't cap
-  the upper bound. Patches float. Crossing a minor is deliberate.
-- Dev tools go in `[dependency-groups] dev`, not runtime dependencies.
-
-## Project layout
-
-- **src layout**: importable packages under `src/`, tests under `tests/` (outside the package).
-- Shared models/contracts imported by both a service and its client live in their own leaf
-  package so the two can't drift.
-- `tests/` mirrors intent (`unit/`, `integration/`, `fixtures/`).
+- src layout: importable packages under `src/`, tests under `tests/` outside the package.
+- `tests/` mirrors intent: `unit/`, `integration/`, `fixtures/`.
+- Cross-cutting models and constants live in a dedicated leaf package that imports nothing else from the project.
 
 ## pyproject.toml
 
-- **Build**: `uv_build`, uv's own backend and `uv init`'s default, bounded to the uv minor in
-  use: `requires = ["uv_build>=0.12.5,<0.13"]`, `build-backend = "uv_build"`. Hatchling only
-  for extension modules, build scripts, or a layout uv_build can't express.
-- **Entry points**: `[project.scripts]` point at a `module:function` callable.
-- **ruff**: `[tool.ruff.lint] select`. Omit `target-version` (inferred from `requires-python`)
-  and `src` (already defaults to `[".", "src"]`).
-- **pytest**: `testpaths = ["tests"]`, `pythonpath = ["src"]`, `asyncio_mode = "auto"` for async.
-- **Nothing else.** Every key must change behavior: check the default before adding one. `ty`
-  needs no environment root for a src layout.
-
-## Code style
-
-- **Keep it stupid simple**: the most direct implementation that works. No clever tricks or
-  premature abstraction.
-- **Strong modularization.** One module/class does one job and owns it behind a clear
-  boundary: narrow public surface, internals kept private. Well-bounded concerns let multiple
-  people/agents work their piece in parallel without colliding.
-- **Names say exactly what the thing does.** Comments explain **why**, not what.
-- **Strongly typed.** Annotate every function signature (params + return) and class attribute.
-  Let ty infer locals: don't annotate the obvious. Avoid `Any` / bare `object`. `ty check`
-  passes clean: earned, not silenced.
-- **Type the seams precisely**: `Protocol` for structural (duck-typed) interfaces, `ABC` for
-  nominal base classes, and a typed sentinel over `str | object`.
-- **Fix the cause a warning names, never silence the symptom.** A linter or type-checker
-  flag is evidence of a real defect. Understand *why* the tool fires before you act. Inline
-  ignore/disable comments, blanket `except`, config loosening, or scaffolding added only to
-  quiet a tool are not fixes: an unjustifiable suppression is itself a defect.
-- **Every construct must have a purpose you can state plainly.** No symbol, parameter,
-  constant, or abstraction exists merely to satisfy a tool or carried along out of habit. If
-  you can't articulate what a thing is for, that's the signal to delete or refactor it, not
-  to keep it.
+- Build backend `uv_build`, bounded to the uv minor in use: `requires = ["uv_build>=0.12.5,<0.13"]`, `build-backend = "uv_build"`. Hatchling only for extension modules, build scripts, or a layout `uv_build` cannot express.
+- `requires-python` bounded on both ends, capped to a single minor (`>=3.12,<3.13`), for applications only. Libraries leave the upper bound open.
+- Dev tools live in `[dependency-groups] dev`, not runtime dependencies.
+- pytest: `testpaths = ["tests"]`, `pythonpath = ["src"]`, and `asyncio_mode = "auto"` for async.
+- Omit ruff `target-version`, inferred from `requires-python`, and `src`, already `[".", "src"]`. A src layout needs no `ty` environment root.
 
 ## Testing
 
-- `pytest`. Start with a smoke test (packages import, app builds, key seams behave) before
-  deep tests.
-- Exercise CLIs in-process (via a test runner), not via subprocess.
-- Split test files by feature/command group (`test_cli_doc.py`, `test_cli_phase.py`), not
-  by driving mechanism, per coding-principles (test-file organization).
-- `conftest.py` is for fixtures only. Shared non-fixture helpers/constants go in a small
-  `_helpers` module: never in `conftest.py`, and never pinned inside one test module, or
-  that module can't be split.
+- `pytest`. Start with a smoke test covering package import, app build, and key seams before deep tests.
+- Exercise CLIs in-process through a test runner, never via subprocess.
+- `conftest.py` holds fixtures only. Shared helpers and constants go in a small `_helpers` module, never pinned inside one test module.
 
-## Quality gate
+## Before reporting
 
-Run the same four locally and in CI. All must pass:
-
-```
-ruff check src tests
-ruff format --check src tests
-ty check src tests
-pytest
-```
+- All four pass: `ruff check src tests`, `ruff format --check src tests`, `ty check src tests`, `pytest`.
+- No `pyproject.toml` key you added restates a tool default.
+- `grep -rnE 'type: ignore|noqa' src tests` shows no suppression you added.
