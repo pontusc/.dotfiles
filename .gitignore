@@ -5,3 +5,4 @@ pending_exceptions.jsonl
 __pycache__/
 .playwright-mcp/
 hypr/reference/
+claude/**/selfheal*
