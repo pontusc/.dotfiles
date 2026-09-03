@@ -18,6 +18,7 @@ so the orchestrator's context stays lean.
   - terraform/terragrunt → `fmt -check`, `validate`, `plan`. Also `tflint` (run from the dir)
   - k8s manifests → `kubectl ... --dry-run=server`
   - helm → `helm lint`
+  - Dockerfiles → `hadolint`
   - python → `ruff check`
   - shell (.sh/.bash/.zsh) → `shellcheck`
   - yaml → `yamllint -c ~/.config/yamllint/config`, under `.github/workflows/` also `actionlint`
