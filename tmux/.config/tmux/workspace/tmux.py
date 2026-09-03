@@ -37,6 +37,13 @@ class SessionInfo(NamedTuple):
     created: int
 
 
+class CurrentWindow(NamedTuple):
+    window_id: str
+    panes: int
+    cwd: Path
+    session: str
+
+
 def _session_target(session: str) -> str:
     # "=" is exact-match (a bare name matches by prefix) and the trailing colon
     # is required: without it tmux reads the first "." in the name as the pane
@@ -62,6 +69,16 @@ def _lines(*args: str) -> list[str]:
     # Unlike _output this must not strip: a trailing field that is empty on the
     # last row would lose its separator and shift the split.
     return _run(*args).stdout.splitlines()
+
+
+def _lines_checked(*args: str) -> list[str]:
+    # Unlike _lines this must not swallow a nonzero return code: an empty list
+    # from a failed query would otherwise read as "no sessions" instead of
+    # "couldn't ask".
+    result = _run(*args)
+    if result.returncode != 0:
+        raise _failure(args[0], result)
+    return result.stdout.splitlines()
 
 
 def _output_checked(*args: str) -> str:
@@ -114,7 +131,9 @@ def list_session_names() -> list[str]:
 def list_sessions() -> list[SessionInfo]:
     # session_created is always numeric; session_name may hold anything but a
     # tab, so it goes last.
-    output = _lines("list-sessions", "-F", "#{session_created}\t#{session_name}")
+    output = _lines_checked(
+        "list-sessions", "-F", "#{session_created}\t#{session_name}"
+    )
     sessions: list[SessionInfo] = []
     for line in output:
         if not line:
@@ -194,6 +213,18 @@ def current_session() -> str | None:
     if result.returncode != 0:
         return None
     return result.stdout.strip() or None
+
+
+def current_window() -> CurrentWindow:
+    """The client's active window: id, pane count, pane cwd and session name."""
+    window_id, panes, cwd, session = _output_checked(
+        "display-message",
+        "-p",
+        "#{window_id}\t#{window_panes}\t#{pane_current_path}\t#{session_name}",
+    ).split("\t", 3)
+    return CurrentWindow(
+        window_id=window_id, panes=int(panes), cwd=Path(cwd), session=session
+    )
 
 
 def session_option(session: str, option: str) -> str:

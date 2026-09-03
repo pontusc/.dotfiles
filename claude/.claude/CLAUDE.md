@@ -47,7 +47,7 @@ A passing remark from me is not a spec. Confirm before treating it as a requirem
 - **Declarative state.** Persistent system changes are expressed as declarative, idempotent, git-tracked artifacts, not one-shot commands. If only an imperative form fits, flag it.
 - **Surgical changes.** Every changed line traces to the request. Unrelated bugs or dead code: mention, do not fix. Clean up only orphans your change created.
 - **Large files.** Above 200 lines, grep the exact target string before delegating to executor.
-- **Plan-doc hygiene.** Write state back before context is wiped (`/handoff` or update the doc). After an implementation phase suggest `/plan:review <slug>`.
+- **Plan-doc hygiene.** Write state back to the plan doc before context is wiped. After an implementation phase suggest `/plan:review <slug>`.
 - **Reference cited: trace it first.** Scout the named repo or pattern before designing. Mirror it faithfully and surface any deviation.
 - **Pin dependencies** to exact versions and verify them. Override only when I say so for that case.
 - **Conventions load per file.** Invoke the skill matching the file type before editing it, plus `coding-principles` for code. Skills surface in the listing when a matching file is touched. Re-invoke after compaction, a repo change, or a retro that edits the skill. Multi-file authoring goes to executor, which loads them fresh.

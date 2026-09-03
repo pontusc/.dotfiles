@@ -75,6 +75,9 @@ def cleanup_session() -> None:
         if not window.tagged:
             continue
         if window.path in repo_roots:
+            if not ui.confirm(f"{window.name}: close repo root window?"):
+                kept.append(f"{window.name}: declined, kept")
+                continue
             tmux.kill_window(window.window_id)
             removed.append(f"{window.name}: repo root window closed")
             continue

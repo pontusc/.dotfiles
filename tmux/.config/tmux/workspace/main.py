@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 
 import compose
+import layout
 import maintain
 import persist
 import report
@@ -57,6 +58,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "add", help="add a discovered repo to the current session"
     )
     add.set_defaults(func=lambda _: maintain.add_repo())
+
+    layout_command = subparsers.add_parser(
+        "layout", help="apply the dev layout to the current window"
+    )
+    layout_command.set_defaults(func=lambda _: layout.arrange_current_window())
 
     cleanup = subparsers.add_parser(
         "cleanup", help="close current-session windows that lose nothing"

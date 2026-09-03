@@ -17,8 +17,9 @@ trap 'exit 0' EXIT
 # work_root, self_repo, self_ticket, and repos_json are set once in main()
 # and read by the functions below via bash's dynamic scoping.
 
-# Extracts repo, ticket, and branch label from a cwd. Prints fields joined by
-# \x1f (repo, ticket, branch); returns 1 if the path isn't under work_root.
+# Extracts repo, ticket, and branch label from a cwd via git. Prints fields
+# joined by \x1f (repo, ticket, branch); returns 1 if the path isn't under
+# work_root or git can't resolve it.
 resolve_context() {
   local path="$1"
   case "$path" in
@@ -26,19 +27,31 @@ resolve_context() {
     *) return 1 ;;
   esac
 
-  local relative="${path#"${work_root}"/}"
-  local repo="${relative%%/*}"
-  repo="${repo%.worktrees}"
+  local git_common_dir
+  if ! git_common_dir="$(git -C "$path" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)"; then
+    return 1
+  fi
+  local repo_root
+  repo_root="$(dirname "$git_common_dir")"
+  local repo
+  repo="$(basename "$repo_root")"
 
-  local ticket=""
-  if [[ "$relative" =~ [A-Z]+-[0-9]+ ]]; then
-    ticket="${BASH_REMATCH[0]}"
+  local toplevel
+  if ! toplevel="$(git -C "$path" rev-parse --show-toplevel 2>/dev/null)"; then
+    return 1
   fi
 
   local branch="repo root"
-  if [[ "$relative" == *".worktrees/"* ]]; then
-    branch="${relative#*.worktrees/}"
-    branch="${branch%%/*}"
+  if [[ "$toplevel" != "$repo_root" ]]; then
+    if ! branch="$(git -C "$path" rev-parse --abbrev-ref HEAD 2>/dev/null)"; then
+      return 1
+    fi
+  fi
+
+  local relative="${path#"${work_root}"/}"
+  local ticket=""
+  if [[ "$relative" =~ [A-Z]+-[0-9]+ ]]; then
+    ticket="${BASH_REMATCH[0]}"
   fi
 
   printf '%s\x1f%s\x1f%s\n' "$repo" "$ticket" "$branch"

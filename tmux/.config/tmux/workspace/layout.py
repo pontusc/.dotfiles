@@ -6,6 +6,7 @@ import shlex
 from pathlib import Path
 
 import tmux
+from errors import WorkspaceError
 
 
 def arrange(
@@ -25,3 +26,12 @@ def arrange(
     tmux.send_keys(window_id, shlex.join(claude_args))
     tmux.select_pane(window_id, "left")
     tmux.select_pane(window_id, "up")
+
+
+def arrange_current_window() -> None:
+    """Apply the dev layout to the current window; it must hold a single pane."""
+    window = tmux.current_window()
+    if window.panes != 1:
+        raise WorkspaceError("dev layout needs a single pane")
+    claude_session = f"{window.session}-{window.cwd.name}"
+    arrange(window.window_id, window.cwd, claude_session, None)

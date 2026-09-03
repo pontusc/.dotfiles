@@ -41,35 +41,32 @@
       "Bash(talosctl shutdown:*)",
       "Bash(talosctl etcd remove-member:*)",
       "Bash(talosctl etcd leave:*)",
-      "Read(.env)",
-      "Read(.env.*)",
-      "Read(~/.ssh/**)",
-      "Read(~/.aws/**)",
-      "Read(~/.kube/**)",
-      "Read(~/.gnupg/**)",
-      "Read(~/.talos/**)",
-      "Read(**/*.pem)",
-      "Read(**/*.key)",
-      "Read(**/.env)",
-      "Read(**/.env.*)",
-      "Read(**/*.pfx)",
-      "Read(**/*.p12)",
-      "Read(**/credentials)",
-      "Read(**/credentials.json)",
-      "Read(**/application_default_credentials.json)",
-      "Read(**/kubeconfig)",
-      "Read(**/*.kubeconfig)",
-      "Read(**/.talos/**)",
-      "Read(**/*.tfstate)",
-      "Read(**/*.tfstate.backup)",
-      "Read(**/.npmrc)",
-      "Read(**/.netrc)",
-      "Read(**/authorized_keys)",
-      "Read(**/id_rsa)",
-      "Read(**/id_ed25519)",
-      "Read(**/id_ecdsa)",
-      "Read(**/id_dsa)",
-      "Read(**/.secret/**)"
+      "Read(//**/.env)",
+      "Read(//**/.env.*)",
+      "Read(//**/.ssh/**)",
+      "Read(//**/.aws/**)",
+      "Read(//**/.kube/**)",
+      "Read(//**/.gnupg/**)",
+      "Read(//**/.talos/**)",
+      "Read(//**/.secret/**)",
+      "Read(//**/*.pem)",
+      "Read(//**/*.key)",
+      "Read(//**/*.pfx)",
+      "Read(//**/*.p12)",
+      "Read(//**/*.tfstate)",
+      "Read(//**/*.tfstate.backup)",
+      "Read(//**/credentials)",
+      "Read(//**/credentials.json)",
+      "Read(//**/application_default_credentials.json)",
+      "Read(//**/kubeconfig)",
+      "Read(//**/*.kubeconfig)",
+      "Read(//**/.npmrc)",
+      "Read(//**/.netrc)",
+      "Read(//**/authorized_keys)",
+      "Read(//**/id_rsa)",
+      "Read(//**/id_ed25519)",
+      "Read(//**/id_ecdsa)",
+      "Read(//**/id_dsa)"
     ],
     "ask": [
       "Bash(git push:*)",
@@ -85,7 +82,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/pontusc/.claude/hooks/notify.sh"
+            "command": "~/.claude/hooks/notify.sh"
           }
         ]
       }
@@ -95,7 +92,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/pontusc/.claude/hooks/notify.sh"
+            "command": "~/.claude/hooks/notify.sh"
           }
         ]
       }
@@ -105,7 +102,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/pontusc/.claude/hooks/notify.sh"
+            "command": "~/.claude/hooks/notify.sh"
           }
         ]
       }
@@ -115,7 +112,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/pontusc/.claude/hooks/notify.sh"
+            "command": "~/.claude/hooks/notify.sh"
           }
         ]
       }
@@ -135,7 +132,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/pontusc/.claude/hooks/notify.sh"
+            "command": "~/.claude/hooks/notify.sh"
           }
         ]
       }
@@ -144,7 +141,7 @@
   "disableWorkflows": true,
   "statusLine": {
     "type": "command",
-    "command": "bash /home/pontusc/.claude/statusline-command.sh"
+    "command": "bash ~/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
     "plan@plans": true,

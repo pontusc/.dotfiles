@@ -7,6 +7,8 @@ folded symlink.
 
 ## Use
 
+- **leader+A** lays out the current single-pane window as nvim, a terminal, and a claude
+  named after the session and directory.
 - **leader+T** opens an fzf multi-select over every discovered repo (space toggles, enter
   accepts the hovered row without unmarking). A second popup then prompts for the ticket
   (a bare number gets the configured
@@ -16,7 +18,7 @@ folded symlink.
   each, pinned to opus with the ticket directory passed via `--add-dir`. A ticket owns one
   worktree per repo, so reopening it with a different slug fails per repo until the old
   worktrees are gone. leader+X only reaches the windows of a live session, so a worktree
-  whose session is already gone needs a manual `git worktree remove` until `done` exists.
+  whose session is already gone needs a manual `git worktree remove`.
 - Empty ticket with a branch given: worktrees on the bare branch, session named by the
   branch. Both prompts empty: windows at repo roots, no worktrees, session named by the
   sole repo or a prompt.
@@ -24,9 +26,10 @@ folded symlink.
   worktree on the session's ticket branch, window and agent join in place. In a non-ticket
   session the repo opens at its root.
 - **leader+X** closes every window in the current session that loses nothing (repo-root
-  windows, worktrees with a clean tree). The worktree is removed, its branch kept.
-  Uncommitted changes keep a window without asking. Ignored files only prompt, since a
-  build cache is disposable but a local `.env` is not.
+  windows, worktrees with a clean tree). A repo-root window only closes after confirming.
+  The worktree is removed, its branch kept. Uncommitted changes keep a window without
+  asking. Ignored files only prompt, since a build cache is disposable but a local `.env`
+  is not.
 - **leader+s** picks another session: digits jump straight to a slot, letters fuzzy-find.
   Slots stick to a session for its lifetime and free up when it dies.
 - `list` prints the discovered repos and the materialized sessions.
@@ -89,10 +92,3 @@ same override.
   powerkit rewrites `status-right` on every render, and it lags a flag by up to 10 seconds.
   The clearing hooks in tmux.conf take no `-t` target, `set-option` does not expand formats
   there and a literal `#{window_id}` raises a blocking error view on every focus change.
-
-## Pending
-
-- `done`: teardown of one session, worktrees removed, branch deletion prompted, session
-  killed.
-- The swap: a `layout` subcommand replaces `dev-layout.sh` for leader+A. Leader+W keeps
-  its own script and the `<repo>.worktrees` layout permanently.

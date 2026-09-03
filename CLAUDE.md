@@ -24,7 +24,7 @@ mirrors the destination relative to `$HOME` (`claude/.claude/settings.json` →
 plugins), so the `claude` package deploys **per-entry** symlinks: `~/.claude/agents`,
 `~/.claude/hooks`, `~/.claude/CLAUDE.md`, `~/.claude/settings.json`,
 `~/.claude/statusline-command.sh`. One level deeper, `~/.claude/skills/` is also real (it
-hosts the external `omarchy` skill from `~/.local/share/omarchy/`), so **each skill has its
+hosts the external `omarchy` skill from `/usr/share/omarchy/`), so **each skill has its
 own symlink**.
 
 Consequences:

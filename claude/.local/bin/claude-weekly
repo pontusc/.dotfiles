@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# Summarizes last week's Claude Code sessions into ~/work-summaries/<monday date>.md and
+# Summarizes last week's Claude Code sessions into ~/weeklies/<monday date>.md and
 # notifies until clicked, the click opens the file. Run by claude-weekly.timer on Monday
 # mornings, or by hand with no arguments.
 
@@ -9,9 +9,11 @@ LAST_MONDAY="$(date -d "${THIS_MONDAY} -7 days" +%F)"
 START="$(date -u -d "${LAST_MONDAY}" +%FT%TZ)"
 END="$(date -u -d "${THIS_MONDAY}" +%FT%TZ)"
 WEEK="$(date -d "${LAST_MONDAY}" +%G-W%V)"
-OUT_DIR="${HOME}/work-summaries"
+OUT_DIR="${HOME}/weeklies"
 OUT="${OUT_DIR}/${LAST_MONDAY}.md"
-MAX_BYTES=600000
+MAX_CHARS=600000
+WORK_ROOT="${CLAUDE_WEEKLY_WORK_ROOT:-${HOME}/Work}"
+ENCODED_WORK_ROOT="${WORK_ROOT//\//-}"
 
 fail() {
   notify-send -u critical "Weekly summary failed" "$1, see journalctl --user -u claude-weekly"
@@ -19,27 +21,48 @@ fail() {
 }
 
 digest() {
-  local file project
+  local file project current_project body project_dir
+  current_project=""
   while IFS= read -r file; do
     project="$(basename "$(dirname "$file")")"
-    printf '\n## %s\n' "${project#-home-pontusc-}"
-    jq -r --arg s "$START" --arg e "$END" '
+    body="$(jq -r --arg s "$START" --arg e "$END" '
       select(.timestamp != null and .timestamp >= $s and .timestamp < $e)
       | if .type == "user" and (.message.content | type) == "string" and (.message.content | startswith("<") | not)
         then "U: " + .message.content[:400]
         elif .type == "assistant" and (.message.content | type) == "array"
         then (.message.content | map(select(.type == "text").text) | join(" ") | select(length > 0) | "A: " + .[:300])
-        else empty end' "$file" 2>/dev/null || true
-  done < <(find "${HOME}/.claude/projects" -mindepth 2 -maxdepth 2 -name '*.jsonl' -newermt "$LAST_MONDAY")
+        else empty end' "$file" 2>/dev/null || true)"
+    if [[ -n "$body" ]]; then
+      if [[ "$project" != "$current_project" ]]; then
+        printf '\n## %s\n' "${project#"${ENCODED_WORK_ROOT}"-}"
+        current_project="$project"
+      fi
+      printf '%s\n' "$body"
+    fi
+  done < <(
+    find "${HOME}/.claude/projects" -mindepth 1 -maxdepth 1 -type d -name "${ENCODED_WORK_ROOT}-*" |
+      while IFS= read -r project_dir; do
+        find "$project_dir" -maxdepth 1 -name '*.jsonl' -newermt "$LAST_MONDAY"
+      done |
+      sort
+  )
 }
 
-PROMPT="Below is a digest of my Claude Code sessions from ${START} to ${END}, one section per project directory, U is me and A is the assistant. Write a weekly summary in markdown. Start with the heading '# Week ${WEEK}'. Then '## Overview', at most ten bullets covering the overarching work of the week across all tickets and sidework, one line each. Then '## Tickets' with one '### <ticket id>' subsection per ticket, found in directory names like worktrees-ALC-1030 or mentioned in the text. Then '## Sidework' with one subsection per repo for everything without a ticket. Bullet points, one line each, what was done and its outcome. Merge duplicate sessions on the same topic. Skip trivia and abandoned one-liners. Plain punctuation, no semicolons, no em or en dashes. Output only the markdown, no preamble."
+PROMPT="Below is a digest of my Claude Code sessions from ${START} to ${END}, one section per project directory, U is me and A is the assistant. Write a weekly summary in markdown. Start with the heading '# Week ${WEEK}'. Then '## Overview', at most ten bullets covering the overarching work of the week across all tickets and sidework, one line each. Then '## Tickets' with one '### <ticket id>' subsection per ticket, found in directory names like tickets-ALC-1026-manifests or worktrees-ALC-1030 or mentioned in the text. Then '## Sidework' with one subsection per repo for everything without a ticket. Bullet points, one line each, what was done and its outcome. Merge duplicate sessions on the same topic. Skip trivia and abandoned one-liners. Plain punctuation, no semicolons, no em or en dashes. Output only the markdown, no preamble."
 
 mkdir -p "$OUT_DIR"
-SUMMARY="$(digest | head -c "$MAX_BYTES" | claude -p "$PROMPT" --model sonnet --setting-sources "" --tools "" --output-format text)" || fail "claude exited non-zero"
+DIGEST="$(digest)"
+if [[ -z "$DIGEST" ]]; then
+  notify-send -u normal "Weekly summary ${WEEK}" "no sessions in the window"
+  exit 0
+fi
+SUMMARY="$(claude -p "$PROMPT" --model sonnet --setting-sources "" --tools "" --output-format text <<<"${DIGEST:0:MAX_CHARS}")" || fail "claude exited non-zero"
 [[ -n "$SUMMARY" ]] || fail "empty summary"
 printf '%s\n' "$SUMMARY" >"$OUT"
 
-if [[ "$(notify-send -u critical -A default=Open "Weekly summary ${WEEK}" "$OUT")" == "default" ]]; then
-  xdg-open "$OUT"
-fi
+# The click wait runs detached so the oneshot unit finishes when the summary is written.
+NOTIFY_SCRIPT="$(cat <<'EOF'
+if [[ "$(notify-send -u critical -A default=Open "$1" "$2")" == "default" ]]; then xdg-open "$2"; fi
+EOF
+)"
+systemd-run --user --collect --quiet --unit "claude-weekly-notify-${LAST_MONDAY}" bash -c "$NOTIFY_SCRIPT" _ "Weekly summary ${WEEK}" "$OUT"
