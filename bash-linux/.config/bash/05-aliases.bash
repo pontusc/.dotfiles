@@ -44,3 +44,6 @@ alias ldk="lazydocker"
 
 # IP check
 alias whatsmyip="curl -s https://ifconfig.me"
+
+# Claude Code: always start on Opus, CLI flag beats the model saved in settings.json
+alias claude="claude --model opus"
