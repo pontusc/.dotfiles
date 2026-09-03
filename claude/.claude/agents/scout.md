@@ -1,6 +1,6 @@
 ---
 name: scout
-description: "Context-builder for the orchestrator. Locates the relevant files/docs/data for a task and returns precise retrieval pointers (paths + line ranges, grep/sed commands, URLs) with a one-line relevance note per hit, so the orchestrator pulls only the exact bytes it needs. Use before reasoning about an unfamiliar area, or for any multi-file / web exploration."
+description: "Context-builder for the orchestrator. Locates the relevant files/docs/data for a task and returns precise retrieval pointers (paths + line ranges, grep/sed commands, URLs) with a one-line relevance note per hit, so the orchestrator pulls only the exact bytes it needs. Use before reasoning about an unfamiliar area, or for any multi-file / web exploration. Haiku for verbatim loading, sonnet for exploration."
 model: sonnet
 color: blue
 tools: Read, Grep, Glob, WebFetch, WebSearch, LSP
