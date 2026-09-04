@@ -74,7 +74,7 @@
     ],
     "defaultMode": "default"
   },
-  "model": "claude-fable-5-1[1m]",
+  "model": "opus",
   "hooks": {
     "Notification": [
       {
