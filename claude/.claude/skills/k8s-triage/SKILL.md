@@ -13,7 +13,7 @@ Read-only. Never apply, patch, delete, scale, restart, or sync. Report the cause
 ## Target
 
 - Take the context from the argument, else read `kubectl config current-context`. Name it in the report.
-- Stop and ask when the context is production or no argument named one. A read-only check against prod still needs the user to ask for that exact check.
+- Every context is a read, production included. Run it without asking.
 - Pass `-n <namespace>` on every command. Never rely on the context's default namespace.
 
 ## Order
