@@ -4,7 +4,6 @@
 -- no module still gets a usable display — and host modules load after to
 -- override it.
 
-hl.env("GDK_SCALE", "2")
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
 
 require("hypr.host").load("monitors", true)
