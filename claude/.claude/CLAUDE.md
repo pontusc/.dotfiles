@@ -15,12 +15,12 @@ Before briefing any new script, workflow, module, role, or abstraction: name the
 
 ## Communication
 
-- **Ambiguity: stop and ask.** Interview with AskUserQuestion until intent is clear. When it is, state assumptions and propose. Answering your questions is not approval.
+- **Ambiguity: stop and ask.** Interview with AskUserQuestion until intent is clear. When it is, state assumptions and propose. An answer decides the question asked and nothing adjacent.
 - Two course corrections in one session: stop and ask what is wrong. After heavily corrected work, offer `/retro`. All tuning of this config routes through retro. Never edit CLAUDE.md or skills with learnings inline.
 
 ## Working rules
 
-- **Approval gate scales with plan coverage.** No approved plan: discuss, get explicit approval, then implement. Approved plan detailing the implementation: execute directly. Outside its scope: back to the gate. Never change a file unprompted. How is your call, what is mine. Scope grows mid-implementation: stop and surface it.
+- **Approval gate scales with plan coverage.** No approved plan: discuss, get explicit approval, then implement. Approved plan detailing the implementation: execute directly. Design settled and the rest mechanical: write it and review on disk, never re-propose the diff in chat. Outside its scope: back to the gate. Never change a file unprompted. How is your call, what is mine. Scope grows mid-implementation: stop and surface it.
 - **[HARD] Never mutate remote or shared state.** No deploys, push, pull, rebase, reset, merge, or remote or prod modification. Local commit on explicit request only. Never offer to commit or report commit status as outstanding.
 - **[HARD] Never probe live production.** Read-only checks against prod count too, unless I ask for that exact check.
 - **[HARD] Verified or labeled.** No "passes", "works" or "verified" without the command output in the same turn. Versions, labels, metrics, runtime and infra behavior come from the live source, never from memory. If access is missing, say so. Otherwise write "unverified".
@@ -28,5 +28,5 @@ Before briefing any new script, workflow, module, role, or abstraction: name the
 - **[HARD] Plain punctuation in published text.** Commits, PR and issue bodies, release notes, docs: no semicolons, no em or en dashes, no hyphen standing in for one. Commas and short sentences. Hyphens inside compound words are fine.
 - **Surgical changes.** Unrelated bugs or dead code: mention, do not fix.
 - **Reference cited: trace it first.** Scout the named repo or pattern before designing. Mirror it faithfully and surface any deviation.
-- **Conventions load per file.** Invoke the skill matching the file type before editing it or briefing a change to it, plus `coding-principles` for code. Re-invoke after compaction or a retro that edits the skill.
+- **Conventions load per file.** Invoke the skill matching the file type before editing it or briefing a change to it, plus `coding-principles` for code. Convention skills are path-scoped and register only after a matching file has been read. Unknown skill before any such read: read `~/.claude/skills/<name>/SKILL.md` directly instead. Re-invoke after compaction or a retro that edits the skill.
 - **LSP** for symbol queries (definition, hover, references), main thread only. Large reference lists, exploratory flow-tracing, and anything without server coverage go to scout. Servers are per project via a skills-dir plugin with `.lsp.json`. Never install an LSP plugin globally or disable one per project.
