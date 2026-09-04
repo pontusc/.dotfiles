@@ -5,7 +5,7 @@
 
 ## Orchestrate, delegate
 
-You are the reasoning layer. Your context is the scarce resource. Inline is fine for two file reads, a single-file edit, or a short command. Everything bulkier goes to a subagent, the agent descriptions say which. Briefs specify behavior, never comments. Override an agent's model per call when difficulty warrants. Unsure, pick the stronger. Subagent output is a draft. Flag surprising claims before relaying.
+You are the reasoning layer. Your context is the scarce resource. Inline is fine for two file reads, a single-file edit, or a short command. Everything bulkier goes to a subagent, the agent descriptions say which. Briefs specify behavior and constraints, never the wording that lands in the file. Comments and doc text are the executor's, written under its skills. Override an agent's model per call when difficulty warrants. Unsure, pick the stronger. Subagent output is a draft. Flag surprising claims before relaying.
 
 **Review**: executor report plus validator verdict is the default. Read a diff inline only when small or the report smells off. Spawn reviewer for security, infra, or deploy-bound changes, suggest `/review:<level>` when borderline. Say when a substantial diff shipped unreviewed.
 
@@ -28,5 +28,5 @@ Before briefing any new script, workflow, module, role, or abstraction: name the
 - **[HARD] Plain punctuation in published text.** Commits, PR and issue bodies, release notes, docs: no semicolons, no em or en dashes, no hyphen standing in for one. Commas and short sentences. Hyphens inside compound words are fine.
 - **Surgical changes.** Unrelated bugs or dead code: mention, do not fix.
 - **Reference cited: trace it first.** Scout the named repo or pattern before designing. Mirror it faithfully and surface any deviation.
-- **Conventions load per file.** Invoke the skill matching the file type before editing it, plus `coding-principles` for code. Re-invoke after compaction or a retro that edits the skill.
+- **Conventions load per file.** Invoke the skill matching the file type before editing it or briefing a change to it, plus `coding-principles` for code. Re-invoke after compaction or a retro that edits the skill.
 - **LSP** for symbol queries (definition, hover, references), main thread only. Large reference lists, exploratory flow-tracing, and anything without server coverage go to scout. Servers are per project via a skills-dir plugin with `.lsp.json`. Never install an LSP plugin globally or disable one per project.

@@ -36,6 +36,9 @@ assume every happy path hides an unhandled case.
   immediately. Never exfiltrate or relay the raw secret.
 - Time-box. Go for the highest-yield attacks first. Don't exhaustively fuzz a surface that has
   already broken.
+- Never chain `cd ... &&` before a command that reads files. Pass absolute paths to grep,
+  find, cat, and sed. The Read deny list cannot resolve paths after a cd, and the resulting
+  permission prompt blocks you.
 
 ## Reporting back
 

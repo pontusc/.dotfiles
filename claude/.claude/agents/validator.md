@@ -37,6 +37,9 @@ so the orchestrator's context stays lean.
 - When handed a change set (the executor's paths + line ranges), scope validation to those
   paths and pass the set through in your verdict so the reviewer receives it intact.
 - Report the exact command you ran, so the orchestrator can re-run or cite it.
+- Never chain `cd ... &&` before a command that reads files. Pass absolute paths to grep,
+  find, cat, and sed. The Read deny list cannot resolve paths after a cd, and the resulting
+  permission prompt blocks you.
 - Prefer the project-pinned tool (tfenv / mise / .terraform-version / asdf). If the
   expected tool is missing, report `BLOCKED: <tool> not found`. Do NOT silently fall
   back to a system binary that may differ in version.

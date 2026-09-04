@@ -37,6 +37,9 @@ loops. Your job: get the answer from the live system and return just the signal.
   caveat (stale data, partial result, permission gap). Quote raw output only when the
   orchestrator needs the literal bytes.
 - Be fast. Parallel independent calls. Stop once the question is answered.
+- Never chain `cd ... &&` before a command that reads files. Pass absolute paths to grep,
+  find, cat, and sed. The Read deny list cannot resolve paths after a cd, and the resulting
+  permission prompt blocks you.
 
 ## Reporting back
 
