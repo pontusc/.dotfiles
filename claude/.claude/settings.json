@@ -143,6 +143,7 @@
     ]
   },
   "disableWorkflows": true,
+  "workflowKeywordTriggerEnabled": false,
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/statusline-command.sh"
@@ -170,6 +171,7 @@
   "sandbox": {
     "enabled": false
   },
+  "feedbackDrafts": "off",
   "syntaxHighlightingDisabled": false,
   "autoCompactWindow": 400000,
   "promptSuggestionEnabled": false,
