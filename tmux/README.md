@@ -27,9 +27,10 @@ folded symlink.
   session the repo opens at its root.
 - **leader+X** closes every window in the current session that loses nothing (repo-root
   windows, worktrees with a clean tree). A repo-root window only closes after confirming.
-  The worktree is removed, its branch kept. Uncommitted changes keep a window without
-  asking. Ignored files only prompt, since a build cache is disposable but a local `.env`
-  is not.
+  The worktree and its branch are both removed, and a branch git refuses to delete, most
+  often unmerged work, only goes on an explicit yes. Uncommitted changes keep a window
+  without asking. Ignored files only prompt, since a build cache is disposable but a local
+  `.env` is not.
 - **leader+s** picks another session: digits jump straight to a slot, letters fuzzy-find.
   Slots stick to a session for its lifetime and free up when it dies.
 - `list` prints the discovered repos and the materialized sessions.

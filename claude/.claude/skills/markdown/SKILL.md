@@ -14,7 +14,8 @@ A README holds what an operator needs to know and the final state of the thing. 
 ## Content
 
 - Operator knowledge: how to run it, what must not be broken, unenforced constraints, the entry point you check when it breaks.
-- Final state: what is true now. Never how it got here, migration notes, or "considerations" describing the current setup.
+- Final state: what is meant to stay. Never how it got here, migration notes, or "considerations" describing the current setup.
+- Temporary and test scaffolding is never documented, even while it sits on disk. A review finding that the doc no longer matches the directory is wrong when the artifact is scheduled for deletion, dismiss it.
 - Delete anything `ls`, `grep`, or the code answers: directory tables, file-tree narration, consumers and call sites, values declared in config, defaults, what deploys the thing, status readable from manifests (RBAC, probes, replicas).
 - A constraint the code enforces is inventory too. Only unenforced constraints earn a sentence.
 - Write about your own level only. A README covers its directory. Children document themselves.

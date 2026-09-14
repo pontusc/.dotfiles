@@ -120,3 +120,18 @@ def remove(repo_root: Path, path: Path) -> str | None:
     with contextlib.suppress(OSError):
         path.parent.rmdir()
     return None
+
+
+def delete_branch(repo_root: Path, branch: str, *, force: bool = False) -> str | None:
+    """Delete a branch, returning git's own message when it refuses."""
+    result = _git(
+        repo_root,
+        "-c",
+        "advice.forceDeleteBranch=false",
+        "branch",
+        "-D" if force else "-d",
+        branch,
+    )
+    if result.returncode == 0:
+        return None
+    return result.stderr.strip() or f"git branch delete exited {result.returncode}"

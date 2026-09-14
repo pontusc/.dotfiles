@@ -6,6 +6,11 @@
     "ENABLE_LSP_TOOL": "1",
     "CLAUDE_CODE_SCROLL_SPEED": "3"
   },
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
   "permissions": {
     "allow": [
       "Read(*)",
@@ -79,11 +84,6 @@
     "defaultMode": "default"
   },
   "model": "opus",
-  "attribution": {
-    "commit": "",
-    "pr": "",
-    "sessionUrl": false
-  },
   "hooks": {
     "Notification": [
       {

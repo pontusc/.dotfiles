@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 import compose
 import config
@@ -59,6 +60,15 @@ def add_repo() -> None:
         ui.notice("\n".join(result.skipped))
 
 
+def _delete_branch(repo_root: Path, branch: str) -> str:
+    error = worktree.delete_branch(repo_root, branch)
+    if error and ui.confirm(f"{error}\ndelete {branch} anyway?"):
+        error = worktree.delete_branch(repo_root, branch, force=True)
+    if error:
+        return f"branch {branch} kept ({error})"
+    return f"deleted branch {branch}"
+
+
 def cleanup_session() -> None:
     session = tmux.current_session()
     if session is None:
@@ -100,13 +110,16 @@ def cleanup_session() -> None:
         ):
             kept.append(f"{owner}: declined, kept")
             continue
-        branch = worktree.branch_at(window.path) or "unknown"
+        branch = worktree.branch_at(window.path)
         error = worktree.remove(work_root / owner, window.path)
         if error:
             kept.append(f"{owner}: {error}, kept")
             continue
         tmux.kill_window(window.window_id)
-        removed.append(f"{owner}: removed worktree (branch {branch} kept)")
+        outcome = "removed worktree"
+        if branch and branch != "HEAD":
+            outcome += f", {_delete_branch(work_root / owner, branch)}"
+        removed.append(f"{owner}: {outcome}")
     persist.save_state()
     if removed or kept:
         ui.notice("\n".join(removed + kept))
