@@ -1,0 +1,27 @@
+modelRoles:
+  default: openai-codex/gpt-5.6-luna
+  smol: openai-codex/gpt-5.6-luna
+  slow: openai-codex/gpt-5.6-luna
+  plan: openai-codex/gpt-5.6-luna
+  task: openai-codex/gpt-5.6-luna
+  advisor: openai-codex/gpt-5.6-luna
+symbolPreset: nerd
+composer:
+  shape: band
+theme:
+  dark: dark-tokyo-night
+setupVersion: 2
+magicKeywords:
+  ultrathink: false
+statusLine:
+  preset: custom
+  separator: powerline-thin
+  leftSegments:
+    - path
+    - git
+    - model
+  rightSegments:
+    - context_pct
+    - usage
+    - status
+    - subagents
