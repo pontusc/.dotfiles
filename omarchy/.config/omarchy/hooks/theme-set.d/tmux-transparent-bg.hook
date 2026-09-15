@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e
+
+# omarchy-theme-set-tmux pins window-style to an explicit bg, which makes tmux
+# paint every cell opaque and defeats kitty's background_opacity in the pane.
+# bg=terminal puts the cells back on the terminal default. Foreground is left
+# unset so it inherits kitty's, already themed by the include in kitty.conf.
+
+tmux list-sessions >/dev/null 2>&1 || exit 0
+
+tmux set-option -g window-style "bg=terminal"
+tmux set-option -g window-active-style "bg=terminal"
