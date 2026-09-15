@@ -7,3 +7,4 @@ __pycache__/
 hypr/reference/
 claude/**/selfheal*
 applyonce
+**/themes/omarchy.json
