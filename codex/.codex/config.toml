@@ -1,0 +1,18 @@
+model = "gpt-5.6-sol"
+model_reasoning_effort = "medium"
+approval_policy = "on-request"
+default_permissions = ":workspace"
+web_search = "cached"
+
+[agents]
+max_concurrent_threads_per_session = 8
+
+[tui]
+theme = "base16-256"
+status_line = ["current-dir", "git-branch", "model-with-reasoning", "context-used", "five-hour-limit", "weekly-limit"]
+
+[projects."/home/pontusc/Work/infrastructure"]
+trust_level = "trusted"
+
+[projects."/home/pontusc/dotfiles"]
+trust_level = "trusted"

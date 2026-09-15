@@ -1,0 +1,10 @@
+prefix_rule(pattern = ["sudo"], decision = "forbidden", justification = "Run privileged commands yourself after reviewing them.")
+
+prefix_rule(pattern = ["git", ["pull", "tag", "checkout", "merge", "rebase", "reset", "clean", "stash"]], decision = "forbidden", justification = "These Git operations can rewrite or import shared state. Run the intended command yourself.")
+prefix_rule(pattern = ["git", "remote", ["add", "remove", "rm", "rename", "set-url"]], decision = "forbidden", justification = "Changing remotes is outside the agent's authority.")
+prefix_rule(pattern = ["git", "branch", ["-d", "-D"]], decision = "forbidden", justification = "Branch deletion is outside the agent's authority.")
+prefix_rule(pattern = ["git", "push"], decision = "prompt", justification = "Remote Git writes require explicit approval.")
+prefix_rule(pattern = ["git", "switch"], decision = "prompt", justification = "Switching branches can disrupt the working tree and requires approval.")
+
+prefix_rule(pattern = ["talosctl", ["reset", "upgrade", "upgrade-k8s", "bootstrap", "reboot", "shutdown"]], decision = "forbidden", justification = "Talos mutations must be run by the user.")
+prefix_rule(pattern = ["talosctl", "etcd", ["remove-member", "leave"]], decision = "forbidden", justification = "Talos etcd mutations must be run by the user.")
