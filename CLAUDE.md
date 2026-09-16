@@ -1,9 +1,9 @@
 # Dotfiles
 
-Personal dotfiles for Arch Linux + Hyprland (omarchy) and CachyOS + KDE Plasma machines,
-deployed with GNU Stow. Each top-level directory is a **stow package**; the path inside it
-mirrors the destination relative to `$HOME` (`claude/.claude/settings.json` →
-`~/.claude/settings.json`). Required tools are listed in `readme.md`.
+Personal dotfiles for Arch Linux + Hyprland (omarchy), deployed with GNU Stow. Each
+top-level directory is a **stow package**. The path inside it mirrors the destination
+relative to `$HOME` (`claude/.claude/settings.json` → `~/.claude/settings.json`). Required
+tools are listed in `readme.md`.
 
 ## Stow mechanics
 
@@ -12,8 +12,6 @@ mirrors the destination relative to `$HOME` (`claude/.claude/settings.json` →
 - **Tree folding**: stow links the highest directory it can own outright — a package whose
   target doesn't exist gets one symlink for the whole tree. When the target already exists as
   a real directory, stow *unfolds* and links each entry inside it individually.
-- Packages are machine/role-specific (`bash-linux` vs `bash-work`, `hypr`, `kde-*`) —
-  install only what applies to the host.
 - **The tmux package**: `~/.config/tmux/workspace` is one folded symlink, so the workspace
   tool's `__pycache__` is written inside the repo tree (gitignored). Its config
   `~/.config/tmux/workspaces.toml` is machine-local and must never enter the repo.

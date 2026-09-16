@@ -15,7 +15,8 @@ symbolPreset: nerd
 composer:
   shape: band
 theme:
-  dark: dark-tokyo-night
+  dark: omarchy-system
+  light: omarchy-system
 setupVersion: 2
 magicKeywords:
   ultrathink: false
@@ -31,3 +32,11 @@ statusLine:
     - usage
     - status
     - subagents
+recap:
+  enabled: false
+dev:
+  autoqaConsent: granted
+astGrep:
+  enabled: true
+github:
+  enabled: true

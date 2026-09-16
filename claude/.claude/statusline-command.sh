@@ -44,46 +44,70 @@ if git -C "$CWD" rev-parse --git-dir > /dev/null 2>&1; then
   fi
 fi
 
-# --- ANSI colors ---
-CYAN="\033[36m"
-BOLD_CYAN="\033[1;36m"
-DIM_CYAN="\033[2;36m"
-DIM_ITALIC_CYAN="\033[2;3;36m"
-YELLOW="\033[33m"
-RED="\033[31m"
+# --- Colors: the omarchy palette when the theme ships one, ANSI slots otherwise ---
+# Omarchy regenerates claude.json on every `omarchy theme set`, and this script
+# re-runs on every render, so a theme switch needs no reload hook.
+OMARCHY_PALETTE_FILE="$HOME/.local/state/omarchy/current/theme/claude.json"
+readonly OMARCHY_PALETTE_FILE
+
+# $1 = #rrggbb, $2 = optional leading SGR attributes such as "1" or "2;3".
+hex_to_sgr() {
+  local hex="${1#\#}" attrs="${2:-}"
+  printf '\\033[%s38;2;%d;%d;%dm' "${attrs:+${attrs};}" "0x${hex:0:2}" "0x${hex:2:2}" "0x${hex:4:2}"
+}
+
+TEXT="\033[36m"
+ACCENT="\033[1;36m"
+SUBTLE="\033[2;36m"
+SUBTLE_ITALIC="\033[2;3;36m"
+WARNING="\033[33m"
+ERROR="\033[31m"
 RESET="\033[0m"
-readonly CYAN BOLD_CYAN DIM_CYAN DIM_ITALIC_CYAN YELLOW RED RESET
+
+PALETTE="$(jq -er '[.overrides | .claude, .text, .inactive, .warning, .error]
+  | map(strings | select(test("^#[0-9a-fA-F]{6}$")))
+  | select(length == 5) | join(" ")' "$OMARCHY_PALETTE_FILE" 2> /dev/null || true)"
+if [[ -n "$PALETTE" ]]; then
+  read -r HEX_ACCENT HEX_TEXT HEX_SUBTLE HEX_WARNING HEX_ERROR <<< "$PALETTE"
+  TEXT="$(hex_to_sgr "$HEX_TEXT")"
+  ACCENT="$(hex_to_sgr "$HEX_ACCENT" 1)"
+  SUBTLE="$(hex_to_sgr "$HEX_SUBTLE")"
+  SUBTLE_ITALIC="$(hex_to_sgr "$HEX_SUBTLE" 3)"
+  WARNING="$(hex_to_sgr "$HEX_WARNING")"
+  ERROR="$(hex_to_sgr "$HEX_ERROR")"
+fi
+readonly TEXT ACCENT SUBTLE SUBTLE_ITALIC WARNING ERROR RESET
 
 # Color a percentage by usage threshold: dim <50, yellow ≥50, red ≥80.
 # $1 = integer percent, $2 = optional label prefix rendered inside the color.
 colorize_pct() {
   local pct="$1" prefix="${2:-}"
-  local color="$DIM_CYAN"
+  local color="$SUBTLE"
   if [[ "$pct" -ge 80 ]]; then
-    color="$RED"
+    color="$ERROR"
   elif [[ "$pct" -ge 50 ]]; then
-    color="$YELLOW"
+    color="$WARNING"
   fi
   printf '%s' "${color}${prefix}${pct}%${RESET}"
 }
 
 # --- Section 1: directory + git (bold/dim-italic cyan) ---
-SEC1="${BOLD_CYAN}${DIR}${RESET}"
+SEC1="${ACCENT}${DIR}${RESET}"
 if [[ -n "$GIT_BRANCH" ]]; then
-  SEC1+=" ${DIM_ITALIC_CYAN}${GIT_BRANCH}${RESET}"
+  SEC1+=" ${SUBTLE_ITALIC}${GIT_BRANCH}${RESET}"
 fi
 
 # --- Section 2: model / agent, effort, context usage ---
 MODEL_SEG=""
 if [[ -n "$AGENT_NAME" ]]; then
-  MODEL_SEG="${CYAN}${MODEL_NAME}:${AGENT_NAME}${RESET}"
+  MODEL_SEG="${TEXT}${MODEL_NAME}:${AGENT_NAME}${RESET}"
 elif [[ -n "$MODEL_NAME" ]]; then
-  MODEL_SEG="${CYAN}${MODEL_NAME}${RESET}"
+  MODEL_SEG="${TEXT}${MODEL_NAME}${RESET}"
 fi
 
 EFFORT_SEG=""
 if [[ -n "$EFFORT_LEVEL" ]]; then
-  EFFORT_SEG="${DIM_CYAN}${EFFORT_LEVEL}${RESET}"
+  EFFORT_SEG="${SUBTLE}${EFFORT_LEVEL}${RESET}"
 fi
 
 CTX_SEG=""
@@ -104,7 +128,7 @@ FIVE_SEG=""
 if [[ -n "$FIVE_HOUR_PCT" && "$FIVE_HOUR_PCT" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
   FIVE_SEG="$(colorize_pct "${FIVE_HOUR_PCT%.*}")"
   if [[ -n "$FIVE_HOUR_RESET" ]]; then
-    FIVE_SEG+="${DIM_CYAN} ($(date -d "@${FIVE_HOUR_RESET}" +%H:%M))${RESET}"
+    FIVE_SEG+="${SUBTLE} ($(date -d "@${FIVE_HOUR_RESET}" +%H:%M))${RESET}"
   fi
 fi
 
@@ -112,13 +136,13 @@ SEVEN_SEG=""
 if [[ -n "$SEVEN_DAY_PCT" && "$SEVEN_DAY_PCT" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
   SEVEN_SEG="$(colorize_pct "${SEVEN_DAY_PCT%.*}")"
   if [[ -n "$SEVEN_DAY_RESET" ]]; then
-    SEVEN_SEG+="${DIM_CYAN} ($(date -d "@${SEVEN_DAY_RESET}" +%a))${RESET}"
+    SEVEN_SEG+="${SUBTLE} ($(date -d "@${SEVEN_DAY_RESET}" +%a))${RESET}"
   fi
 fi
 
 SEC3=""
 if [[ -n "$FIVE_SEG" && -n "$SEVEN_SEG" ]]; then
-  SEC3="${FIVE_SEG}${DIM_CYAN} | ${RESET}${SEVEN_SEG}"
+  SEC3="${FIVE_SEG}${SUBTLE} | ${RESET}${SEVEN_SEG}"
 else
   SEC3="${FIVE_SEG}${SEVEN_SEG}"
 fi
@@ -179,7 +203,7 @@ fi
 OUTPUT=""
 for SEC in "$SEC1" "$SEC2" "$SEC3" "$SCOPED_SEG"; do
   if [[ -n "$SEC" ]]; then
-    [[ -n "$OUTPUT" ]] && OUTPUT+="${DIM_CYAN} | ${RESET}"
+    [[ -n "$OUTPUT" ]] && OUTPUT+="${SUBTLE} | ${RESET}"
     OUTPUT+="$SEC"
   fi
 done

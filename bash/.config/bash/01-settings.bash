@@ -17,3 +17,12 @@ if [[ -f $omarchy_lazygit_theme ]]; then
   LG_CONFIG_FILE="$LG_CONFIG_FILE,$omarchy_lazygit_theme"
 fi
 unset omarchy_lazygit_theme
+
+# starship
+# Unset, starship reads ~/.config/starship.toml, which carries the same prompt
+# in the stock cyan.
+omarchy_starship_config="$HOME/.local/state/omarchy/current/theme/starship.toml"
+if [[ -f $omarchy_starship_config ]]; then
+  export STARSHIP_CONFIG="$omarchy_starship_config"
+fi
+unset omarchy_starship_config

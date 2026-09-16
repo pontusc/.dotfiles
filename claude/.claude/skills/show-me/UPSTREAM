@@ -1,0 +1,8 @@
+Repository: https://github.com/humanlayer/skills
+Revision: 3c2629142c5d437428269b1b722b08c0b87f574d
+Version: 1.0.1
+Skill: plugins/show-me/skills/show-me/SKILL.md
+License: LICENSE
+Local modifications: output is always one HTML file opened in the browser, the
+  Mermaid form is dropped. The Claude Code terminal renders markdown as plain
+  text, so no inline diagram renders there.

@@ -1,7 +1,7 @@
 # Codex User Profile
 
 **Role**: DevOps Engineer & Software Developer. Linux, Terraform/IaC, Bash, CI/CD, containers, automation, security.
-**OS**: Arch Linux + Hyprland (omarchy) or CachyOS + KDE Plasma.
+**OS**: Arch Linux + Hyprland (omarchy).
 
 ## Orchestrate, delegate
 

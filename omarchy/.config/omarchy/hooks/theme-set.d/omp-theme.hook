@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Publish the generated OMP palette after an Omarchy theme switch. No arguments required.
+SOURCE="$HOME/.local/state/omarchy/current/theme/omp.json"
+THEME_DIR="${PI_CODING_AGENT_DIR:-$HOME/.omp/agent}/themes"
+readonly SOURCE THEME_DIR
+
+mkdir -p "$THEME_DIR"
+TEMP_THEME=$(mktemp "$THEME_DIR/.omarchy-system.XXXXXX")
+readonly TEMP_THEME
+trap 'rm -f "$TEMP_THEME"' EXIT
+cp "$SOURCE" "$TEMP_THEME"
+mv -f "$TEMP_THEME" "$THEME_DIR/omarchy-system.json"
