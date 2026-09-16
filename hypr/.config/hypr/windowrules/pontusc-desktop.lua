@@ -1,6 +1,6 @@
 -- Workspace numbers follow monitors/pontusc-desktop.lua: 1-3 DP-1, 4-5 DP-3, 6-7 HDMI-A-1.
 
-o.window("^steam_app_[0-9]+$", { tag = "+game" })
+o.window("^steam_app_([0-9]+|battlenet)$", { tag = "+game" })
 o.window("^stellaris$", { tag = "+game" })
 o.window({ initial_title = "^World of Warcraft$", xwayland = true }, { tag = "+game" })
 o.window({ tag = "game" }, { workspace = "3 silent", fullscreen = true, render_unfocused = true, opacity = "1 1" })

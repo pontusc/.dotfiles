@@ -14,3 +14,8 @@ hl.workspace_rule({ workspace = "5", monitor = "DP-3" })
 
 hl.workspace_rule({ workspace = "6", monitor = "HDMI-A-1", default = true })
 hl.workspace_rule({ workspace = "7", monitor = "HDMI-A-1" })
+
+-- Xwayland sets no primary output, so X11 games that default to "primary monitor" pick the
+-- first xrandr entry, the portrait HDMI-A-1. Xwayland may not be up yet on hyprland.start,
+-- hence the retry.
+o.exec_on_start("sh -c 'for _ in 1 2 3 4 5 6 7 8 9 10; do xrandr --output DP-1 --primary && break; sleep 1; done'")
