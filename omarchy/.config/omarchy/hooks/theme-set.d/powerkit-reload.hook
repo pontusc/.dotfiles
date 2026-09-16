@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -e
+
+# Powerkit caches colors and rendered segments for 24h keyed by theme name, which
+# is the constant "custom" here, so a theme switch would keep serving stale entries.
+# It reads every @powerkit_* option only when TMUX is set, so the reload goes through
+# run-shell, which supplies it and waits for the script to finish.
+
+tmux list-sessions >/dev/null 2>&1 || exit 0
+
+POWERKIT_DATA_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/tmux-powerkit/data"
+
+shopt -s nullglob
+rm -f "$POWERKIT_DATA_DIR"/theme_colors__custom__* "$POWERKIT_DATA_DIR"/rendered_*__custom__*
+shopt -u nullglob
+
+tmux run-shell "$HOME/.config/tmux/plugins/tmux-powerkit/tmux-powerkit.tmux"
+
+tmux refresh-client -S
