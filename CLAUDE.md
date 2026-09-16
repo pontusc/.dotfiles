@@ -36,6 +36,18 @@ Consequences:
 - `claude/.config/dcg` → `~/.config/dcg` is fully folded (one symlink for the directory);
   its runtime file `pending_exceptions.jsonl` lives inside the repo tree but is gitignored.
 
+## The omarchy package (partially folded, read before adding files)
+
+`~/.config/omarchy/themed/` and `~/.config/omarchy/hooks/theme-set.d/` are real directories,
+omarchy ships its own `.sample` files into both, so the `omarchy` package deploys
+**per-entry** symlinks for every `.tpl` and `.hook`.
+
+Consequence:
+
+- **A new template or hook does not deploy itself.** After adding one under
+  `omarchy/.config/omarchy/themed/` or `omarchy/.config/omarchy/hooks/theme-set.d/`, run
+  `stow -R omarchy` or link it manually. Everything currently in the repo is linked.
+
 ## Key files
 
 - `claude/.claude/CLAUDE.md` — global user instructions (orchestration/delegation rules)

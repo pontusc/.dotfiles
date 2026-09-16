@@ -17,4 +17,4 @@ shopt -u nullglob
 
 tmux run-shell "$HOME/.config/tmux/plugins/tmux-powerkit/tmux-powerkit.tmux"
 
-tmux refresh-client -S
+tmux refresh-client -S || true

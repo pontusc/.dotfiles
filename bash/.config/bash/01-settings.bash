@@ -10,13 +10,18 @@ export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
 export ARGOCD_OPTS="--grpc-web"
 
 # lazygit
-# A missing file in LG_CONFIG_FILE aborts lazygit at startup.
-export LG_CONFIG_FILE="$HOME/.config/lazygit/config.yml"
-omarchy_lazygit_theme="$HOME/.local/state/omarchy/current/theme/lazygit.yml"
-if [[ -f $omarchy_lazygit_theme ]]; then
-  LG_CONFIG_FILE="$LG_CONFIG_FILE,$omarchy_lazygit_theme"
+# A missing path in LG_CONFIG_FILE aborts lazygit at startup, so each entry is added only when present.
+lazygit_configs=""
+for lazygit_config in "$HOME/.config/lazygit/config.yml" \
+  "$HOME/.local/state/omarchy/current/theme/lazygit.yml"; do
+  if [[ -f $lazygit_config ]]; then
+    lazygit_configs="${lazygit_configs:+$lazygit_configs,}$lazygit_config"
+  fi
+done
+if [[ -n $lazygit_configs ]]; then
+  export LG_CONFIG_FILE="$lazygit_configs"
 fi
-unset omarchy_lazygit_theme
+unset lazygit_config lazygit_configs
 
 # starship
 # Unset, starship reads ~/.config/starship.toml, which carries the same prompt
