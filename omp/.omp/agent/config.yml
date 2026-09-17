@@ -40,3 +40,7 @@ astGrep:
   enabled: true
 github:
   enabled: true
+completion:
+  notify: off
+ask:
+  notify: off

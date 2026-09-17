@@ -113,6 +113,12 @@ export default function tmuxAttention(pi: ExtensionAPI): void {
     await safely(clearPaneTag);
   });
 
+  pi.on("tool_call", async (event, _ctx) => {
+    if (event.toolName === "ask") {
+      await safely(() => raiseAttention("ask", "OMP asks"));
+    }
+  });
+
   pi.on("tool_approval_requested", async (event, _ctx) => {
     await safely(() => raiseAttention("ask", `OMP asks${event.toolName ? `, ${event.toolName}` : ""}`));
   });

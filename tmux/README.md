@@ -88,8 +88,8 @@ same override.
 - Nothing checks the versions, so keep them in mind: uv, tmux 3.2 or newer for
   `display-popup`, and an fzf recent enough for the `enter:select+accept` bind.
 - The Claude flag segment and the picker markers read the window option `@claude`, set to
-  `ask` or `done` by `~/.claude/hooks/notify.sh` in the claude package. Renaming the option
-  or its values breaks both sides. The segment is a powerkit `external()` entry because
+  `ask` or `done` by `~/.claude/hooks/notify.sh` or OMP's `tmux-attention.ts` extension.
+  Renaming the option or its values breaks both sides. The segment is a powerkit `external()` entry because
   powerkit rewrites `status-right` on every render, and it lags a flag by up to 10 seconds.
   The clearing hooks in tmux.conf take no `-t` target, `set-option` does not expand formats
   there and a literal `#{window_id}` raises a blocking error view on every focus change.
