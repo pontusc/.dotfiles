@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Install the Vivaldi theme integration for the selected desktop user. Run as root with one username argument.
+
+die() {
+  printf '%s\n' "$1" >&2
+  exit "${2:-1}"
+}
+
+usage() {
+  printf 'Usage: %s DESKTOP_USER\n' "${0##*/}" >&2
+}
+
+if (( EUID != 0 )); then
+  die 'error: this installer must be run as root'
+fi
+if (( $# != 1 )); then
+  usage
+  exit 2
+fi
+
+DESKTOP_USER=$1
+if ! getent passwd "$DESKTOP_USER" >/dev/null; then
+  die "error: unknown desktop user: $DESKTOP_USER"
+fi
+DESKTOP_UID=$(id -u -- "$DESKTOP_USER")
+DESKTOP_GID=$(id -g -- "$DESKTOP_USER")
+DESKTOP_HOME=$(getent passwd "$DESKTOP_USER" | cut -d: -f6)
+readonly DESKTOP_USER DESKTOP_UID DESKTOP_GID DESKTOP_HOME
+
+SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
+REPO_MOD="$SCRIPT_DIR/../share/vivaldi-theme/omarchy-theme.js"
+USER_MOD="$DESKTOP_HOME/.local/share/vivaldi-theme/omarchy-theme.js"
+if [[ -f "$REPO_MOD" ]]; then
+  MOD_SOURCE=$REPO_MOD
+elif [[ -f "$USER_MOD" ]]; then
+  MOD_SOURCE=$USER_MOD
+else
+  die "error: theme mod not found at $REPO_MOD or $USER_MOD"
+fi
+readonly SCRIPT_DIR REPO_MOD USER_MOD MOD_SOURCE
+
+VIVALDI_DIR=/opt/vivaldi/resources/vivaldi
+WINDOW_HTML="$VIVALDI_DIR/window.html"
+MOD_TARGET="$VIVALDI_DIR/omarchy-theme.js"
+PALETTE_DIR="$VIVALDI_DIR/omarchy-palette"
+PALETTE_TARGET="$PALETTE_DIR/colors.json"
+SCRIPT_TAG='<script src="omarchy-theme.js"></script>'
+readonly VIVALDI_DIR WINDOW_HTML MOD_TARGET PALETTE_DIR PALETTE_TARGET SCRIPT_TAG
+
+trusted_directory() {
+  local destination=$1
+  local owner
+  local mode
+  [[ -d "$destination" && ! -L "$destination" ]] || die "error: unsafe Vivaldi destination: $destination"
+  owner=$(stat -c %u -- "$destination")
+  mode=$(stat -c %a -- "$destination")
+  [[ $owner == 0 ]] || die "error: Vivaldi destination is not root-owned: $destination"
+  mode=$((8#$mode))
+  (( (mode & 022) == 0 )) || die "error: Vivaldi destination is writable by group or other: $destination"
+}
+
+trusted_directory /opt
+trusted_directory /opt/vivaldi
+trusted_directory /opt/vivaldi/resources
+trusted_directory "$VIVALDI_DIR"
+[[ -f "$WINDOW_HTML" && ! -L "$WINDOW_HTML" ]] || die "error: unsafe Vivaldi window.html: $WINDOW_HTML"
+if [[ -e "$MOD_TARGET" || -L "$MOD_TARGET" ]]; then
+  [[ -f "$MOD_TARGET" && ! -L "$MOD_TARGET" ]] || die "error: unsafe Vivaldi mod destination: $MOD_TARGET"
+fi
+if [[ -e "$PALETTE_DIR" || -L "$PALETTE_DIR" ]]; then
+  [[ -d "$PALETTE_DIR" && ! -L "$PALETTE_DIR" ]] || die "error: unsafe palette destination: $PALETTE_DIR"
+  palette_owner=$(stat -c %u -- "$PALETTE_DIR")
+  palette_mode=$(stat -c %a -- "$PALETTE_DIR")
+  [[ $palette_owner == "$DESKTOP_UID" && $palette_mode == 755 ]] || die "error: existing palette directory has unexpected owner or mode: $PALETTE_DIR"
+fi
+if [[ -e "$PALETTE_TARGET" || -L "$PALETTE_TARGET" ]]; then
+  [[ -f "$PALETTE_TARGET" && ! -L "$PALETTE_TARGET" ]] || die "error: unsafe palette file: $PALETTE_TARGET"
+fi
+
+TEMP_HTML=''
+TEMP_MOD=''
+cleanup() {
+  if [[ -n "$TEMP_HTML" ]]; then
+    rm -f -- "$TEMP_HTML"
+  fi
+  if [[ -n "$TEMP_MOD" ]]; then
+    rm -f -- "$TEMP_MOD"
+  fi
+}
+trap cleanup EXIT
+
+TEMP_MOD=$(mktemp "$VIVALDI_DIR/.omarchy-theme.js.XXXXXX")
+runuser -u "$DESKTOP_USER" -- /usr/bin/cat -- "$MOD_SOURCE" > "$TEMP_MOD"
+install -o root -g root -m 0644 -- "$TEMP_MOD" "$MOD_TARGET"
+rm -f -- "$TEMP_MOD"
+TEMP_MOD=''
+
+if ! grep -Fq -- "$SCRIPT_TAG" "$WINDOW_HTML"; then
+  grep -Fq -- '</body>' "$WINDOW_HTML" || die "error: Vivaldi window.html has no </body> tag"
+  TEMP_HTML=$(mktemp "$VIVALDI_DIR/.window.html.XXXXXX")
+  chmod 0644 -- "$TEMP_HTML"
+  chown --reference="$WINDOW_HTML" "$TEMP_HTML"
+  perl -0pe 's#</body>#  <script src="omarchy-theme.js"></script>\n</body>#' "$WINDOW_HTML" > "$TEMP_HTML"
+  mv -f -- "$TEMP_HTML" "$WINDOW_HTML"
+  TEMP_HTML=''
+fi
+
+if [[ ! -e "$PALETTE_DIR" ]]; then
+  mkdir -m 0755 -- "$PALETTE_DIR"
+  [[ ! -L "$PALETTE_DIR" ]] || die "error: unsafe palette destination: $PALETTE_DIR"
+  chmod 0755 -- "$PALETTE_DIR"
+  chown --no-dereference "$DESKTOP_UID:$DESKTOP_GID" -- "$PALETTE_DIR"
+fi
+[[ -d "$PALETTE_DIR" && ! -L "$PALETTE_DIR" ]] || die "error: unsafe palette destination: $PALETTE_DIR"
+
+printf 'Installed Vivaldi theme integration. Run the Vivaldi theme hook as %s to publish the current palette:\n  %s\n' \
+  "$DESKTOP_USER" "$DESKTOP_HOME/.config/omarchy/hooks/theme-set.d/vivaldi-theme.hook"

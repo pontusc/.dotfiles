@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Publish the rendered Vivaldi palette after an Omarchy theme switch. No arguments required.
+SOURCE="$HOME/.local/state/omarchy/current/theme/vivaldi-palette.json"
+PALETTE_DIR=/opt/vivaldi/resources/vivaldi/omarchy-palette
+TARGET="$PALETTE_DIR/colors.json"
+readonly SOURCE PALETTE_DIR TARGET
+
+[[ -d "$PALETTE_DIR" && ! -L "$PALETTE_DIR" ]] || exit 0
+[[ -f "$SOURCE" && ! -L "$SOURCE" ]] || exit 0
+
+TEMP_PALETTE=$(mktemp "$PALETTE_DIR/.colors.json.XXXXXX")
+readonly TEMP_PALETTE
+trap 'rm -f -- "$TEMP_PALETTE"' EXIT
+jq -se '
+  select(length == 1) | .[0] |
+  select(
+    type == "object" and
+    (keys | sort) == ["accent", "background", "foreground", "highlight"] and
+    all(.[]; type == "string" and test("^#[0-9A-Fa-f]{6}$"))
+  )
+' "$SOURCE" > "$TEMP_PALETTE"
+chmod 0644 -- "$TEMP_PALETTE"
+mv -f -- "$TEMP_PALETTE" "$TARGET"
