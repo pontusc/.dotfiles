@@ -13,4 +13,12 @@
 -- a Bitwarden tab is in front. Only the popout is born with this title.
 o.window({ initial_title = "^Bitwarden( .*)?$" }, { float = true, size = { 500, 706 } })
 
+-- Omarchy's browser tag matches "Vivaldi-stable" case-sensitively and misses this class.
+o.window("^vivaldi-stable$", { tag = "-default-opacity", tile = true, opacity = "1.0 0.985" })
+
+-- No fade on video. Title tracks the focused tab, so this flips as tabs change.
+o.window({ class = "^vivaldi-stable$", title = "^.*(?i:twitch|youtube|netflix|hbo max|viaplay|svt play).*$" }, {
+  opacity = "1 1",
+})
+
 require("hypr.host").load("windowrules", false)
