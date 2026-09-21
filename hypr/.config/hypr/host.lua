@@ -1,6 +1,7 @@
 -- The single place the hostname is resolved. Per-host modules live in
--- monitors/<hostname>.lua and windowrules/<hostname>.lua; callers ask this
--- module to load theirs rather than reading /etc/hostname themselves.
+-- monitors/<hostname>.lua, windowrules/<hostname>.lua and
+-- autostart/<hostname>.lua; callers ask this module to load theirs rather
+-- than reading /etc/hostname themselves.
 
 local function hostname()
   local file = io.open("/etc/hostname", "r")

@@ -14,7 +14,7 @@
 o.window({ initial_title = "^Bitwarden( .*)?$" }, { float = true, size = { 500, 706 } })
 
 -- Omarchy's browser tag matches "Vivaldi-stable" case-sensitively and misses this class.
-o.window("^vivaldi-stable$", { tag = "-default-opacity", tile = true, opacity = "1.0 0.985" })
+o.window("^vivaldi-stable$", { tag = "-default-opacity", opacity = "1.0 0.985" })
 
 -- No fade on video. Title tracks the focused tab, so this flips as tabs change.
 o.window({ class = "^vivaldi-stable$", title = "^.*(?i:twitch|youtube|netflix|hbo max|viaplay|svt play).*$" }, {

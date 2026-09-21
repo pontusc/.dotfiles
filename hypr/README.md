@@ -8,7 +8,9 @@ Per-host monitor rules live in `.config/hypr/monitors/<hostname>.lua`, resolved 
 rule and gets a notification.
 
 Per-host window rules live in `.config/hypr/windowrules/<hostname>.lua`, resolved the same
-way. A host without one is silently skipped. `host.lua` is the shared resolver both use.
+way. A host without one is silently skipped. Per-host autostart processes live in
+`.config/hypr/autostart/<hostname>.lua`, also silently skipped when absent. `host.lua` is
+the shared resolver all three use.
 
 Lid/clamshell handling is Omarchy native (`switch:*:Lid Switch` binds plus the
 `omarchy-hyprland-monitor-watch` daemon). Host modules must not rebind the lid switch or
