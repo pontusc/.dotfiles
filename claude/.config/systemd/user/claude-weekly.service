@@ -4,4 +4,5 @@ Description=Weekly Claude Code session summary
 [Service]
 Type=oneshot
 TimeoutStartSec=1h
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin
 ExecStart=%h/.local/bin/claude-weekly
