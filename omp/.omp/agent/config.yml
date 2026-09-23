@@ -1,11 +1,11 @@
 modelRoles:
-  default: openai-codex/gpt-6-astra:medium
-  smol: openai-codex/gpt-5.6-luna:high
-  slow: openai-codex/gpt-5.6-luna:high
+  default: openai-codex/gpt-6-sol:medium
+  slow: openai-codex/gpt-6-sol:high
   plan: openai-codex/gpt-5.6-luna:high
   task: openai-codex/gpt-5.6-luna:high
   tiny: openai-codex/gpt-5.6-luna:low
   advisor: openai-codex/gpt-6-astra:medium
+  smol: openai-codex/gpt-6-luna
 cycleOrder:
   - default
   - slow
@@ -41,6 +41,6 @@ astGrep:
 github:
   enabled: true
 completion:
-  notify: off
+  notify: "off"
 ask:
-  notify: off
+  notify: "off"

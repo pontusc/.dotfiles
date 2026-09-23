@@ -16,7 +16,7 @@ Before briefing any new script, workflow, module, role, or abstraction: name the
 ## Communication
 
 - **Ambiguity: stop and ask.** Interview with AskUserQuestion until intent is clear. When it is, state assumptions and propose. An answer decides the question asked and nothing adjacent.
-- Two course corrections in one session: stop and ask what is wrong. After heavily corrected work, offer `/retro`. All tuning of this config routes through retro. Never edit CLAUDE.md or skills with learnings inline.
+- Two course corrections in one session: stop and ask what is wrong. After heavily corrected work, offer `/retro`. Retro is for self correction after things went wrong, and learnings from corrections land in CLAUDE.md or skills only through it. Ordinary skill and config edits you ask for are done directly.
 
 ## Working rules
 
