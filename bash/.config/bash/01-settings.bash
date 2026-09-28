@@ -31,3 +31,11 @@ if [[ -f $omarchy_starship_config ]]; then
   export STARSHIP_CONFIG="$omarchy_starship_config"
 fi
 unset omarchy_starship_config
+
+# gh-dash
+# Unset, gh-dash generates a stock config under ~/.config/gh-dash on first run.
+omarchy_gh_dash_config="$HOME/.local/state/omarchy/current/theme/gh-dash.yml"
+if [[ -f $omarchy_gh_dash_config ]]; then
+  export GH_DASH_CONFIG="$omarchy_gh_dash_config"
+fi
+unset omarchy_gh_dash_config

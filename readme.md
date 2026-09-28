@@ -33,6 +33,7 @@ To stop syncing, remove the `omarchy-theme.js` script tag from `/opt/vivaldi/res
 - kitty
 - tmux and TPM
 - starship
+- gh, with extensions dlvhdr/gh-dash and dlvhdr/gh-enhance
 - lazygit
 - lazydocker
 - fzf

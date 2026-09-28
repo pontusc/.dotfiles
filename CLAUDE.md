@@ -47,6 +47,10 @@ Consequence:
   `omarchy/.config/omarchy/themed/` or `omarchy/.config/omarchy/hooks/theme-set.d/`, run
   `stow -R omarchy` or link it manually. Everything currently in the repo is linked.
 
+## The git package (partially folded)
+
+`~/.config/gh/` is a real directory because `hosts.yml` holds the OAuth token, so `config.yml` is a per-entry symlink. Never add `hosts.yml` to the package.
+
 ## Key files
 
 - `claude/.claude/CLAUDE.md` — global user instructions (orchestration/delegation rules)

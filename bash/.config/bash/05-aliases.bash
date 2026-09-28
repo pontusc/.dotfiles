@@ -32,5 +32,9 @@ alias sconf="nvim ~/.ssh/config"
 alias lgt="lazygit"
 alias ldk="lazydocker"
 
+# GitHub TUIs
+alias gd="gh dash"
+alias ge="gh enhance"
+
 # IP check
 alias whatsmyip="curl -s https://ifconfig.me"

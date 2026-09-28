@@ -3,6 +3,7 @@
 [settings]
 work_root = "~/Work"
 ticket_prefix = "ALC"
+agent = "session"
 
 [repos]
 infrastructure = "IAC"
