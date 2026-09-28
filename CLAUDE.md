@@ -13,8 +13,7 @@ tools are listed in `readme.md`.
   target doesn't exist gets one symlink for the whole tree. When the target already exists as
   a real directory, stow *unfolds* and links each entry inside it individually.
 - **The tmux package**: `~/.config/tmux/workspace` is one folded symlink, so the workspace
-  tool's `__pycache__` is written inside the repo tree (gitignored). Its config
-  `~/.config/tmux/workspaces.toml` is machine-local and must never enter the repo.
+  tool's `__pycache__` is written inside the repo tree (gitignored).
 
 ## The claude package (partially folded — read before adding files)
 

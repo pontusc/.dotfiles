@@ -1,0 +1,11 @@
+# Settings for the workspace tool. [repos] describes what each repo handles, shown on picker rows.
+
+[settings]
+work_root = "~/Work"
+ticket_prefix = "ALC"
+
+[repos]
+infrastructure = "IAC"
+manifests = "K8s"
+Alchemy = "Application"
+testing = "Testing Repo"

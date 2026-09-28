@@ -48,9 +48,8 @@ the session name.
 
 ## Config
 
-`~/.config/tmux/workspaces.toml`. Machine-local, never enters the repo (the per-entry
-symlinks under `~/.config/tmux` let it sit next to the stowed scripts). Human-edited,
-read-only to the tool.
+`~/.config/tmux/workspaces.toml`, stowed from this package. Human-edited, read-only to the
+tool.
 
 The repo universe is not in the config: every direct child of `work_root` containing
 `.git` is a repo (`*.worktrees` directories are skipped). The whole file is optional, a
