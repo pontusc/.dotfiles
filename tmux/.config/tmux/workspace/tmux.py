@@ -277,6 +277,13 @@ def session_windows(session: str) -> list[SessionWindow]:
     return windows
 
 
+def find_window_by_name(session: str, name: str) -> SessionWindow | None:
+    for window in session_windows(session):
+        if window.name == name:
+            return window
+    return None
+
+
 def kill_window(window_id: str) -> None:
     _run("kill-window", "-t", window_id)
 

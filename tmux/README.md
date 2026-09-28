@@ -15,7 +15,10 @@ folded symlink.
   `ticket_prefix`, so 1026 becomes ABC-1026) and the branch slug. The tool creates the
   session, one window per repo with a worktree on branch `KEY/slug` at
   `tickets/<session>/<repo>` under the work root, the 3-pane layout, and a named claude in
-  each, pinned to opus with the ticket directory passed via `--add-dir`. A ticket owns one
+  each, pinned to opus with the ticket directory passed via `--add-dir`. With
+  `agent = "session"` the session instead opens with one `agent` window at
+  `tickets/<session>`, a claude named after the ticket that sees every worktree below it,
+  and the repo windows hold only nvim and a terminal. A ticket owns one
   worktree per repo, so reopening it with a different slug fails per repo until the old
   worktrees are gone. leader+X only reaches the windows of a live session, so a worktree
   whose session is already gone needs a manual `git worktree remove`.
@@ -26,7 +29,8 @@ folded symlink.
   worktree on the session's ticket branch, window and agent join in place. In a non-ticket
   session the repo opens at its root.
 - **leader+X** closes every window in the current session that loses nothing (repo-root
-  windows, worktrees with a clean tree). A repo-root window only closes after confirming.
+  windows, worktrees with a clean tree, the `agent` window once no worktree window is
+  left). A repo-root window only closes after confirming.
   The worktree and its branch are both removed, and a branch git refuses to delete, most
   often unmerged work, only goes on an explicit yes. Uncommitted changes keep a window
   without asking. Ignored files only prompt, since a build cache is disposable but a local
@@ -57,6 +61,8 @@ missing or empty config still gives the full dynamic flow.
 work_root = "~/Work"                 # default, override per machine
 ticket_prefix = "ABC"                # optional, expands bare ticket numbers
 # ticket_pattern = "[A-Z]+-[0-9]+"   # default shown, uppercase keys are the contract
+# agent = "window"                   # default, a claude per repo window. "session": one
+                                     # claude per ticket session in its own window
 
 [repos]
 cluster = "k8s manifests + Helm values"

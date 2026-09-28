@@ -7,6 +7,7 @@ from pathlib import Path
 
 import compose
 import config
+import layout
 import persist
 import repo
 import ticket
@@ -49,12 +50,19 @@ def add_repo() -> None:
     if choice is None:
         return
     session_ticket = _session_ticket(session, workspace_config.settings.ticket_pattern)
+    agent_dir = compose.agent_dir_for(
+        workspace_config.settings, session_ticket, session
+    )
     specs, failures = compose.prepare_windows(
-        [compose.row_name(choice)], work_root, session_ticket, session
+        [compose.row_name(choice)],
+        work_root,
+        session_ticket,
+        session,
+        per_window_agent=agent_dir is None,
     )
     if failures:
         raise WorkspaceError("\n".join(failures))
-    result = compose.ensure_windows(session, specs)
+    result = compose.ensure_windows(session, specs, agent_dir)
     persist.save_state()
     if result.skipped:
         ui.notice("\n".join(result.skipped))
@@ -120,6 +128,13 @@ def cleanup_session() -> None:
         if branch and branch != "HEAD":
             outcome += f", {_delete_branch(work_root / owner, branch)}"
         removed.append(f"{owner}: {outcome}")
+    # The session's single agent window has nothing to lose and goes with the
+    # last worktree, whichever agent mode is configured now.
+    if not any(window.tagged for window in tmux.session_windows(session)):
+        agent = tmux.find_window_by_name(session, layout.AGENT_WINDOW)
+        if agent is not None and not agent.tagged:
+            tmux.kill_window(agent.window_id)
+            removed.append(f"{agent.name}: agent window closed")
     persist.save_state()
     if removed or kept:
         ui.notice("\n".join(removed + kept))

@@ -29,8 +29,7 @@ from errors import WorkspaceError
 class WindowSpec:
     repo: str
     path: Path
-    claude_session: str
-    group_dir: Path | None
+    agent: list[str] | None
 
 
 class ComposeResult(NamedTuple):
@@ -58,11 +57,21 @@ def row_name(row: str) -> str:
     return row.split()[0]
 
 
+def agent_dir_for(
+    settings: config.Settings, session_ticket: ticket.Ticket | None, session: str
+) -> Path | None:
+    """Where the session's single agent runs, None when each window gets its own."""
+    if settings.agent != "session" or session_ticket is None:
+        return None
+    return worktree.ticket_dir(settings.work_root, session)
+
+
 def prepare_windows(
     repos: list[str],
     work_root: Path,
     session_ticket: ticket.Ticket | None,
     session: str,
+    per_window_agent: bool = True,
 ) -> tuple[list[WindowSpec], list[str]]:
     """Resolve each repo to the path its window opens at, per-repo failures apart."""
     specs: list[WindowSpec] = []
@@ -75,8 +84,7 @@ def prepare_windows(
                 WindowSpec(
                     repo=repo_name,
                     path=repo_root,
-                    claude_session=claude_session,
-                    group_dir=None,
+                    agent=layout.claude_command(claude_session),
                 )
             )
             continue
@@ -98,24 +106,26 @@ def prepare_windows(
             if error:
                 failures.append(f"{repo_name}: {error}")
                 continue
-        specs.append(
-            WindowSpec(
-                repo=repo_name,
-                path=path,
-                claude_session=claude_session,
-                group_dir=path.parent,
-            )
-        )
+        agent = None
+        if per_window_agent:
+            agent = layout.claude_command(claude_session, path.parent)
+        specs.append(WindowSpec(repo=repo_name, path=path, agent=agent))
     return specs, failures
 
 
 def _configure_window(window_id: str, spec: WindowSpec) -> None:
     tmux.set_window_option(window_id, "@worktree", str(spec.path))
-    layout.arrange(window_id, spec.path, spec.claude_session, spec.group_dir)
+    layout.arrange(window_id, spec.path, spec.agent)
 
 
-def ensure_windows(session: str, specs: list[WindowSpec]) -> ComposeResult:
-    """Open a window per spec in session, reporting the ones left alone."""
+def ensure_windows(
+    session: str, specs: list[WindowSpec], agent_dir: Path | None = None
+) -> ComposeResult:
+    """Open a window per spec in session, reporting the ones left alone.
+
+    With agent_dir the session holds one agent window there, created first so
+    it keeps index 1, and only when the session does not have one yet.
+    """
     pending: list[WindowSpec] = []
     skipped: list[str] = []
     for spec in specs:
@@ -127,7 +137,11 @@ def ensure_windows(session: str, specs: list[WindowSpec]) -> ComposeResult:
                 f"{spec.repo}: already open in session {existing.session}, left alone"
             )
     if not tmux.session_exists(session):
-        if pending:
+        if agent_dir is not None:
+            layout.start_agent(
+                tmux.start_session(session, layout.AGENT_WINDOW, agent_dir), session
+            )
+        elif pending:
             first = pending[0]
             _configure_window(
                 tmux.start_session(session, first.repo, first.path), first
@@ -137,6 +151,13 @@ def ensure_windows(session: str, specs: list[WindowSpec]) -> ComposeResult:
             return ComposeResult(skipped=skipped, session_live=False)
         else:
             tmux.start_empty_session(session)
+    elif (
+        agent_dir is not None
+        and tmux.find_window_by_name(session, layout.AGENT_WINDOW) is None
+    ):
+        layout.start_agent(
+            tmux.new_window(session, layout.AGENT_WINDOW, agent_dir), session
+        )
     for spec in pending:
         _configure_window(tmux.new_window(session, spec.repo, spec.path), spec)
     return ComposeResult(skipped=skipped, session_live=True)
@@ -253,10 +274,13 @@ def materialize_workspace(repos: list[str]) -> None:
     # Checked before prepare_windows: a name tmux rejects would otherwise leave
     # the freshly created branches and worktrees behind.
     tmux.validate_session_name(session)
-    specs, failures = prepare_windows(repos, work_root, session_ticket, session)
+    agent_dir = agent_dir_for(workspace_config.settings, session_ticket, session)
+    specs, failures = prepare_windows(
+        repos, work_root, session_ticket, session, per_window_agent=agent_dir is None
+    )
     if failures and not specs:
         raise WorkspaceError("no repo could be prepared:\n  " + "\n  ".join(failures))
-    result = ensure_windows(session, specs)
+    result = ensure_windows(session, specs, agent_dir)
     if result.session_live:
         if session_ticket is not None:
             tmux.set_session_option(session, "@ticket_slug", session_ticket.slug)

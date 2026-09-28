@@ -43,8 +43,12 @@ def _base_ref(repo_root: Path) -> str:
     return "HEAD"
 
 
+def ticket_dir(work_root: Path, session: str) -> Path:
+    return work_root / TICKETS_DIR / session
+
+
 def path_for(work_root: Path, session: str, repo_name: str) -> Path:
-    return work_root / TICKETS_DIR / session / repo_name
+    return ticket_dir(work_root, session) / repo_name
 
 
 def main_repo_root(path: Path) -> Path | None:
