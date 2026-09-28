@@ -11,19 +11,12 @@ paths:
 
 # Terraform and Terragrunt Conventions
 
-## Module layout
+## Resources
 
-- `main.tf` for resources, `variables.tf` for inputs, `outputs.tf` for outputs, `locals.tf` for locals, `data.tf` once there are more than two data sources, otherwise inline them in `main.tf`.
-
-## Variables and resources
-
-- Every variable carries a `description` and a specific `type` (`string`, `number`, `list(string)`), never `any`. Add a `validation` block for input constraints such as naming patterns.
 - `lifecycle { prevent_destroy = true }` on stateful resources: databases, storage buckets, clusters.
-- `for_each` keyed by a stable map or set by default, so adding or removing one element does not reindex the rest. `count` only for an on/off toggle (`count = var.enabled ? 1 : 0`).
 
 ## Terragrunt
 
-- `include` blocks inherit common config, `dependency` blocks reference another module's outputs. Inputs stay flat and explicit.
 - Generate the provider block, with a pinned provider version, in a `generate` block rather than a per-module `versions.tf`.
 - To attach a resource to a called module, a firewall for a GKE cluster module, define a new `firewall.tf` in the calling directory. Terragrunt copies every file there, so the module itself stays untouched.
 
@@ -45,4 +38,3 @@ paths:
 
 - Name every resource the plan would destroy or replace, or state that there are none.
 - Every addressing change has a matching `moved {}` block.
-- Every new variable has both `description` and `type`.

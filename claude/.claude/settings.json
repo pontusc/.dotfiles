@@ -35,6 +35,11 @@
       "Bash(git reset:*)",
       "Bash(git clean:*)",
       "Bash(git stash:*)",
+      "Bash(git switch -f:*)",
+      "Bash(git switch --force:*)",
+      "Bash(git switch -C:*)",
+      "Bash(git switch --force-create:*)",
+      "Bash(git switch --discard-changes:*)",
       "Bash(git remote add:*)",
       "Bash(git remote remove:*)",
       "Bash(git remote rm:*)",
@@ -77,10 +82,7 @@
       "Read(//**/id_ecdsa)",
       "Read(//**/id_dsa)"
     ],
-    "ask": [
-      "Bash(git push:*)",
-      "Bash(git switch:*)"
-    ],
+    "ask": ["Bash(git push:*)"],
     "defaultMode": "default"
   },
   "model": "opus",

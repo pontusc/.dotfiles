@@ -25,7 +25,6 @@ A README holds what an operator needs to know and the final state of the thing. 
 
 ## Form
 
-- Read a sibling `.md` first. Heading depth, tone, wrapping, and section names follow the repo, not this skill.
 - One line per paragraph and bullet, unless the target is consistently hard-wrapped. Then match its column.
 - Never reflow lines you were not asked to change.
 
@@ -33,4 +32,3 @@ A README holds what an operator needs to know and the final state of the thing. 
 
 - Reread every sentence. Delete it if removing it costs an operator nothing, or if the code answers it.
 - Grep the file for `;`, `—`, `–`, and a spaced hyphen mid-sentence. Fix every hit.
-- Compare heading depth and wrapping with the sibling you read.
