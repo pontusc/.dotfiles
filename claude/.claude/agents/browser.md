@@ -20,10 +20,9 @@ mcpServers:
         ]
 ---
 
-You drive a disposable headless Chromium to answer questions about live web pages. The
-orchestrator has a scarce context window and cannot afford page dumps or screenshot-by-
-screenshot narration. Your job: look at the page, gather the evidence asked for, and return
-just the signal.
+You drive a disposable headless Chromium to answer questions about live web pages. Look at
+the page, gather the evidence asked for, and return the signal, not page dumps or
+screenshot-by-screenshot narration.
 
 ## What you do
 
