@@ -1,97 +1,4 @@
-prSections:
-    - title: My Pull Requests
-      filters: is:open author:@me
-    - title: Needs My Review
-      filters: is:open review-requested:@me
-    - title: Involved
-      filters: is:open involves:@me -author:@me
-issuesSections:
-    - title: My Issues
-      filters: is:open author:@me
-    - title: Assigned
-      filters: is:open assignee:@me
-    - title: Involved
-      filters: is:open involves:@me -author:@me
-notificationsSections:
-    - title: All
-      filters: ""
-    - title: Created
-      filters: reason:author
-    - title: Participating
-      filters: reason:participating
-    - title: Mentioned
-      filters: reason:mention
-    - title: Review Requested
-      filters: reason:review-requested
-    - title: Assigned
-      filters: reason:assign
-    - title: Subscribed
-      filters: reason:subscribed
-    - title: Team Mentioned
-      filters: reason:team-mention
-repo:
-    branchesRefetchIntervalSeconds: 30
-    prsRefetchIntervalSeconds: 60
-defaults:
-    preview:
-        open: true
-        width: 0.45
-        height: 0.6
-        position: auto
-    prsLimit: 20
-    prApproveComment: LGTM
-    issuesLimit: 20
-    notificationsLimit: 20
-    view: prs
-    layout:
-        prs:
-            updatedAt:
-                width: 5
-            createdAt:
-                width: 5
-            repo:
-                width: 20
-            author:
-                width: 15
-            authorIcon:
-                hidden: false
-            labels:
-                width: 22
-                hidden: true
-            assignees:
-                width: 20
-                hidden: true
-            base:
-                width: 15
-                hidden: true
-            lines:
-                width: 15
-        issues:
-            updatedAt:
-                width: 5
-            createdAt:
-                width: 5
-            repo:
-                width: 15
-            creator:
-                width: 10
-            creatorIcon:
-                hidden: false
-            assignees:
-                width: 20
-                hidden: true
-    refetchIntervalMinutes: 30
-keybindings:
-    prs:
-        - key: T
-          command: gh enhance -R {{.RepoName}} {{.PrNumber}}
-repoPaths: {}
 theme:
-    ui:
-        sectionsShowCount: true
-        table:
-            showSeparator: true
-            compact: false
     colors:
         text:
             primary: "{{ foreground }}"
@@ -100,6 +7,7 @@ theme:
             faint: "{{ mix background foreground 45% }}"
             warning: "{{ red }}"
             success: "{{ green }}"
+            error: "{{ bright_red }}"
             actor: "{{ accent }}"
         background:
             selected: "{{ selection_background }}"
@@ -107,17 +15,10 @@ theme:
             primary: "{{ accent }}"
             secondary: "{{ muted }}"
             faint: "{{ lighter_background }}"
-        inline:
-            icons:
-                newcontributor: "{{ cyan }}"
-                contributor: "{{ blue }}"
-                collaborator: "{{ yellow }}"
-                member: "{{ yellow }}"
-                owner: "{{ orange }}"
-                unknownrole: "{{ muted }}"
-pager:
-    diff: ""
-confirmQuit: false
-showAuthorIcons: true
-smartFilteringAtLaunch: true
-includeReadNotifications: true
+        icon:
+            newcontributor: "{{ cyan }}"
+            contributor: "{{ blue }}"
+            collaborator: "{{ yellow }}"
+            member: "{{ yellow }}"
+            owner: "{{ orange }}"
+            unknownrole: "{{ muted }}"

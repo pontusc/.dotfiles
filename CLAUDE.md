@@ -51,6 +51,8 @@ Consequence:
 
 `~/.config/gh/` is a real directory because `hosts.yml` holds the OAuth token, so `config.yml` is a per-entry symlink. Never add `hosts.yml` to the package.
 
+gh-dash includes the rendered omarchy theme file and a missing include is a hard error, so on a fresh machine apply a theme once before running `gh dash`.
+
 ## Key files
 
 - `claude/.claude/CLAUDE.md` — global user instructions (orchestration/delegation rules)

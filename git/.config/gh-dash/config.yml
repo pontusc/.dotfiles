@@ -1,0 +1,26 @@
+include:
+    - ~/.local/state/omarchy/current/theme/gh-dash.yml
+prSections:
+    - title: Mine
+      filters: is:open author:@me
+    - title: Review
+      filters: is:open review-requested:@me -author:app/alchemy-renovate
+    - title: Renovate
+      filters: is:open author:app/alchemy-renovate
+keybindings:
+    universal:
+        - key: J
+          builtin: pageDown
+        - key: K
+          builtin: pageUp
+    prs:
+        - key: m
+          name: rebase merge
+          command: 'gum confirm "Rebase merge #{{.PrNumber}} into {{.RepoName}}?" && gh pr merge {{.PrNumber}} -R {{.RepoName}} --rebase'
+        - key: T
+          name: enhance
+          command: gh enhance -R {{.RepoName}} {{.PrNumber}}
+repoPaths:
+    Alchemy-Innovations-AB/workflows-testing: ~/Work/testing
+    Alchemy-Innovations-AB/*: ~/Work/*
+    pontusc-alchemy/*: ~/Work/*
