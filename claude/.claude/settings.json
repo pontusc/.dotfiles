@@ -168,8 +168,7 @@
     "refreshInterval": 5
   },
   "enabledPlugins": {
-    "plan@plans": true,
-    "peer-roster@dotfiles": true
+    "plan@plans": true
   },
   "extraKnownMarketplaces": {
     "plans": {
@@ -177,12 +176,6 @@
         "source": "github",
         "repo": "pontusc-alchemy/claudeplans",
         "ref": "v0.0.6"
-      }
-    },
-    "dotfiles": {
-      "source": {
-        "source": "directory",
-        "path": "/home/pontusc/dotfiles/claude-plugins"
       }
     }
   },

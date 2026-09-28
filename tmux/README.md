@@ -63,13 +63,7 @@ cluster = "k8s manifests + Helm values"
 infrastructure = "Terraform IaC"
 ```
 
-`[repos]` is the single source of repo descriptions: the tool shows them inline on picker
-rows and in `list`, and the peer-roster plugin reads the same table to annotate sibling
-sessions. Descriptions are optional.
-
-The peer-roster plugin keeps its own built-in ticket pattern, so a machine that overrides
-`ticket_pattern` to a non-Jira scheme loses roster grouping until the plugin learns the
-same override.
+`[repos]` holds optional repo descriptions, shown inline on picker rows and in `list`.
 
 ## Constraints
 
