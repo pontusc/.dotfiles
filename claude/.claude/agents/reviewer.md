@@ -4,7 +4,7 @@ description: "Independent correctness and design review of a completed change. R
 model: opus
 effort: high
 color: red
-tools: Read, Grep, Glob, Bash, Skill, LSP
+tools: Read, Grep, Glob, Bash, Skill
 skills:
   - coding-principles
 ---

@@ -10,7 +10,7 @@ Less is more. The smallest change that satisfies the request, with structure and
 
 ## Scope
 
-- Implement only what was asked. No guards, fallbacks, flags, modes, config keys, or hardening beyond the request. Offer omissions as a one-line menu afterwards.
+- Implement only what was asked. No guards, fallbacks, flags, modes, config keys, or hardening beyond the request and the Correctness baseline. Offer omissions as a one-line menu afterwards.
 - A config key set to the tool's default is noise. Check the default, or omit the line.
 
 ## Structure and names
@@ -32,6 +32,7 @@ Less is more. The smallest change that satisfies the request, with structure and
 - Validate at trust boundaries only. Inside, trust your invariants and fail loud where one is relied on.
 - Environment-specific values come from env vars with sane defaults. Secrets come from a secret manager or mounted file, never a default credential, never exposed or committed.
 - Fix the cause a linter or type checker names. Never suppress, loosen config, or add scaffolding to quiet a tool.
+- Least privilege, pinned and verified dependencies, standard injection defenses.
 
 ## Before reporting
 

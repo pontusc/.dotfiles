@@ -3,7 +3,7 @@ name: executor
 description: "Implements precise changes from a spec: file edits, multi-file refactors, mechanical transformations. Delegate here once the design is settled and you have a concrete change list."
 model: opus
 color: yellow
-tools: Read, Edit, Write, Grep, Glob, Bash, Skill, LSP
+tools: Read, Edit, Write, Grep, Glob, Bash, Skill
 skills:
   - coding-principles
 ---

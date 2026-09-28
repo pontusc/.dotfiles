@@ -13,6 +13,7 @@ paths:
 ## Toolchain
 
 - Declare both `go 1.x` and `toolchain go1.x.y` in `go.mod` so local and CI build with the same version.
+- Never hand-edit `go.mod` or `go.sum`. Change dependencies with `go get pkg@vX.Y.Z`, never `@latest`.
 
 ## Testing
 

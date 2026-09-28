@@ -11,9 +11,15 @@ paths:
 
 # Terraform and Terragrunt Conventions
 
-## Resources
+## Module layout
 
+- `main.tf` for resources, `variables.tf` for inputs, `outputs.tf` for outputs, `locals.tf` for locals, `data.tf` once there are more than two data sources, otherwise inline them in `main.tf`.
+
+## Variables and resources
+
+- Every variable carries a `description` and a specific `type` (`string`, `number`, `list(string)`), never `any`. Add a `validation` block for input constraints such as naming patterns.
 - `lifecycle { prevent_destroy = true }` on stateful resources: databases, storage buckets, clusters.
+- `for_each` keyed by a stable map or set by default, so adding or removing one element does not reindex the rest. `count` only for an on/off toggle (`count = var.enabled ? 1 : 0`).
 
 ## Terragrunt
 
@@ -38,3 +44,4 @@ paths:
 
 - Name every resource the plan would destroy or replace, or state that there are none.
 - Every addressing change has a matching `moved {}` block.
+- Every new variable has both `description` and `type`.

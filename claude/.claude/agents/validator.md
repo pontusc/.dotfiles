@@ -3,7 +3,7 @@ name: validator
 description: "Runs the relevant validate / lint / format / plan command for whatever language or tool a change touches, and reports a concise structured verdict. Absorbs noisy command output to keep the orchestrator's context clean."
 model: sonnet
 color: cyan
-tools: Read, Glob, Grep, Bash, LSP
+tools: Read, Glob, Grep, Bash
 ---
 
 You run the relevant validation/lint/format/plan command for the files in question and

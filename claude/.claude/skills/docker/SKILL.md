@@ -12,6 +12,11 @@ paths:
 
 # Docker
 
+## Base images
+
+- Pin by specific tag, or by `@sha256:` digest for immutability. Never `latest`.
+- Official or verified-publisher images only. Flag the publisher and the supply-chain risk before using a community base.
+
 ## Build structure
 
 - Omit the `# syntax=` directive unless a labs-only feature requires it.
@@ -25,4 +30,5 @@ paths:
 ## Before reporting
 
 - Run `docker build --check -f <file> .` and fix every reported rule.
+- Grep the file for `latest` and for any `FROM` without a tag or digest.
 - Confirm every `COPY --from` external image reference carries a digest.

@@ -12,6 +12,11 @@ paths:
 
 ## Header
 
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+```
+
 - Below the header, a comment of at most three lines states what the script does and how it is invoked (args, where it runs from). Nothing else in the script is narrated.
 - A file meant to be sourced omits the `set` line, which would mutate the caller's shell, and says so up top: `# Source this file, it is not meant to be executed directly.`
 - Functions are `function_name() {`, never the `function` keyword.
@@ -29,4 +34,4 @@ paths:
 
 - `shellcheck` passes on every changed script, with no new disable directives.
 - `grep -nE '=\$\(.*grep' <script>` returns nothing on every changed script.
-- Every executable script you touched carries a usage comment of at most three lines.
+- Every executable script you touched carries `set -euo pipefail` and a usage comment of at most three lines.
