@@ -9,3 +9,4 @@ claude/**/selfheal*
 applyonce
 **/themes/omarchy.json
 **/themes/omarchy-system.json
+**/allow_once.jsonl
