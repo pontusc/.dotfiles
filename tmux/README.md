@@ -18,7 +18,7 @@ folded symlink.
   each, pinned to opus with the ticket directory passed via `--add-dir`. With
   `agent = "session"` the session instead opens with one `agent` window at
   `tickets/<session>`, a claude named after the ticket that sees every worktree below it,
-  and the repo windows hold only nvim and a terminal. A ticket owns one
+  beside a terminal, and each repo window is nvim beside a terminal. A ticket owns one
   worktree per repo, so reopening it with a different slug fails per repo until the old
   worktrees are gone. leader+X only reaches the windows of a live session, so a worktree
   whose session is already gone needs a manual `git worktree remove`.

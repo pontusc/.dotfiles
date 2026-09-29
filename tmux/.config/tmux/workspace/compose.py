@@ -139,7 +139,9 @@ def ensure_windows(
     if not tmux.session_exists(session):
         if agent_dir is not None:
             layout.start_agent(
-                tmux.start_session(session, layout.AGENT_WINDOW, agent_dir), session
+                tmux.start_session(session, layout.AGENT_WINDOW, agent_dir),
+                session,
+                agent_dir,
             )
         elif pending:
             first = pending[0]
@@ -156,7 +158,7 @@ def ensure_windows(
         and tmux.find_window_by_name(session, layout.AGENT_WINDOW) is None
     ):
         layout.start_agent(
-            tmux.new_window(session, layout.AGENT_WINDOW, agent_dir), session
+            tmux.new_window(session, layout.AGENT_WINDOW, agent_dir), session, agent_dir
         )
     for spec in pending:
         _configure_window(tmux.new_window(session, spec.repo, spec.path), spec)
