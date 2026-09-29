@@ -78,6 +78,9 @@ infrastructure = "Terraform IaC"
   all user options on restore, so the resurrect hooks mirror the tags plus `@slot` and
   `@ticket_slug` to a state file and reapply them by session and window name. A session or
   window renamed after the last periodic save comes back untagged.
+- A new ticket branch is cut from the default branch after fetching it from origin. A
+  session opened offline still gets its worktrees, cut from the last fetched state, and a
+  notice says so.
 - Two worktree layouts coexist by design: the tool writes `tickets/<session>/<repo>`,
   leader+W keeps writing `<repo>.worktrees/<branch>`. Ownership is resolved by asking git
   for the main repo, so cleanup and de-dupe must keep working for both.

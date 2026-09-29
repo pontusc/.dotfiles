@@ -61,8 +61,28 @@ def main_repo_root(path: Path) -> Path | None:
     return Path(result.stdout.strip()).parent
 
 
-def create(repo_root: Path, branch: str, path: Path) -> str | None:
-    """Check out branch at path, returning an error message on failure."""
+def _refresh_base(repo_root: Path, base: str) -> str | None:
+    """Fetch a remote-tracking base ref, returning a warning when that fails."""
+    remote, _, name = base.partition("/")
+    if remote != "origin" or not name:
+        return None
+    result = _git(
+        repo_root, "fetch", "--quiet", remote, f"refs/heads/{name}:refs/remotes/{base}"
+    )
+    if result.returncode == 0:
+        return None
+    detail = result.stderr.strip() or f"git fetch exited {result.returncode}"
+    return f"branched from stale {base}, fetch failed: {detail}"
+
+
+class Created(NamedTuple):
+    error: str | None
+    warning: str | None
+
+
+def create(repo_root: Path, branch: str, path: Path) -> Created:
+    """Check out branch at path, a new branch cut from the freshly fetched base."""
+    warning = None
     if _ref_exists(repo_root, f"refs/heads/{branch}"):
         args = ["worktree", "add", str(path), branch]
     elif _ref_exists(repo_root, f"refs/remotes/origin/{branch}"):
@@ -76,19 +96,14 @@ def create(repo_root: Path, branch: str, path: Path) -> str | None:
             f"origin/{branch}",
         ]
     else:
-        args = [
-            "worktree",
-            "add",
-            "--no-track",
-            "-b",
-            branch,
-            str(path),
-            _base_ref(repo_root),
-        ]
+        base = _base_ref(repo_root)
+        warning = _refresh_base(repo_root, base)
+        args = ["worktree", "add", "--no-track", "-b", branch, str(path), base]
     result = _git(repo_root, *args)
     if result.returncode == 0:
-        return None
-    return result.stderr.strip() or f"git worktree add exited {result.returncode}"
+        return Created(error=None, warning=warning)
+    error = result.stderr.strip() or f"git worktree add exited {result.returncode}"
+    return Created(error=error, warning=None)
 
 
 def branch_at(path: Path) -> str | None:

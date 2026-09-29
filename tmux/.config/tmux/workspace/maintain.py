@@ -53,7 +53,7 @@ def add_repo() -> None:
     agent_dir = compose.agent_dir_for(
         workspace_config.settings, session_ticket, session
     )
-    specs, failures = compose.prepare_windows(
+    specs, failures, warnings = compose.prepare_windows(
         [compose.row_name(choice)],
         work_root,
         session_ticket,
@@ -64,8 +64,8 @@ def add_repo() -> None:
         raise WorkspaceError("\n".join(failures))
     result = compose.ensure_windows(session, specs, agent_dir)
     persist.save_state()
-    if result.skipped:
-        ui.notice("\n".join(result.skipped))
+    if result.skipped or warnings:
+        ui.notice("\n".join(result.skipped + warnings))
 
 
 def _delete_branch(repo_root: Path, branch: str) -> str:

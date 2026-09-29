@@ -37,6 +37,12 @@ class ComposeResult(NamedTuple):
     session_live: bool
 
 
+class Prepared(NamedTuple):
+    specs: list[WindowSpec]
+    failures: list[str]
+    warnings: list[str]
+
+
 def repo_lines(repos: Sequence[str], descriptions: dict[str, str]) -> list[str]:
     """Picker rows: the repo name padded to a common width, then its description."""
     if not repos:
@@ -72,10 +78,11 @@ def prepare_windows(
     session_ticket: ticket.Ticket | None,
     session: str,
     per_window_agent: bool = True,
-) -> tuple[list[WindowSpec], list[str]]:
+) -> Prepared:
     """Resolve each repo to the path its window opens at, per-repo failures apart."""
     specs: list[WindowSpec] = []
     failures: list[str] = []
+    warnings: list[str] = []
     for repo_name in repos:
         repo_root = work_root / repo_name
         claude_session = f"{session}-{repo_name}"
@@ -102,15 +109,17 @@ def prepare_windows(
                 continue
         else:
             path.parent.mkdir(parents=True, exist_ok=True)
-            error = worktree.create(repo_root, branch, path)
-            if error:
-                failures.append(f"{repo_name}: {error}")
+            created = worktree.create(repo_root, branch, path)
+            if created.error:
+                failures.append(f"{repo_name}: {created.error}")
                 continue
+            if created.warning:
+                warnings.append(f"{repo_name}: {created.warning}")
         agent = None
         if per_window_agent:
             agent = layout.claude_command(claude_session, path.parent)
         specs.append(WindowSpec(repo=repo_name, path=path, agent=agent))
-    return specs, failures
+    return Prepared(specs=specs, failures=failures, warnings=warnings)
 
 
 def _configure_window(window_id: str, spec: WindowSpec) -> None:
@@ -277,7 +286,7 @@ def materialize_workspace(repos: list[str]) -> None:
     # the freshly created branches and worktrees behind.
     tmux.validate_session_name(session)
     agent_dir = agent_dir_for(workspace_config.settings, session_ticket, session)
-    specs, failures = prepare_windows(
+    specs, failures, warnings = prepare_windows(
         repos, work_root, session_ticket, session, per_window_agent=agent_dir is None
     )
     if failures and not specs:
@@ -294,3 +303,5 @@ def materialize_workspace(repos: list[str]) -> None:
         ui.notice(
             "some repos were skipped:\n  " + "\n  ".join(failures + result.skipped)
         )
+    if warnings:
+        ui.notice("\n".join(warnings))
