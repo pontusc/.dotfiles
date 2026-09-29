@@ -24,6 +24,7 @@
       "Write(*)",
       "Skill(*)",
       "mcp__playwright",
+      "mcp__linear",
       "mcp__claude_ai_Slack__slack_read_canvas",
       "mcp__claude_ai_Slack__slack_read_channel",
       "mcp__claude_ai_Slack__slack_read_thread",
@@ -34,6 +35,7 @@
       "mcp__claude_ai_Slack__slack_search_users"
     ],
     "deny": [
+      "mcp__claude_ai_Linear",
       "Bash(sudo:*)",
       "Bash(git pull:*)",
       "Bash(git tag:*)",
@@ -90,10 +92,7 @@
       "Read(//**/id_ecdsa)",
       "Read(//**/id_dsa)"
     ],
-    "ask": [
-      "Bash(git push:*)",
-      "Bash(git switch:*)"
-    ],
+    "ask": ["Bash(git push:*)", "Bash(git switch:*)"],
     "defaultMode": "default"
   },
   "model": "opus",
