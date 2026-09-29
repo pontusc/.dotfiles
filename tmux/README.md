@@ -81,6 +81,10 @@ infrastructure = "Terraform IaC"
 - A new ticket branch is cut from the default branch after fetching it from origin. A
   session opened offline still gets its worktrees, cut from the last fetched state, and a
   notice says so.
+- With `agent = "session"` the tool owns `tickets/<session>/.claude`, a symlink to
+  `~/.config/claude-ticket` that gives the agent its ticket instructions and skills. Loose
+  files in a ticket root are deleted by leader+X only after confirming, and a directory
+  that is not a live worktree window keeps the whole ticket root.
 - Two worktree layouts coexist by design: the tool writes `tickets/<session>/<repo>`,
   leader+W keeps writing `<repo>.worktrees/<branch>`. Ownership is resolved by asking git
   for the main repo, so cleanup and de-dupe must keep working for both.

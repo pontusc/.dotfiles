@@ -137,6 +137,8 @@ def ensure_windows(
     """
     pending: list[WindowSpec] = []
     skipped: list[str] = []
+    if agent_dir is not None:
+        layout.link_agent_config(agent_dir)
     for spec in specs:
         existing = tmux.find_window_by_worktree(spec.path)
         if existing is None:

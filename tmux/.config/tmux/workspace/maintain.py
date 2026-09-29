@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import shutil
 from pathlib import Path
 
 import compose
@@ -77,6 +78,26 @@ def _delete_branch(repo_root: Path, branch: str) -> str:
     return f"deleted branch {branch}"
 
 
+def _remove_ticket_root(ticket_root: Path) -> str:
+    """Delete the ticket root once nothing but the tool's link and loose files remain.
+
+    A directory is never deleted here, it may be a worktree whose window is
+    already gone.
+    """
+    leftovers = [
+        entry
+        for entry in ticket_root.iterdir()
+        if entry.name != layout.AGENT_CONFIG_LINK
+    ]
+    names = ", ".join(sorted(entry.name for entry in leftovers))
+    if any(entry.is_dir() for entry in leftovers):
+        return f"{ticket_root.name}: kept, {names} still present"
+    if leftovers and not ui.confirm(f"{ticket_root.name}: delete {names}?"):
+        return f"{ticket_root.name}: kept {names}"
+    shutil.rmtree(ticket_root)
+    return f"{ticket_root.name}: ticket directory removed"
+
+
 def cleanup_session() -> None:
     session = tmux.current_session()
     if session is None:
@@ -135,6 +156,9 @@ def cleanup_session() -> None:
         if agent is not None and not agent.tagged:
             tmux.kill_window(agent.window_id)
             removed.append(f"{agent.name}: agent window closed")
+        ticket_root = worktree.ticket_dir(work_root, session)
+        if workspace_config.settings.agent == "session" and ticket_root.is_dir():
+            removed.append(_remove_ticket_root(ticket_root))
     persist.save_state()
     if removed or kept:
         ui.notice("\n".join(removed + kept))

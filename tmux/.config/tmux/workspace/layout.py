@@ -10,6 +10,16 @@ import tmux
 from errors import WorkspaceError
 
 AGENT_WINDOW = "agent"
+AGENT_CONFIG_DIR = Path.home() / ".config" / "claude-ticket"
+AGENT_CONFIG_LINK = ".claude"
+
+
+def link_agent_config(ticket_root: Path) -> None:
+    """Expose the ticket agent config to claude through a .claude symlink."""
+    link = ticket_root / AGENT_CONFIG_LINK
+    if not link.exists() and not link.is_symlink():
+        ticket_root.mkdir(parents=True, exist_ok=True)
+        link.symlink_to(AGENT_CONFIG_DIR)
 
 
 def claude_command(session_name: str, extra_dir: Path | None = None) -> list[str]:
