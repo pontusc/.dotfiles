@@ -35,8 +35,10 @@ Consequences:
 - `claude/.config/dcg` → `~/.config/dcg` is fully folded (one symlink for the directory);
   its runtime file `pending_exceptions.jsonl` lives inside the repo tree but is gitignored.
 - `claude/.config/claude-ticket` → `~/.config/claude-ticket` is fully folded. The tmux
-  workspace tool symlinks it as `.claude` into every ticket root, so a skill added here
-  reaches ticket sessions without restowing.
+  workspace tool symlinks it as `.claude` into every ticket root and loads its `plugin`
+  directory as the `ticket` plugin, so a skill added there reaches ticket sessions without
+  restowing. Skills must stay under `plugin/`, a `skills/` next to `CLAUDE.md` would load
+  a second, unnamespaced copy.
 
 ## The omarchy package (partially folded, read before adding files)
 

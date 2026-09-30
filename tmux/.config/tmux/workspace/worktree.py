@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import contextlib
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
 from typing import NamedTuple
 
@@ -80,7 +81,12 @@ class Created(NamedTuple):
     warning: str | None
 
 
-def create(repo_root: Path, branch: str, path: Path) -> Created:
+def create(
+    repo_root: Path,
+    branch: str,
+    path: Path,
+    report: Callable[[str], None] = lambda _: None,
+) -> Created:
     """Check out branch at path, a new branch cut from the freshly fetched base."""
     warning = None
     if _ref_exists(repo_root, f"refs/heads/{branch}"):
@@ -97,8 +103,10 @@ def create(repo_root: Path, branch: str, path: Path) -> Created:
         ]
     else:
         base = _base_ref(repo_root)
+        report(f"fetching {base}")
         warning = _refresh_base(repo_root, base)
         args = ["worktree", "add", "--no-track", "-b", branch, str(path), base]
+    report("adding worktree")
     result = _git(repo_root, *args)
     if result.returncode == 0:
         return Created(error=None, warning=warning)

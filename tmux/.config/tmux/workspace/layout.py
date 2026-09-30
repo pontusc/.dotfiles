@@ -22,8 +22,13 @@ def link_agent_config(ticket_root: Path) -> None:
         link.symlink_to(AGENT_CONFIG_DIR)
 
 
-def claude_command(session_name: str, extra_dir: Path | None = None) -> list[str]:
-    args = ["claude", "--model", "opus", "-n", session_name]
+def claude_command(
+    session_name: str, extra_dir: Path | None = None, *, ticket_plugin: bool = False
+) -> list[str]:
+    args = ["claude", "--model", "opus"]
+    if ticket_plugin:
+        args += ["--plugin-dir", str(AGENT_CONFIG_DIR / "plugin")]
+    args += ["-n", session_name]
     if extra_dir is not None:
         # --add-dir is variadic in the claude CLI, so it must stay last.
         args += ["--add-dir", str(extra_dir)]
@@ -58,7 +63,9 @@ def arrange_side(window_id: str, cwd: Path, command: str) -> None:
 
 def start_agent(window_id: str, session: str, cwd: Path) -> None:
     """The session's single agent beside a terminal, in the ticket directory."""
-    arrange_side(window_id, cwd, shlex.join(claude_command(session)))
+    arrange_side(
+        window_id, cwd, shlex.join(claude_command(session, ticket_plugin=True))
+    )
 
 
 def arrange_current_window() -> None:

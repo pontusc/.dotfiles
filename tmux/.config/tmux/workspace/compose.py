@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 from collections.abc import Sequence
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from typing import NamedTuple
@@ -72,6 +73,51 @@ def agent_dir_for(
     return worktree.ticket_dir(settings.work_root, session)
 
 
+class _Resolved(NamedTuple):
+    spec: WindowSpec | None
+    failure: str | None
+    warning: str | None
+
+
+def _prepare_worktree(
+    repo_name: str,
+    work_root: Path,
+    branch: str,
+    session: str,
+    per_window_agent: bool,
+    progress: ui.Progress,
+) -> _Resolved:
+    path = worktree.path_for(work_root, session, repo_name)
+    warning = None
+    if path.is_dir():
+        # The path is derived from the branch name, so an existing one is
+        # only ours to reuse when it really is that branch's worktree.
+        checked_out = worktree.branch_at(path)
+        if checked_out != branch:
+            failure = f"{path} is on {checked_out or 'no branch'}, expected {branch}"
+            progress.finish(repo_name, failure, ok=False)
+            return _Resolved(None, f"{repo_name}: {failure}", None)
+        progress.finish(repo_name, "reusing worktree", ok=True)
+    else:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        created = worktree.create(
+            work_root / repo_name,
+            branch,
+            path,
+            report=lambda state: progress.update(repo_name, state),
+        )
+        if created.error:
+            progress.finish(repo_name, created.error, ok=False)
+            return _Resolved(None, f"{repo_name}: {created.error}", None)
+        if created.warning:
+            warning = f"{repo_name}: {created.warning}"
+        progress.finish(repo_name, "worktree ready", ok=True)
+    agent = None
+    if per_window_agent:
+        agent = layout.claude_command(f"{session}-{repo_name}", path.parent)
+    return _Resolved(WindowSpec(repo=repo_name, path=path, agent=agent), None, warning)
+
+
 def prepare_windows(
     repos: list[str],
     work_root: Path,
@@ -80,46 +126,34 @@ def prepare_windows(
     per_window_agent: bool = True,
 ) -> Prepared:
     """Resolve each repo to the path its window opens at, per-repo failures apart."""
-    specs: list[WindowSpec] = []
-    failures: list[str] = []
-    warnings: list[str] = []
-    for repo_name in repos:
-        repo_root = work_root / repo_name
-        claude_session = f"{session}-{repo_name}"
-        if session_ticket is None:
-            specs.append(
+    if session_ticket is None:
+        return Prepared(
+            specs=[
                 WindowSpec(
                     repo=repo_name,
-                    path=repo_root,
-                    agent=layout.claude_command(claude_session),
+                    path=work_root / repo_name,
+                    agent=layout.claude_command(f"{session}-{repo_name}"),
                 )
+                for repo_name in repos
+            ],
+            failures=[],
+            warnings=[],
+        )
+    branch = session_ticket.branch
+    with ui.Progress(repos) as progress, ThreadPoolExecutor() as pool:
+        resolved = list(
+            pool.map(
+                lambda repo_name: _prepare_worktree(
+                    repo_name, work_root, branch, session, per_window_agent, progress
+                ),
+                repos,
             )
-            continue
-        branch = session_ticket.branch
-        path = worktree.path_for(work_root, session, repo_name)
-        if path.is_dir():
-            # The path is derived from the branch name, so an existing one is
-            # only ours to reuse when it really is that branch's worktree.
-            checked_out = worktree.branch_at(path)
-            if checked_out != branch:
-                failures.append(
-                    f"{repo_name}: {path} is on {checked_out or 'no branch'},"
-                    f" expected {branch}"
-                )
-                continue
-        else:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            created = worktree.create(repo_root, branch, path)
-            if created.error:
-                failures.append(f"{repo_name}: {created.error}")
-                continue
-            if created.warning:
-                warnings.append(f"{repo_name}: {created.warning}")
-        agent = None
-        if per_window_agent:
-            agent = layout.claude_command(claude_session, path.parent)
-        specs.append(WindowSpec(repo=repo_name, path=path, agent=agent))
-    return Prepared(specs=specs, failures=failures, warnings=warnings)
+        )
+    return Prepared(
+        specs=[item.spec for item in resolved if item.spec is not None],
+        failures=[item.failure for item in resolved if item.failure is not None],
+        warnings=[item.warning for item in resolved if item.warning is not None],
+    )
 
 
 def _configure_window(window_id: str, spec: WindowSpec) -> None:

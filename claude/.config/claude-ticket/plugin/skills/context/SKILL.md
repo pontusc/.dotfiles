@@ -1,5 +1,5 @@
 ---
-name: ticket-context
+name: context
 description: Gather the context for work in a ticket workspace. Use on the first prompt describing what to build or change, or when the user mentions the ticket or Linear.
 ---
 

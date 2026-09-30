@@ -7,7 +7,9 @@ Interview the user until you share one understanding. Treat it as a design tree,
 
 Work in rounds. The frontier is every decision whose prerequisites are settled, the questions you can ask now without guessing at answers you have not heard. Ask the whole frontier in one round, then wait for the answers.
 
-Format each question as:
+Every question goes through AskUserQuestion, never as prose in the reply. One call holds up to four questions, so a larger frontier is several calls in a row, each waiting for its answers. Your recommendation is the first option, labeled `(Recommended)`, and the question body carries the reasoning behind it. A question without a fixed set of options still goes through the tool, with the candidate answers you can think of as options and the rest left to the free text.
+
+Only when the tool is unavailable, write the question in the reply as:
 
 **Q1 <title>**
 <body, with the options when there are any>

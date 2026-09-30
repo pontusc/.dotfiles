@@ -5,18 +5,104 @@ from __future__ import annotations
 import codecs
 import os
 import select
+import shutil
 import subprocess
 import sys
 import termios
+import threading
+import time
 import tty
 from collections.abc import Sequence
-from typing import NoReturn
+from types import TracebackType
+from typing import NoReturn, Self
 
 from errors import Cancelled, WorkspaceError
 
 # Terminal-default background and gutter, so fzf paints no opaque cells and
 # the popup keeps the terminal's translucency.
 _FZF_STYLE = ("--color=bg:-1,gutter:-1",)
+_SPINNER = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+_FRAME_SECONDS = 0.1
+
+
+class Progress:
+    """One line per item, redrawn in place while the items run concurrently.
+
+    Without a tty each state change prints as its own line instead.
+    """
+
+    def __init__(self, names: Sequence[str]) -> None:
+        self._names = list(names)
+        self._states = dict.fromkeys(self._names, "")
+        self._finished: dict[str, tuple[bool, float]] = {}
+        self._started = time.monotonic()
+        self._lock = threading.Lock()
+        self._stop = threading.Event()
+        self._thread = threading.Thread(target=self._loop, daemon=True)
+        self._live = sys.stdout.isatty()
+        self._drawn = 0
+        self._width = max((len(name) for name in self._names), default=0)
+
+    def update(self, name: str, state: str) -> None:
+        with self._lock:
+            self._states[name] = state.splitlines()[0] if state else ""
+        if not self._live:
+            print(f"{name}: {state}", flush=True)
+
+    def finish(self, name: str, state: str, *, ok: bool) -> None:
+        self.update(name, state)
+        with self._lock:
+            self._finished[name] = (ok, time.monotonic() - self._started)
+
+    def __enter__(self) -> Self:
+        if self._live:
+            self._thread.start()
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        if not self._live:
+            return
+        self._stop.set()
+        self._thread.join()
+        self._render(0)
+
+    def _loop(self) -> None:
+        frame = 0
+        while not self._stop.is_set():
+            self._render(frame)
+            frame += 1
+            self._stop.wait(_FRAME_SECONDS)
+
+    def _render(self, frame: int) -> None:
+        columns = shutil.get_terminal_size().columns
+        now = time.monotonic()
+        with self._lock:
+            lines = []
+            for name in self._names:
+                finished = self._finished.get(name)
+                if finished is None:
+                    mark = _SPINNER[frame % len(_SPINNER)]
+                    elapsed = now - self._started
+                else:
+                    mark = "✔" if finished[0] else "✘"
+                    elapsed = finished[1]
+                line = f" {mark} {name:<{self._width}}  {self._states[name]}"
+                clock = f"{elapsed:.1f}s"
+                padding = columns - len(line) - len(clock) - 1
+                if padding < 1:
+                    line = line[: columns - len(clock) - 2]
+                    padding = 1
+                lines.append(line + " " * padding + clock)
+        out = f"\x1b[{self._drawn}A" if self._drawn else ""
+        out += "".join(f"\r\x1b[K{line}\n" for line in lines)
+        sys.stdout.write(out)
+        sys.stdout.flush()
+        self._drawn = len(lines)
 
 
 def _wait_for_keypress() -> None:
