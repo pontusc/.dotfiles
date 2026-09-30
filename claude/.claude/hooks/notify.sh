@@ -20,10 +20,10 @@ clear_flag() {
 }
 
 raise_flag() {
-  local flag="$1" message="$2"
-  local pane_active window_active session_attached session_name window_name
-  IFS=$'\t' read -r pane_active window_active session_attached session_name window_name \
-    < <(tmux display -p -t "$TMUX_PANE" -F $'#{pane_active}\t#{window_active}\t#{session_attached}\t#{session_name}\t#{window_name}')
+  local flag="$1"
+  local pane_active window_active session_attached session_name
+  IFS=$'\t' read -r pane_active window_active session_attached session_name \
+    < <(tmux display -p -t "$TMUX_PANE" -F $'#{pane_active}\t#{window_active}\t#{session_attached}\t#{session_name}')
 
   local client_flags
   readarray -t client_flags < <(tmux list-clients -t "$session_name" -F '#{client_flags}' 2>/dev/null)
@@ -37,11 +37,6 @@ raise_flag() {
   fi
 
   tmux set-option -w -t "$TMUX_PANE" @claude "$flag"
-  local clients client
-  readarray -t clients < <(tmux list-clients -F '#{client_name}' 2>/dev/null)
-  for client in "${clients[@]}"; do
-    tmux display-message -c "$client" "${message}, ${session_name}:${window_name}"
-  done
 }
 
 case "$EVENT" in
@@ -54,14 +49,14 @@ case "$EVENT" in
     clear_flag
     ;;
   PreToolUse)
-    raise_flag "ask" "Claude asks"
+    raise_flag "ask"
     ;;
   Notification)
-    raise_flag "ask" "$(jq -r '.message // "Approval needed"' <<<"$INPUT")"
+    raise_flag "ask"
     ;;
   Stop)
     if [[ ! -f "$STATE_FILE" ]] || (( $(date +%s) - $(<"$STATE_FILE") >= DONE_AFTER )); then
-      raise_flag "done" "Claude finished"
+      raise_flag "done"
     fi
     ;;
 esac
