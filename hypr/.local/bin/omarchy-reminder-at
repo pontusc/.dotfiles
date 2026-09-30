@@ -30,7 +30,7 @@ def cmd(args: Sequence[str], *, check: bool = True) -> subprocess.CompletedProce
 
 
 def notify(title: str, body: str | None = None, urgency: str = "low") -> None:
-    args = ["omarchy-notification-send", NOTIFICATION_GLYPH, title]
+    args = ["omarchy-notification-send", "-g", NOTIFICATION_GLYPH, title]
     if body is not None:
         args.append(body)
     args += ["-u", urgency]
@@ -228,12 +228,6 @@ def schedule_reminder(target: datetime, message: str, days: int) -> None:
     message_file = REMINDER_DIR / f"{unit}.message"
     message_file.write_text(message)
 
-    fire_message = message
-    # omarchy-notification-send misparses a description starting with '-' as a
-    # notify-send flag and drops it; a leading space defangs it harmlessly.
-    if fire_message.startswith("-"):
-        fire_message = " " + fire_message
-
     cmd(
         [
             "systemd-run",
@@ -244,9 +238,9 @@ def schedule_reminder(target: datetime, message: str, days: int) -> None:
             f"--unit={unit}",
             "bash",
             "-c",
-            f'omarchy-notification-send "{NOTIFICATION_GLYPH}" "Reminder" "$1" -u critical; rm -f "$2"',
+            f'omarchy-notification-send -g "{NOTIFICATION_GLYPH}" "Reminder" "$1" -u critical; rm -f "$2"',
             "bash",
-            fire_message,
+            message,
             str(message_file),
         ]
     )
