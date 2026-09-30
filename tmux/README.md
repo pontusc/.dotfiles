@@ -12,7 +12,11 @@ folded symlink.
 - **leader+T** opens an fzf multi-select over every discovered repo (space toggles, enter
   accepts the hovered row without unmarking). A second popup then prompts for the ticket
   (a bare number gets the configured
-  `ticket_prefix`, so 1026 becomes ABC-1026) and the branch slug. The tool creates the
+  `ticket_prefix`, so 1026 becomes ABC-1026) and opens an fzf over the branches the picked
+  repos already have for it, local or on origin as of the last fetch, each row naming the
+  repos that carry it. Typing switches the prompt to `New branch` and enter takes the
+  text as a new slug, moving the cursor switches back and enter takes the hovered
+  branch. The tool creates the
   session, one window per repo with a worktree on branch `KEY/slug` at
   `tickets/<session>/<repo>` under the work root, the 3-pane layout, and a named claude in
   each, pinned to opus with the ticket directory passed via `--add-dir`. With
@@ -22,26 +26,24 @@ folded symlink.
   worktree per repo, so reopening it with a different slug fails per repo until the old
   worktrees are gone. leader+X only reaches the windows of a live session, so a worktree
   whose session is already gone needs a manual `git worktree remove`.
-- Empty ticket with a branch given: worktrees on the bare branch, session named by the
-  branch. Both prompts empty: windows at repo roots, no worktrees, session named by the
-  sole repo or a prompt.
+- Empty ticket: the branch picker lists every branch that is not a ticket branch,
+  worktrees go on the bare branch, and the session is named by it.
 - **leader+E** adds a repo to the current session: fzf over the repos not yet in it,
-  worktree on the session's ticket branch, window and agent join in place. In a non-ticket
-  session the repo opens at its root.
+  worktree on the session's ticket branch, window and agent join in place.
 - **leader+X** closes every window in the current session that loses nothing (repo-root
   windows, worktrees with a clean tree, the `agent` window once no worktree window is
   left). A repo-root window only closes after confirming.
   The worktree and its branch are both removed, and a branch git refuses to delete, most
   often unmerged work, only goes on an explicit yes. Uncommitted changes keep a window
-  without asking. Ignored files only prompt, since a build cache is disposable but a local
-  `.env` is not.
+  without asking. Ignored files go with the worktree, so a local file that must survive
+  needs to be moved out first.
 - **leader+s** picks another session: digits jump straight to a slot, letters fuzzy-find.
   Slots stick to a session for its lifetime and free up when it dies.
 - `list` prints the discovered repos and the materialized sessions.
 - Cancelling any prompt (fzf abort, escape, ctrl-d) exits silently. Re-running the flow
   for an existing ticket attaches and fills in only what is missing.
 
-Naming: session = ticket key (or workspace name when ticketless), window = repo, claude
+Naming: session = ticket key (or the branch when ticketless), window = repo, claude
 session = `<KEY>-<repo>`. Renaming a ticket session makes `add` refuse with an error until
 it is renamed back, since it derives the ticket and the `tickets/<session>` directory from
 the session name.
@@ -65,10 +67,13 @@ ticket_prefix = "ABC"                # optional, expands bare ticket numbers
 
 [repos]
 cluster = "k8s manifests + Helm values"
-infrastructure = "Terraform IaC"
+infrastructure = { description = "Terraform IaC", copy = ["certs", "data/fixtures"] }
 ```
 
 `[repos]` holds optional repo descriptions, shown inline on picker rows and in `list`.
+The table form adds `copy`, paths copied from the main checkout into a worktree the
+moment it is created, for gitignored inputs a checkout cannot produce. A reopened
+worktree is not touched, and a missing source only warns.
 
 ## Constraints
 

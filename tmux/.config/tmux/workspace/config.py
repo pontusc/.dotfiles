@@ -6,6 +6,7 @@ import re
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
+from typing import NamedTuple
 
 from errors import WorkspaceError
 
@@ -28,6 +29,7 @@ class Settings:
 class Config:
     settings: Settings
     repos: dict[str, str]
+    copies: dict[str, tuple[str, ...]]
 
 
 def _parse_settings(table: object) -> Settings:
@@ -67,24 +69,51 @@ def _parse_settings(table: object) -> Settings:
     )
 
 
-def _parse_repos(table: object) -> dict[str, str]:
-    if not isinstance(table, dict) or not all(
-        isinstance(description, str) for description in table.values()
-    ):
-        raise WorkspaceError(
-            f'{CONFIG_PATH}: [repos] must map "<dir>" to a description string'
-        )
-    return dict(table)
+class _Repos(NamedTuple):
+    descriptions: dict[str, str]
+    copies: dict[str, tuple[str, ...]]
+
+
+def _parse_repos(table: object) -> _Repos:
+    shape = (
+        f'{CONFIG_PATH}: [repos] must map "<dir>" to a description string or a table'
+        ' with "description" and "copy", a list of paths'
+    )
+    if not isinstance(table, dict):
+        raise WorkspaceError(shape)
+    descriptions: dict[str, str] = {}
+    copies: dict[str, tuple[str, ...]] = {}
+    for name, value in table.items():
+        if isinstance(value, str):
+            descriptions[name] = value
+            continue
+        if not isinstance(value, dict):
+            raise WorkspaceError(shape)
+        description = value.get("description")
+        copy = value.get("copy", [])
+        if description is not None and not isinstance(description, str):
+            raise WorkspaceError(shape)
+        if not isinstance(copy, list) or not all(
+            isinstance(path, str) for path in copy
+        ):
+            raise WorkspaceError(shape)
+        if description is not None:
+            descriptions[name] = description
+        if copy:
+            copies[name] = tuple(copy)
+    return _Repos(descriptions=descriptions, copies=copies)
 
 
 def load() -> Config:
     if not CONFIG_PATH.is_file():
-        return Config(settings=_parse_settings({}), repos={})
+        return Config(settings=_parse_settings({}), repos={}, copies={})
     try:
         raw = tomllib.loads(CONFIG_PATH.read_text())
     except (OSError, tomllib.TOMLDecodeError) as error:
         raise WorkspaceError(f"cannot read {CONFIG_PATH}: {error}") from error
+    repos = _parse_repos(raw.get("repos", {}))
     return Config(
         settings=_parse_settings(raw.get("settings", {})),
-        repos=_parse_repos(raw.get("repos", {})),
+        repos=repos.descriptions,
+        copies=repos.copies,
     )

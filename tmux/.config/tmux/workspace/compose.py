@@ -81,14 +81,16 @@ class _Resolved(NamedTuple):
 
 def _prepare_worktree(
     repo_name: str,
-    work_root: Path,
+    workspace_config: config.Config,
     branch: str,
     session: str,
     per_window_agent: bool,
     progress: ui.Progress,
 ) -> _Resolved:
+    work_root = workspace_config.settings.work_root
+    repo_root = work_root / repo_name
     path = worktree.path_for(work_root, session, repo_name)
-    warning = None
+    warnings: list[str] = []
     if path.is_dir():
         # The path is derived from the branch name, so an existing one is
         # only ours to reuse when it really is that branch's worktree.
@@ -101,7 +103,7 @@ def _prepare_worktree(
     else:
         path.parent.mkdir(parents=True, exist_ok=True)
         created = worktree.create(
-            work_root / repo_name,
+            repo_root,
             branch,
             path,
             report=lambda state: progress.update(repo_name, state),
@@ -110,41 +112,39 @@ def _prepare_worktree(
             progress.finish(repo_name, created.error, ok=False)
             return _Resolved(None, f"{repo_name}: {created.error}", None)
         if created.warning:
-            warning = f"{repo_name}: {created.warning}"
+            warnings.append(created.warning)
+        for relative in workspace_config.copies.get(repo_name, ()):
+            progress.update(repo_name, f"copying {relative}")
+            error = worktree.copy_into(repo_root, path, relative)
+            if error:
+                warnings.append(error)
         progress.finish(repo_name, "worktree ready", ok=True)
     agent = None
     if per_window_agent:
         agent = layout.claude_command(f"{session}-{repo_name}", path.parent)
+    warning = f"{repo_name}: {', '.join(warnings)}" if warnings else None
     return _Resolved(WindowSpec(repo=repo_name, path=path, agent=agent), None, warning)
 
 
 def prepare_windows(
     repos: list[str],
-    work_root: Path,
-    session_ticket: ticket.Ticket | None,
+    workspace_config: config.Config,
+    session_ticket: ticket.Ticket,
     session: str,
     per_window_agent: bool = True,
 ) -> Prepared:
     """Resolve each repo to the path its window opens at, per-repo failures apart."""
-    if session_ticket is None:
-        return Prepared(
-            specs=[
-                WindowSpec(
-                    repo=repo_name,
-                    path=work_root / repo_name,
-                    agent=layout.claude_command(f"{session}-{repo_name}"),
-                )
-                for repo_name in repos
-            ],
-            failures=[],
-            warnings=[],
-        )
     branch = session_ticket.branch
     with ui.Progress(repos) as progress, ThreadPoolExecutor() as pool:
         resolved = list(
             pool.map(
                 lambda repo_name: _prepare_worktree(
-                    repo_name, work_root, branch, session, per_window_agent, progress
+                    repo_name,
+                    workspace_config,
+                    branch,
+                    session,
+                    per_window_agent,
+                    progress,
                 ),
                 repos,
             )
@@ -210,25 +210,39 @@ def ensure_windows(
     return ComposeResult(skipped=skipped, session_live=True)
 
 
-def _session_name(repos: list[str]) -> str | None:
-    if len(repos) == 1:
-        return repos[0]
-    return ui.prompt_line("Session name ❯ ").strip() or None
+def _branch_rows(
+    repos: list[str], work_root: Path, key: str | None, pattern: re.Pattern[str]
+) -> list[str]:
+    """Picker rows: the slug, a tab, and the repos that already have the branch.
+
+    With a ticket only its branches, shown as slugs. Without one every branch
+    that is not a ticket branch.
+    """
+    holders: dict[str, list[str]] = {}
+    for repo_name in repos:
+        for branch in worktree.branches(work_root / repo_name):
+            prefix, _, slug = branch.partition("/")
+            if key is not None:
+                if prefix != key or not slug:
+                    continue
+                holders.setdefault(slug, []).append(repo_name)
+            elif not (slug and pattern.fullmatch(prefix)):
+                holders.setdefault(branch, []).append(repo_name)
+    return [f"{slug}\t{' '.join(found)}" for slug, found in sorted(holders.items())]
 
 
 def _resolve_ticket(
-    pattern: re.Pattern[str], prefix: str | None
+    repos: list[str], settings: config.Settings
 ) -> ticket.Ticket | None:
     raw = ui.prompt_line("Ticket ❯ ").strip()
-    key = ticket.parse_key(raw, pattern, prefix) if raw else None
-    branch = ui.prompt_line("Branch ❯ ").strip()
-    if key is not None:
-        if not branch:
-            raise WorkspaceError("ticket needs a branch")
-        return ticket.Ticket(key=key, slug=branch)
-    if not branch:
+    key = None
+    if raw:
+        key = ticket.parse_key(raw, settings.ticket_pattern, settings.ticket_prefix)
+    rows = _branch_rows(repos, settings.work_root, key, settings.ticket_pattern)
+    slug = ui.pick_or_new(rows)
+    if slug is None:
         return None
-    return ticket.Ticket(key=None, slug=branch)
+    return ticket.Ticket(key=key, slug=slug)
 
 
 def flow_workspace() -> None:
@@ -307,32 +321,28 @@ def open_workspace(chain_out: Path | None) -> None:
 
 def materialize_workspace(repos: list[str]) -> None:
     workspace_config = config.load()
-    work_root = workspace_config.settings.work_root
-    session_ticket = _resolve_ticket(
-        workspace_config.settings.ticket_pattern,
-        workspace_config.settings.ticket_prefix,
-    )
-    if session_ticket is not None:
-        session = session_ticket.session_name
-    else:
-        session = _session_name(repos)
-        if session is None:
-            return
+    session_ticket = _resolve_ticket(repos, workspace_config.settings)
+    if session_ticket is None:
+        return
+    session = session_ticket.session_name
     # Checked before prepare_windows: a name tmux rejects would otherwise leave
     # the freshly created branches and worktrees behind.
     tmux.validate_session_name(session)
     agent_dir = agent_dir_for(workspace_config.settings, session_ticket, session)
     specs, failures, warnings = prepare_windows(
-        repos, work_root, session_ticket, session, per_window_agent=agent_dir is None
+        repos,
+        workspace_config,
+        session_ticket,
+        session,
+        per_window_agent=agent_dir is None,
     )
     if failures and not specs:
         raise WorkspaceError("no repo could be prepared:\n  " + "\n  ".join(failures))
     result = ensure_windows(session, specs, agent_dir)
     if result.session_live:
-        if session_ticket is not None:
-            tmux.set_session_option(session, "@ticket_slug", session_ticket.slug)
-            if session_ticket.key is not None:
-                tmux.set_session_option(session, "@ticket_key", session_ticket.key)
+        tmux.set_session_option(session, "@ticket_slug", session_ticket.slug)
+        if session_ticket.key is not None:
+            tmux.set_session_option(session, "@ticket_key", session_ticket.key)
         tmux.focus_session(session)
         persist.save_state()
     if failures or result.skipped:

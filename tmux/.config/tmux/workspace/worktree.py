@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import contextlib
+import shutil
 import subprocess
 from collections.abc import Callable
 from pathlib import Path
@@ -112,6 +113,40 @@ def create(
         return Created(error=None, warning=warning)
     error = result.stderr.strip() or f"git worktree add exited {result.returncode}"
     return Created(error=error, warning=None)
+
+
+def branches(repo_root: Path) -> set[str]:
+    """Local branches and origin branches as of the last fetch, remote prefix dropped."""
+    result = _git(
+        repo_root,
+        "for-each-ref",
+        "--format=%(refname:short)",
+        "refs/heads",
+        "refs/remotes/origin",
+    )
+    found: set[str] = set()
+    for line in result.stdout.splitlines():
+        name = line.removeprefix("origin/")
+        if name and name != "HEAD":
+            found.add(name)
+    return found
+
+
+def copy_into(repo_root: Path, path: Path, relative: str) -> str | None:
+    """Copy a path from the main checkout into the worktree, an error message on failure."""
+    source = repo_root / relative
+    target = path / relative
+    if not source.exists():
+        return f"{relative} not found in {repo_root}"
+    try:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if source.is_dir():
+            shutil.copytree(source, target, symlinks=True)
+        else:
+            shutil.copy2(source, target)
+    except OSError as error:
+        return f"copying {relative} failed: {error}"
+    return None
 
 
 def branch_at(path: Path) -> str | None:

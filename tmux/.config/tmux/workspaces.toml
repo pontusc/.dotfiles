@@ -8,5 +8,5 @@ agent = "session"
 [repos]
 infrastructure = "IAC"
 manifests = "K8s"
-Alchemy = "Application"
+Alchemy = { description = "Application", copy = ["certs", "services/market-data/data/historic_data"] }
 testing = "Testing Repo"

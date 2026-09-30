@@ -173,6 +173,72 @@ def pick(
     return selected[0] if selected else None
 
 
+_PICK_PROMPT = "Branch ❯ "
+_NEW_PROMPT = "New branch ❯ "
+
+
+def pick_or_new(options: Sequence[str]) -> str | None:
+    """The typed query once something is typed, the hovered row once the cursor
+    moved or nothing is typed. None when cancelled.
+
+    The prompt names the mode, and the enter binding reads it back, since fzf
+    keeps no other state across key presses. Rows may carry a description after
+    a tab, only the first column is returned.
+    """
+    moved = f"change-prompt({_PICK_PROMPT})"
+    typed = (
+        f'transform:[ -n "$FZF_QUERY" ] && echo "change-prompt({_NEW_PROMPT})"'
+        f' || echo "change-prompt({_PICK_PROMPT})"'
+    )
+    enter = (
+        f'transform:case "$FZF_PROMPT" in "{_NEW_PROMPT}") echo print-query;;'
+        " *) echo accept;; esac"
+    )
+    result = subprocess.run(
+        [
+            "fzf",
+            *_FZF_STYLE,
+            "--print-query",
+            "--delimiter",
+            "\t",
+            "--nth",
+            "1",
+            "--bind",
+            f"change:{typed}",
+            "--bind",
+            f"enter:{enter}",
+            "--bind",
+            ",".join(
+                f"{key}:{action}+{moved}"
+                for key, action in (
+                    ("up", "up"),
+                    ("down", "down"),
+                    ("ctrl-p", "up"),
+                    ("ctrl-n", "down"),
+                    ("ctrl-k", "up"),
+                    ("ctrl-j", "down"),
+                )
+            ),
+            "--prompt",
+            _PICK_PROMPT,
+        ],
+        input="\n".join(options),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode == 130:
+        return None
+    if result.returncode not in (0, 1):
+        raise WorkspaceError(f"fzf exited {result.returncode}: {result.stderr.strip()}")
+    lines = result.stdout.splitlines()
+    # accept prints the query and the row, print-query and accept without a
+    # match print only the query.
+    if len(lines) > 1 and lines[-1]:
+        return lines[-1].split("\t")[0]
+    return lines[0].strip() or None if lines else None
+
+
 def pick_multi(options: Sequence[str], prompt: str) -> list[str]:
     return _run_fzf(
         options,

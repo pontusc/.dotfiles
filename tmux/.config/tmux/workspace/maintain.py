@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import shutil
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import compose
@@ -51,12 +52,14 @@ def add_repo() -> None:
     if choice is None:
         return
     session_ticket = _session_ticket(session, workspace_config.settings.ticket_pattern)
+    if session_ticket is None:
+        raise WorkspaceError(f"session {session} has no branch to add a worktree on")
     agent_dir = compose.agent_dir_for(
         workspace_config.settings, session_ticket, session
     )
     specs, failures, warnings = compose.prepare_windows(
         [compose.row_name(choice)],
-        work_root,
+        workspace_config,
         session_ticket,
         session,
         per_window_agent=agent_dir is None,
@@ -98,6 +101,38 @@ def _remove_ticket_root(ticket_root: Path) -> str:
     return f"{ticket_root.name}: ticket directory removed"
 
 
+def _status_of(
+    window: tmux.SessionWindow, progress: ui.Progress
+) -> tuple[str, worktree.Status | None]:
+    progress.update(window.name, "checking status")
+    status = worktree.status(window.path)
+    if status is None:
+        progress.finish(window.name, "git status failed", ok=False)
+    elif status.changes:
+        progress.finish(window.name, "uncommitted changes", ok=False)
+    elif status.ignored:
+        progress.finish(window.name, "ignored files only", ok=True)
+    else:
+        progress.finish(window.name, "clean", ok=True)
+    return window.window_id, status
+
+
+def _statuses(
+    windows: list[tmux.SessionWindow], repo_roots: set[Path]
+) -> dict[str, worktree.Status | None]:
+    """Git status per worktree window, gathered concurrently under a progress block."""
+    checkouts = [
+        window
+        for window in windows
+        if window.path not in repo_roots and window.path.is_dir()
+    ]
+    if not checkouts:
+        return {}
+    names = [window.name for window in checkouts]
+    with ui.Progress(names) as progress, ThreadPoolExecutor() as pool:
+        return dict(pool.map(lambda window: _status_of(window, progress), checkouts))
+
+
 def cleanup_session() -> None:
     session = tmux.current_session()
     if session is None:
@@ -108,11 +143,11 @@ def cleanup_session() -> None:
     repo_roots = {work_root / name for name in discovered}
     removed: list[str] = []
     kept: list[str] = []
-    for window in tmux.session_windows(session):
-        # Only @worktree-tagged windows are the tool's to close. A hand-made
-        # window that happens to sit in a repo is not.
-        if not window.tagged:
-            continue
+    # Only @worktree-tagged windows are the tool's to close. A hand-made
+    # window that happens to sit in a repo is not.
+    windows = [window for window in tmux.session_windows(session) if window.tagged]
+    statuses = _statuses(windows, repo_roots)
+    for window in windows:
         if window.path in repo_roots:
             if not ui.confirm(f"{window.name}: close repo root window?"):
                 kept.append(f"{window.name}: declined, kept")
@@ -127,17 +162,12 @@ def cleanup_session() -> None:
         if owner is None:
             kept.append(f"{window.name}: no discovered repo owns {window.path}, kept")
             continue
-        status = worktree.status(window.path)
+        status = statuses.get(window.window_id)
         if status is None:
             kept.append(f"{owner}: git status failed, kept")
             continue
         if status.changes:
             kept.append(f"{owner}: uncommitted changes, kept")
-            continue
-        if status.ignored and not ui.confirm(
-            f"{owner}: only ignored files ({', '.join(status.ignored)})\nremove anyway?"
-        ):
-            kept.append(f"{owner}: declined, kept")
             continue
         branch = worktree.branch_at(window.path)
         error = worktree.remove(work_root / owner, window.path)
