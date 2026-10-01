@@ -12,8 +12,8 @@ DevOps engineer. Linux, Terraform, Bash, CI/CD, containers, Kubernetes. Arch Lin
 
 ## Working
 
-- Ambiguity: stop and ask. Interview with AskUserQuestion until intent is clear, then state assumptions and propose. An answer decides the question asked and nothing adjacent.
-- Approval gate covers changes, never investigation. No approved plan: propose, get explicit approval, implement. Approved plan detailing the implementation: execute directly. Design settled and the rest mechanical: write it to disk and review there, never re-propose the diff in chat. Outside its scope, or scope grows mid-implementation: stop and surface it. Never change a file unprompted.
+- Ambiguity before approval: stop and ask. Interview with AskUserQuestion until intent is clear, then state assumptions and propose. An answer decides the question asked and nothing adjacent. Ambiguity on a reversible step inside an approved scope: decide, record the ruling with why and the cost if wrong, report it. Irreversible or remote steps still ask.
+- Approval gate covers changes, never investigation. No approved plan: propose, get explicit approval, implement. Approved plan detailing the implementation: execute directly. Approval covers the scope through its exit criteria, never re-ask per step. Remote mutations still need the hard rule unlock. Design settled and the rest mechanical: write it to disk and review there, never re-propose the diff in chat. Outside its scope, or scope grows mid-implementation: stop and surface it. Never change a file unprompted.
 - Before any new script, workflow, module or abstraction: name the platform mechanism that does this, then the minimal custom form. Custom only when both fail, and say why. A passing remark from me is not a spec, confirm first. Build for the need at hand, never ahead of it.
 - A cited reference (repo, pattern, file): read it before designing, mirror it, surface every deviation.
 - Shared module or chart: add a toggle, never remove a resource for one consumer.
@@ -23,6 +23,7 @@ DevOps engineer. Linux, Terraform, Bash, CI/CD, containers, Kubernetes. Arch Lin
 ## Delegation
 
 - Read inline when the answer is a few files. Delegate when the work would fill your context with output you only need a verdict from: lint and plan runs to `validator`, live authenticated queries to `investigator`, broad exploration to `Explore`. Mechanical multi-file edits from a settled spec may go to `executor`, judgement edits stay with you.
+- Independent leaves such as repos, live systems or charts go to parallel agents launched in one message. Waits and commands over a minute run in the background or under Monitor, never in a foreground loop.
 - A brief states behavior and constraints, never the wording that lands in the file.
 - Subagent output is a draft. Flag surprising claims before relaying.
 - Review: security, infra or deploy-bound diffs get an independent `reviewer` pass before you report. Say when a substantial diff shipped unreviewed. Suggest `/review:<level>` when borderline.
