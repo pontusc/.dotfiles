@@ -1,10 +1,11 @@
 ---
 name: plan
-description: Plan the work in spec.md as plan.md plus one phase-N.md per detailed phase, detailing only the next phase to work on.
-disable-model-invocation: true
+description: Plan the work in spec.md as plan.md plus one phase-N.md per detailed phase, detailing only the next phase to work on. Invoked by work when a phase ends, never to start a plan.
 ---
 
-Read `spec.md` and `spec-context.md`. Write `plan.md` beside them, and `phase-N.md` for the phase being detailed.
+Without `plan.md`, run only when the user typed `/ticket:plan`, that is the sign the spec is reviewed. Invoked any other way, stop and say so.
+
+Read `spec.md`, `spec-context.md` and `research.md`. Write `plan.md` beside them, and `phase-N.md` for the phase being detailed.
 
 `plan.md` is the overview and stays short. Every phase has a goal, what it should accomplish on its own, stated in a few lines. Later phases carry a few notes about what happens there, based on the phases before them. A finished phase carries its outcome instead. The full detail of a phase, its tasks, test and exit criteria, lives in `phase-N.md` and is written only for the next phase to work on.
 
@@ -47,6 +48,7 @@ Use exactly this structure. Text in angle brackets describes what goes there.
 
 - <One action per bullet. The code, config or command shape it needs sits inline under the bullet, trimmed to what the implementer would otherwise guess.>
 - <Mark a task the operator must run themselves, and say why.>
+- <Mark a task that must wait for another because both touch the same state, root module or lockfile, and name the task it waits for.>
 
 ### Test
 
@@ -54,7 +56,15 @@ Use exactly this structure. Text in angle brackets describes what goes there.
 
 ### Exit criteria
 
-- <A check that can be run, with the expected result.>
+#### Automated
+
+- <A command an agent runs, with the expected result.>
+
+#### Manual
+
+- <A check only the operator can make, and how.>
 ```
 
 The phase being worked on has Goal and Outcome in `plan.md` and its own phase file. Every later phase has Goal and Notes only, and gains its phase file when its turn comes.
+
+Before presenting a phase file, a reviewer checks it against `spec.md` and `spec-context.md`. Fix its findings first.

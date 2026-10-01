@@ -21,7 +21,6 @@ Both are slim. One line per fact, no restating between sections or files, nothin
 
 `spec-context.md` is for agents that pick the work up later. Sections in this order, each omitted only when empty:
 
-- Current state: per repo, what exists today that the work builds on or replaces.
 - Invariants: what must not change.
 - Caveats: known limitations, what will surprise the implementer.
 - Out of scope.
