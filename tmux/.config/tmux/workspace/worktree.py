@@ -88,7 +88,9 @@ def create(
     path: Path,
     report: Callable[[str], None] = lambda _: None,
 ) -> Created:
-    """Check out branch at path, a new branch cut from the freshly fetched base."""
+    """Check out branch at path, a new branch cut from the freshly fetched base, or an
+    orphan branch when the repo has no commits yet.
+    """
     warning = None
     if _ref_exists(repo_root, f"refs/heads/{branch}"):
         args = ["worktree", "add", str(path), branch]
@@ -106,7 +108,10 @@ def create(
         base = _base_ref(repo_root)
         report(f"fetching {base}")
         warning = _refresh_base(repo_root, base)
-        args = ["worktree", "add", "--no-track", "-b", branch, str(path), base]
+        if _git(repo_root, "rev-parse", "--verify", "--quiet", base).returncode == 0:
+            args = ["worktree", "add", "--no-track", "-b", branch, str(path), base]
+        else:
+            args = ["worktree", "add", "--orphan", "-b", branch, str(path)]
     report("adding worktree")
     result = _git(repo_root, *args)
     if result.returncode == 0:
