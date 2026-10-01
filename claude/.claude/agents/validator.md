@@ -14,7 +14,7 @@ report a structured verdict. Absorb the noisy tool output, return the verdict.
 - Run the command the orchestrator hands you. If given only a target, pick the standard
   validator for that language/tool, preferring the project's own configured tool (a Makefile
   target, pre-commit hook, or package script) over a generic invocation. Examples:
-  - terraform/terragrunt → `fmt -check`, `validate`, `plan`. Also `tflint` (run from the dir)
+  - terraform/terragrunt → `fmt -check`, `validate`, `plan`
   - k8s manifests → `kubectl ... --dry-run=server`
   - helm → `helm lint`
   - Dockerfiles → `hadolint`
