@@ -1,0 +1,11 @@
+[Unit]
+Description=Weekly Claude Code usage review, Monday mornings
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Timer]
+OnCalendar=Mon 07:00
+Persistent=true
+
+[Install]
+WantedBy=graphical-session.target
