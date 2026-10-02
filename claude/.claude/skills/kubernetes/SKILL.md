@@ -20,6 +20,7 @@ paths:
 - `LimitRange` and `ResourceQuota` at namespace level as guardrails.
 - Liveness, readiness, and startup probes all present.
 - NetworkPolicy with explicit ingress and egress rules, default-deny preferred.
+- An unlocked apply or sync runs as background Bash followed by `kubectl wait` or `argocd app wait`, never a foreground poll loop. Report when the task notification lands.
 
 ## Before reporting
 

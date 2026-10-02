@@ -32,7 +32,8 @@
       "mcp__claude_ai_Slack__slack_search_channels",
       "mcp__claude_ai_Slack__slack_search_public",
       "mcp__claude_ai_Slack__slack_search_public_and_private",
-      "mcp__claude_ai_Slack__slack_search_users"
+      "mcp__claude_ai_Slack__slack_search_users",
+      "Monitor"
     ],
     "deny": [
       "mcp__claude_ai_Linear",
@@ -44,7 +45,15 @@
       "Bash(git rebase:*)",
       "Bash(git reset:*)",
       "Bash(git clean:*)",
-      "Bash(git stash:*)",
+      "Bash(git stash)",
+      "Bash(git stash -*)",
+      "Bash(git stash push:*)",
+      "Bash(git stash save:*)",
+      "Bash(git stash pop:*)",
+      "Bash(git stash apply:*)",
+      "Bash(git stash drop:*)",
+      "Bash(git stash clear:*)",
+      "Bash(git stash branch:*)",
       "Bash(git switch -f:*)",
       "Bash(git switch --force:*)",
       "Bash(git switch -C:*)",
@@ -92,7 +101,10 @@
       "Read(//**/id_ecdsa)",
       "Read(//**/id_dsa)"
     ],
-    "ask": ["Bash(git push:*)", "Bash(git switch:*)"],
+    "ask": [
+      "Bash(git push:*)",
+      "Bash(git switch:*)"
+    ],
     "defaultMode": "default"
   },
   "model": "opus",
@@ -134,6 +146,15 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/notify.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/markdown-punctuation.sh"
           }
         ]
       }
@@ -204,5 +225,11 @@
   "agentPushNotifEnabled": false,
   "preferences": {
     "verboseMode": true
+  },
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "Editing files under ~/dotfiles is allowed, it is the personal dotfiles repo that deploys ~/.claude and ~/.config through stow"
+    ]
   }
 }

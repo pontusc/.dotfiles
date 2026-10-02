@@ -39,6 +39,7 @@ paths:
 - For a change touching stateful resources (databases, clusters, buckets, load balancers, DNS) or resource addressing, state the expected plan impact as counts of create, update, destroy, and replace before editing.
 - After editing, delegate to the `validator` agent with the sequence `fmt -check`, `validate`, `plan` plus the stated change intent. Use `terragrunt` in a Terragrunt module, `terraform` otherwise. The task is not done until that plan is reviewed.
 - On an unintended destroy or replace, a `prevent_destroy` conflict, or out-of-scope drift, stop and wait for the user.
+- An unlocked apply or destroy runs as background Bash, never in the foreground. Report when the task notification lands.
 
 ## Before reporting
 

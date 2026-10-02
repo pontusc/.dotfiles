@@ -22,6 +22,7 @@
 	ui = auto 			     # Output in columns when possible
 [branch]
 	sort = -committerdate    # Sort branches by most recent commit first
+	autoSetupMerge = simple  # Track only same-name remote branches, so push.autoSetupRemote handles new ones
 [tag]
 	sort = -version:refname  # Sort version numbers as you would expect
 [rerere]
