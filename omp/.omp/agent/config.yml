@@ -44,3 +44,5 @@ completion:
   notify: "off"
 ask:
   notify: "off"
+spelling:
+  autocomplete: "off"

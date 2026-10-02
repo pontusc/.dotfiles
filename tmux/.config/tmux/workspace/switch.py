@@ -11,7 +11,8 @@ import ui
 
 _SLOT_OPTION = "@slot"
 _MAX_BOUND_DIGIT = 9
-_FLAG_MARKERS = {"ask": " ?", "done": " ✓"}
+_FLAG_MARKERS = {"ask": "?", "done": "✓"}
+_LABEL_WIDTH = 20
 
 
 class SessionRecord(NamedTuple):
@@ -72,6 +73,15 @@ def _digit_binds(rows: Sequence[SlottedSession]) -> list[str]:
     return binds
 
 
+def _label(name: str) -> str:
+    slug = tmux.session_option(name, "@ticket_slug")
+    if not slug or slug == name:
+        return ""
+    if len(slug) > _LABEL_WIDTH:
+        return f"{slug[: _LABEL_WIDTH - 1]}…"
+    return slug
+
+
 def switch_session() -> None:
     current = tmux.current_session()
     records = _current_records()
@@ -89,10 +99,14 @@ def switch_session() -> None:
         key=lambda row: row.slot,
     )
     flags = tmux.flagged_sessions()
+    name_width = max(len(row.name) for row in rows)
     lines = [
-        f"{row.name}\t{row.slot:>2}  {row.name}"
-        f"{_FLAG_MARKERS.get(flags.get(row.name), '')}"
-        f"{' *' if row.name == current else ''}"
+        (
+            f"{row.name}\t{row.slot:>2}  {row.name:<{name_width}}"
+            f" {'*' if row.name == current else ' '}"
+            f"{_FLAG_MARKERS.get(flags.get(row.name), ' ')}"
+            f"  {_label(row.name)}"
+        ).rstrip()
         for row in rows
     ]
     choice = ui.pick(lines, "Switch ❯ ", binds=_digit_binds(rows), delimiter="\t")
