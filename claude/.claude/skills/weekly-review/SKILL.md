@@ -60,7 +60,7 @@ An internal solution, a new skill, hook, git hook or small script, competes with
 Wait for every subagent and background command before writing. All three outputs exist before your final message.
 
 1. Artifact. Load the `artifact-design` skill, then publish one private artifact titled `Weekly review <WEEK>`, no pin. Sections in order: week in numbers, pain points, misses, recommendations ranked by expected gain, appendix. A recommendation is the issue and the proposed solution with its source and effort. No commands, no diffs. The appendix holds the rest, collapsed.
-2. Report file `~/weeklies/reviews/<monday>.md`. Line one `# Week <WEEK> review`, line two `Artifact: <url>`, then the artifact content as markdown. Plain punctuation, no semicolons, no em or en dashes.
+2. Report file `~/weeklies/reviews/<monday>.md`. Line one `# Week <WEEK> review`, line two `Artifact: <url>`, then the artifact content as markdown.
 3. Ledger `~/weeklies/reviews/ledger.md`, a table with the columns candidate, source, first proposed, state, note. One row per candidate. New candidates are appended as `proposed` or `rejected`. Only rows in state `proposed` may be updated, the user owns `adopted` and `rejected`.
 
 Finish with a short message naming the top recommendations, it is the first thing the user sees when attaching. End with a statement, never a question.

@@ -31,4 +31,3 @@ A README holds what an operator needs to know and the final state of the thing. 
 ## Before reporting
 
 - Reread every sentence. Delete it if removing it costs an operator nothing, or if the code answers it.
-- Grep the file for `;`, `—`, `–`, and a spaced hyphen mid-sentence. Fix every hit.
