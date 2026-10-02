@@ -123,7 +123,7 @@ worktree is not touched, and a missing source only warns.
   `gh` must be logged in or the entry loses those inputs. The prompt is
   `~/.config/claude-ticket/archive.md`.
 - The Claude flag segment and the picker markers read the window option `@claude`, set to
-  `ask` or `done` by `~/.claude/hooks/notify.sh` or OMP's `tmux-attention.ts` extension.
+  `ask` or `done` by the `tmux-attention` Claude mod or OMP's `tmux-attention.ts` extension.
   Renaming the option or its values breaks both sides. The segment is a powerkit `external()` entry because
   powerkit rewrites `status-right` on every render, and it lags a flag by up to 10 seconds.
   The clearing hooks in tmux.conf take no `-t` target, `set-option` does not expand formats

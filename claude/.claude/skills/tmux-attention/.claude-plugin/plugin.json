@@ -1,0 +1,5 @@
+{
+  "name": "tmux-attention",
+  "version": "0.1.0",
+  "description": "Flags the tmux window hosting Claude with @claude ask or done"
+}
