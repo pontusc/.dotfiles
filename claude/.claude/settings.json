@@ -188,7 +188,8 @@
     "refreshInterval": 5
   },
   "enabledPlugins": {
-    "plan@plans": true
+    "plan@plans": true,
+    "alchemy-infrastructure@alchemy": true
   },
   "extraKnownMarketplaces": {
     "plans": {
@@ -196,6 +197,12 @@
         "source": "github",
         "repo": "pontusc-alchemy/claudeplans",
         "ref": "v0.0.6"
+      }
+    },
+    "alchemy": {
+      "source": {
+        "source": "directory",
+        "path": "/home/pontusc/Work/agent-marketplace"
       }
     }
   },
@@ -207,7 +214,7 @@
   "syntaxHighlightingDisabled": false,
   "modelSettings": {
     "claude-fable-5-1": {
-      "effortLevel": "medium"
+      "effortLevel": "high"
     },
     "claude-opus-5-5": {
       "effortLevel": "medium"
@@ -223,13 +230,13 @@
   "crossSessionInbound": "accept",
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": false,
-  "preferences": {
-    "verboseMode": true
-  },
   "autoMode": {
     "allow": [
       "$defaults",
       "Editing files under ~/dotfiles is allowed, it is the personal dotfiles repo that deploys ~/.claude and ~/.config through stow"
     ]
+  },
+  "preferences": {
+    "verboseMode": true
   }
 }

@@ -37,6 +37,19 @@ folded symlink.
   often unmerged work, only goes on an explicit yes. Uncommitted changes keep a window
   without asking. Ignored files go with the worktree, so a local file that must survive
   needs to be moved out first.
+  With `archive_root` set, a ticket session in `agent = "session"` mode closes as a unit
+  instead: every worktree must be clean or nothing is removed. The windows close, the
+  worktrees stay, and a detached opus `claude -p` writes `<archive_root>/tickets/<KEY>.md`
+  from the ticket files, the branch commits and patches, the pull requests, the digested
+  Claude transcripts and the Linear issue, tagged from `<archive_root>/tags.md`. The entry
+  is committed locally in the archive repo, then the worktrees, their branches and the
+  ticket directory with its notes go. A branch git refuses to delete is kept without
+  asking. A directory in the ticket root that is not a
+  live worktree window stops the close with nothing removed. Reopening the ticket with
+  leader+T while the run is in flight keeps its worktrees and directory. On failure
+  everything stays on disk and a tmux message says so: fix the cause in
+  `~/.local/state/tmux-workspace/archive/<KEY>.log`, reopen the ticket with leader+T and
+  close it again. The `/ticket:recall` skill searches the archive.
 - **leader+s** picks another session: digits jump straight to a slot, letters fuzzy-find.
   Slots stick to a session for its lifetime and free up when it dies.
 - `list` prints the discovered repos and the materialized sessions.
@@ -64,6 +77,9 @@ ticket_prefix = "ABC"                # optional, expands bare ticket numbers
 # ticket_pattern = "[A-Z]+-[0-9]+"   # default shown, uppercase keys are the contract
 # agent = "window"                   # default, a claude per repo window. "session": one
                                      # claude per ticket session in its own window
+# archive_root = "~/.local/share/ticket-archive"  # optional, archive closed tickets there.
+                                     # A git repo you create and push yourself. Checked
+                                     # only when a ticket closes
 
 [repos]
 cluster = "k8s manifests + Helm values"
@@ -99,6 +115,11 @@ worktree is not touched, and a missing source only warns.
   popups have to be opened server-side, one after the other.
 - Nothing checks the versions, so keep them in mind: uv, tmux 3.2 or newer for
   `display-popup`, and an fzf recent enough for the `enter:select+accept` bind.
+- The archive agent runs without the user settings, with only the file tools and the
+  read only Linear MCP server, and may write only under `tickets/` and `tags.md` in the
+  archive repo. Every input it needs is a file the tool prepares. The Linear server and
+  `gh` must be logged in or the entry loses those inputs. The prompt is
+  `~/.config/claude-ticket/archive.md`.
 - The Claude flag segment and the picker markers read the window option `@claude`, set to
   `ask` or `done` by `~/.claude/hooks/notify.sh` or OMP's `tmux-attention.ts` extension.
   Renaming the option or its values breaks both sides. The segment is a powerkit `external()` entry because

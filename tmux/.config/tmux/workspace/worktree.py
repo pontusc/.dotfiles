@@ -31,7 +31,7 @@ def _ref_exists(repo_root: Path, ref: str) -> bool:
     return _git(repo_root, "show-ref", "--verify", "--quiet", ref).returncode == 0
 
 
-def _base_ref(repo_root: Path) -> str:
+def base_ref(repo_root: Path) -> str:
     head = _git(
         repo_root, "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"
     )
@@ -105,7 +105,7 @@ def create(
             f"origin/{branch}",
         ]
     else:
-        base = _base_ref(repo_root)
+        base = base_ref(repo_root)
         report(f"fetching {base}")
         warning = _refresh_base(repo_root, base)
         if _git(repo_root, "rev-parse", "--verify", "--quiet", base).returncode == 0:

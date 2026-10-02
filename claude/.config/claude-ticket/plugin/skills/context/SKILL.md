@@ -20,6 +20,10 @@ Write neutral questions to `research.md`. A question names what to find, never t
 - `live <system>`: a GCP project, cluster or other running system. Identifiers the work depends on, such as project ids, groups, VPCs, namespaces, hostnames and ports, are always live questions.
 - `upstream <chart or module>@<version>`: behaviour of a third party chart or module at the version the repos pin.
 
+## Prior work
+
+Before wave 1, invoke `ticket:recall` with the repos in the ticket and the nouns of the issue. Its hits go under `### Prior work` in `research.md`, one line per ticket with the Decisions and Gotchas that apply. A gotcha that bears on a question sharpens that question's brief.
+
 ## Wave 1
 
 One message launches every agent. A brief holds the questions, the path or system to answer them from, and the demand for file:line references or command output. Never the ticket, the issue text or the intent.

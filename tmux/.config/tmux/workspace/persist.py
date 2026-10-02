@@ -16,11 +16,11 @@ from typing import TypedDict
 
 import tmux
 
-_STATE_PATH = (
+STATE_DIR = (
     Path(os.environ.get("XDG_STATE_HOME") or Path.home() / ".local" / "state")
     / "tmux-workspace"
-    / "state.json"
 )
+_STATE_PATH = STATE_DIR / "state.json"
 
 StoredWorktrees = list[tuple[str, str]] | dict[str, str]
 

@@ -11,6 +11,7 @@ import argparse
 import sys
 from pathlib import Path
 
+import archive
 import compose
 import layout
 import maintain
@@ -68,6 +69,10 @@ def _build_parser() -> argparse.ArgumentParser:
         "cleanup", help="close current-session windows that lose nothing"
     )
     cleanup.set_defaults(func=lambda _: maintain.cleanup_session())
+
+    archive_run = subparsers.add_parser("archive")
+    archive_run.add_argument("plan", type=Path)
+    archive_run.set_defaults(func=lambda args: archive.run(args.plan))
 
     listing = subparsers.add_parser(
         "list", help="show discovered repos and materialized sessions"

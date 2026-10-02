@@ -7,6 +7,7 @@ import shutil
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+import archive
 import compose
 import config
 import layout
@@ -101,6 +102,68 @@ def _remove_ticket_root(ticket_root: Path) -> str:
     return f"{ticket_root.name}: ticket directory removed"
 
 
+def _archive_target(session: str, settings: config.Settings) -> tuple[str, Path] | None:
+    """The ticket key and archive repo when this session's close is archived."""
+    if settings.archive_root is None or settings.agent != "session":
+        return None
+    key = tmux.session_option(session, "@ticket_key") or session
+    if not settings.ticket_pattern.fullmatch(key):
+        return None
+    if not worktree.ticket_dir(settings.work_root, session).is_dir():
+        return None
+    if not (settings.archive_root / ".git").exists():
+        raise WorkspaceError(
+            f"archive_root {settings.archive_root} is not a git repo, create it or"
+            " unset it in workspaces.toml"
+        )
+    return key, settings.archive_root
+
+
+def _start_archive(
+    session: str,
+    key: str,
+    archive_root: Path,
+    work_root: Path,
+    planned: list[archive.Worktree],
+    windows: list[str],
+    blocked: bool,
+) -> str | None:
+    """Schedule the archive and close the windows, or say why not.
+
+    None when the ticket root is empty, there is nothing to archive.
+    """
+    if blocked:
+        return f"{key}: archive needs every worktree clean and known, nothing removed"
+    ticket_root = worktree.ticket_dir(work_root, session)
+    planned_paths = {entry.path for entry in planned}
+    leftovers = [
+        entry
+        for entry in ticket_root.iterdir()
+        if entry.name != layout.AGENT_CONFIG_LINK and str(entry) not in planned_paths
+    ]
+    if not planned and not leftovers:
+        return None
+    directories = sorted(entry.name for entry in leftovers if entry.is_dir())
+    if directories:
+        return f"{key}: {', '.join(directories)} is not a live worktree window, nothing removed"
+    archive.schedule(
+        archive.Plan(
+            key=key,
+            ticket_root=str(ticket_root),
+            archive_root=str(archive_root),
+            client=tmux.current_client(),
+            loose_files=sorted(entry.name for entry in leftovers),
+            worktrees=planned,
+        )
+    )
+    for window_id in windows:
+        tmux.kill_window(window_id)
+    agent = tmux.find_window_by_name(session, layout.AGENT_WINDOW)
+    if agent is not None and not agent.tagged:
+        tmux.kill_window(agent.window_id)
+    return f"{key}: archiving in the background"
+
+
 def _status_of(
     window: tmux.SessionWindow, progress: ui.Progress
 ) -> tuple[str, worktree.Status | None]:
@@ -141,6 +204,9 @@ def cleanup_session() -> None:
     work_root = workspace_config.settings.work_root
     discovered = repo.discover(work_root)
     repo_roots = {work_root / name for name in discovered}
+    archive_target = _archive_target(session, workspace_config.settings)
+    planned: list[archive.Worktree] = []
+    planned_windows: list[str] = []
     removed: list[str] = []
     kept: list[str] = []
     # Only @worktree-tagged windows are the tool's to close. A hand-made
@@ -170,18 +236,49 @@ def cleanup_session() -> None:
             kept.append(f"{owner}: uncommitted changes, kept")
             continue
         branch = worktree.branch_at(window.path)
+        if archive_target is not None:
+            planned.append(
+                archive.Worktree(
+                    repo=owner,
+                    repo_root=str(work_root / owner),
+                    path=str(window.path),
+                    branch=None if branch == "HEAD" else branch,
+                )
+            )
+            planned_windows.append(window.window_id)
+            continue
         error = worktree.remove(work_root / owner, window.path)
         if error:
             kept.append(f"{owner}: {error}, kept")
             continue
         tmux.kill_window(window.window_id)
-        outcome = "removed worktree"
+        result = "removed worktree"
         if branch and branch != "HEAD":
-            outcome += f", {_delete_branch(work_root / owner, branch)}"
-        removed.append(f"{owner}: {outcome}")
-    # The session's single agent window has nothing to lose and goes with the
-    # last worktree, whichever agent mode is configured now.
-    if not any(window.tagged for window in tmux.session_windows(session)):
+            result += f", {_delete_branch(work_root / owner, branch)}"
+        removed.append(f"{owner}: {result}")
+    outcome = None
+    if archive_target is not None:
+        blocked = any(
+            window.tagged
+            and window.path not in repo_roots
+            and window.window_id not in planned_windows
+            for window in tmux.session_windows(session)
+        )
+        outcome = _start_archive(
+            session,
+            *archive_target,
+            work_root,
+            planned,
+            planned_windows,
+            blocked,
+        )
+        if outcome is not None:
+            removed.append(outcome)
+    if outcome is None and not any(
+        window.tagged for window in tmux.session_windows(session)
+    ):
+        # The session's single agent window has nothing to lose and goes with
+        # the last worktree, whichever agent mode is configured now.
         agent = tmux.find_window_by_name(session, layout.AGENT_WINDOW)
         if agent is not None and not agent.tagged:
             tmux.kill_window(agent.window_id)

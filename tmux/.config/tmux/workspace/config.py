@@ -23,6 +23,7 @@ class Settings:
     ticket_pattern: re.Pattern[str]
     ticket_prefix: str | None = None
     agent: str = DEFAULT_AGENT_MODE
+    archive_root: Path | None = None
 
 
 @dataclass(frozen=True)
@@ -66,7 +67,19 @@ def _parse_settings(table: object) -> Settings:
         ticket_pattern=compiled,
         ticket_prefix=ticket_prefix,
         agent=agent,
+        archive_root=_parse_archive_root(table.get("archive_root")),
     )
+
+
+def _parse_archive_root(raw: object) -> Path | None:
+    if raw is None:
+        return None
+    if not isinstance(raw, str):
+        raise WorkspaceError(f"{CONFIG_PATH}: settings.archive_root must be a string")
+    root = Path(raw).expanduser()
+    if not root.is_absolute():
+        raise WorkspaceError(f"{CONFIG_PATH}: settings.archive_root must be absolute")
+    return root
 
 
 class _Repos(NamedTuple):

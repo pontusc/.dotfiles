@@ -4,6 +4,7 @@
 work_root = "~/Work"
 ticket_prefix = "ALC"
 agent = "session"
+archive_root = "~/.local/share/ticket-archive"
 
 [repos]
 infrastructure = "IAC"

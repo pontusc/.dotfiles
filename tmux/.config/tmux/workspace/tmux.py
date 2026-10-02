@@ -215,6 +215,16 @@ def current_session() -> str | None:
     return result.stdout.strip() or None
 
 
+def current_client() -> str:
+    return _output("display-message", "-p", "#{client_tty}")
+
+
+def message(client: str, text: str) -> None:
+    """Show text on a client named by tty, the caller has no pane of its own."""
+    if client:
+        _run("display-message", "-c", client, "-d", "15000", text)
+
+
 def current_window() -> CurrentWindow:
     """The client's active window: id, pane count, pane cwd and session name."""
     window_id, panes, cwd, session = _output_checked(
