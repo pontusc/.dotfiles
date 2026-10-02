@@ -146,6 +146,11 @@ def _start_archive(
     directories = sorted(entry.name for entry in leftovers if entry.is_dir())
     if directories:
         return f"{key}: {', '.join(directories)} is not a live worktree window, nothing removed"
+    if not leftovers and not any(
+        worktree.has_work(Path(entry.repo_root), Path(entry.path), entry.branch)
+        for entry in planned
+    ):
+        return _close_without_archive(session, key, ticket_root, planned, windows)
     archive.schedule(
         archive.Plan(
             key=key,
@@ -158,10 +163,39 @@ def _start_archive(
     )
     for window_id in windows:
         tmux.kill_window(window_id)
-    agent = tmux.find_window_by_name(session, layout.AGENT_WINDOW)
-    if agent is not None and not agent.tagged:
-        tmux.kill_window(agent.window_id)
+    _close_agent_window(session)
     return f"{key}: archiving in the background"
+
+
+def _close_agent_window(session: str) -> str | None:
+    agent = tmux.find_window_by_name(session, layout.AGENT_WINDOW)
+    if agent is None or agent.tagged:
+        return None
+    tmux.kill_window(agent.window_id)
+    return f"{agent.name}: agent window closed"
+
+
+def _close_without_archive(
+    session: str,
+    key: str,
+    ticket_root: Path,
+    planned: list[archive.Worktree],
+    windows: list[str],
+) -> str:
+    lines = [f"{key}: nothing to archive"]
+    for entry, window_id in zip(planned, windows, strict=True):
+        error = worktree.remove(Path(entry.repo_root), Path(entry.path))
+        if error:
+            lines.append(f"{entry.repo}: {error}, kept")
+            continue
+        tmux.kill_window(window_id)
+        result = "removed worktree"
+        if entry.branch:
+            result += f", {_delete_branch(Path(entry.repo_root), entry.branch)}"
+        lines.append(f"{entry.repo}: {result}")
+    _close_agent_window(session)
+    lines.append(_remove_ticket_root(ticket_root))
+    return "\n".join(lines)
 
 
 def _status_of(
@@ -279,10 +313,9 @@ def cleanup_session() -> None:
     ):
         # The session's single agent window has nothing to lose and goes with
         # the last worktree, whichever agent mode is configured now.
-        agent = tmux.find_window_by_name(session, layout.AGENT_WINDOW)
-        if agent is not None and not agent.tagged:
-            tmux.kill_window(agent.window_id)
-            removed.append(f"{agent.name}: agent window closed")
+        closed = _close_agent_window(session)
+        if closed is not None:
+            removed.append(closed)
         ticket_root = worktree.ticket_dir(work_root, session)
         if workspace_config.settings.agent == "session" and ticket_root.is_dir():
             removed.append(_remove_ticket_root(ticket_root))

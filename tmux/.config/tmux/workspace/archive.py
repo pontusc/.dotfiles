@@ -32,6 +32,7 @@ TAGS_FILE = "tags.md"
 _AGENT_TIMEOUT_SECONDS = 1800
 _DIGEST_BLOCK_CHARS = 2000
 _FALLBACK_COMMITS = 50
+_GH_TIMEOUT_SECONDS = 60
 _PATCH_CHARS = 300_000
 _LINEAR_MCP = {
     "mcpServers": {
@@ -207,7 +208,15 @@ def _fork_point(entry: Worktree) -> str | None:
     if base == "HEAD":
         return None
     try:
-        return _git(entry.path, "merge-base", "HEAD", base).strip() or None
+        fork = _git(entry.path, "merge-base", "HEAD", base).strip()
+        if fork != _git(entry.path, "rev-parse", "HEAD").strip():
+            return fork or None
+        # The branch is merged into base, so its commits sit on both sides of
+        # the merge base. The oldest reflog entry is where it was created.
+        if entry.branch is None:
+            return None
+        reflog = _git(entry.path, "reflog", "show", "--format=%H", entry.branch)
+        return reflog.split()[-1] if reflog.split() else None
     except WorkspaceError:
         return None
 
@@ -219,22 +228,26 @@ def _pull_requests(entry: Worktree, key: str) -> str:
     if entry.branch:
         filters.append(["--head", entry.branch])
     for selector in filters:
-        result = subprocess.run(
-            [
-                "gh",
-                "pr",
-                "list",
-                "--state",
-                "all",
-                "--json",
-                "url,state,title,mergedAt",
-                *selector,
-            ],
-            cwd=entry.path,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
+        try:
+            result = subprocess.run(
+                [
+                    "gh",
+                    "pr",
+                    "list",
+                    "--state",
+                    "all",
+                    "--json",
+                    "url,state,title,mergedAt",
+                    *selector,
+                ],
+                cwd=entry.path,
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=_GH_TIMEOUT_SECONDS,
+            )
+        except subprocess.TimeoutExpired:
+            return f"gh timed out after {_GH_TIMEOUT_SECONDS}s"
         if result.returncode != 0:
             return f"gh failed: {result.stderr.strip()}"
         for pull in json.loads(result.stdout or "[]"):
@@ -290,7 +303,8 @@ def _run_agent(plan: Plan, inputs: Path) -> Path:
         .replace("{inputs}", str(inputs))
         .replace("{ticket_root}", plan.ticket_root)
     )
-    archive_root = plan.archive_root.lstrip("/")
+    # Read rules also govern Grep and Glob. Scoping them keeps an injected
+    # instruction in a transcript or comment from copying anything else in.
     command = [
         "claude",
         "-p",
@@ -306,11 +320,11 @@ def _run_agent(plan: Plan, inputs: Path) -> Path:
         "--permission-mode",
         "dontAsk",
         "--allowedTools",
-        "Read",
-        "Grep",
-        "Glob",
-        f"Edit(//{archive_root}/{ENTRIES_DIR}/**)",
-        f"Edit(//{archive_root}/{TAGS_FILE})",
+        f"Read(/{inputs}/**)",
+        f"Read(/{plan.ticket_root}/**)",
+        f"Read(/{plan.archive_root}/**)",
+        f"Edit(/{plan.archive_root}/{ENTRIES_DIR}/**)",
+        f"Edit(/{plan.archive_root}/{TAGS_FILE})",
         "mcp__linear__get_issue",
         "mcp__linear__list_comments",
         "--add-dir",
@@ -346,15 +360,23 @@ def _run_agent(plan: Plan, inputs: Path) -> Path:
 
 
 def _commit(plan: Plan, entry: Path) -> None:
+    """Commit the entry and tags, or fail so nothing is cleaned.
+
+    An unchanged entry means the agent wrote nothing for this close, and the
+    ticket files may hold what it missed.
+    """
     root = Path(plan.archive_root)
     paths = [str(entry.relative_to(root))]
     if (root / TAGS_FILE).exists():
         paths.append(TAGS_FILE)
-    _git(plan.archive_root, "add", "--", *paths)
-    if not _git(plan.archive_root, "status", "--porcelain", "--", *paths).strip():
-        _log("archive unchanged, nothing to commit")
-        return
-    _git(plan.archive_root, "commit", "-q", "-m", f"Archive {plan.key}", "--", *paths)
+    with (STATE_DIR / "commit.lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        _git(plan.archive_root, "add", "--", *paths)
+        if not _git(plan.archive_root, "status", "--porcelain", "--", *paths).strip():
+            raise WorkspaceError(f"{entry} is unchanged, nothing archived")
+        _git(
+            plan.archive_root, "commit", "-q", "-m", f"Archive {plan.key}", "--", *paths
+        )
     _log("archive committed")
 
 

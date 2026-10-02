@@ -22,7 +22,7 @@ Write neutral questions to `research.md`. A question names what to find, never t
 
 ## Prior work
 
-Before wave 1, invoke `ticket:recall` with the repos in the ticket and the nouns of the issue. Its hits go under `### Prior work` in `research.md`, one line per ticket with the Decisions and Gotchas that apply. A gotcha that bears on a question sharpens that question's brief.
+Before wave 1, invoke `ticket:recall` with the repos in the ticket and the nouns of the issue. Its hits go under `### Prior work` in `research.md`, one line per item that applies, prefixed with the ticket key and its closed date. A gotcha that bears on a question sharpens that question's brief.
 
 ## Wave 1
 

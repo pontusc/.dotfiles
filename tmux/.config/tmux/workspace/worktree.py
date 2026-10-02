@@ -177,6 +177,17 @@ def status(path: Path) -> Status | None:
     return Status(changes=tuple(changes), ignored=tuple(ignored))
 
 
+def has_work(repo_root: Path, path: Path, branch: str | None) -> bool:
+    """Commits past the base, or a branch that reached origin. Unsure counts as work."""
+    if branch and _ref_exists(repo_root, f"refs/remotes/origin/{branch}"):
+        return True
+    base = base_ref(repo_root)
+    if base == "HEAD":
+        return True
+    count = _git(path, "rev-list", "--count", f"{base}..HEAD")
+    return count.returncode != 0 or int(count.stdout.strip() or 0) > 0
+
+
 def remove(repo_root: Path, path: Path) -> str | None:
     """Remove a worktree, returning an error message on failure."""
     result = _git(repo_root, "worktree", "remove", str(path))

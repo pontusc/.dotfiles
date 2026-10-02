@@ -38,7 +38,9 @@ folded symlink.
   without asking. Ignored files go with the worktree, so a local file that must survive
   needs to be moved out first.
   With `archive_root` set, a ticket session in `agent = "session"` mode closes as a unit
-  instead: every worktree must be clean or nothing is removed. The windows close, the
+  instead: every worktree must be clean or nothing is removed. A ticket with no commits
+  past the base, no branch on origin and no notes closes without archiving. Otherwise the
+  windows close, the
   worktrees stay, and a detached opus `claude -p` writes `<archive_root>/tickets/<KEY>.md`
   from the ticket files, the branch commits and patches, the pull requests, the digested
   Claude transcripts and the Linear issue, tagged from `<archive_root>/tags.md`. The entry
