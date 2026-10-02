@@ -27,3 +27,24 @@ enabled = [
   "system.services",
   "system.permissions",
 ]
+
+# Only statically literal targets are exempted, variable paths still deny.
+[rules."core.filesystem:redirect-truncate-root-home"]
+exempt_target_globs = ["~/.claude/jobs/*/tmp/**"]
+
+[rules."core.filesystem:rm-rf-root-home"]
+exempt_target_globs = [
+  "~/.claude/jobs/*/tmp/**",
+  "**/.terragrunt-cache",
+  "**/.terragrunt-cache/**",
+  "**/__pycache__",
+  "**/__pycache__/**",
+]
+
+[rules."core.filesystem:rm-rf-general"]
+exempt_target_globs = [
+  "**/.terragrunt-cache",
+  "**/.terragrunt-cache/**",
+  "**/__pycache__",
+  "**/__pycache__/**",
+]
