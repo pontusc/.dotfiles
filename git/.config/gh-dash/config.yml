@@ -16,7 +16,7 @@ keybindings:
     prs:
         - key: m
           name: rebase merge
-          command: 'gum confirm "Rebase merge #{{.PrNumber}} into {{.RepoName}}?" && gh pr merge {{.PrNumber}} -R {{.RepoName}} --rebase'
+          command: 'gum confirm "Rebase merge #{{.PrNumber}} ({{.HeadRefName}}) into {{.RepoName}}?" && gh pr merge {{.PrNumber}} -R {{.RepoName}} --rebase'
         - key: T
           name: enhance
           command: gh enhance -R {{.RepoName}} {{.PrNumber}}
