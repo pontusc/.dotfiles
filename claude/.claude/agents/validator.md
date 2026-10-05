@@ -35,6 +35,10 @@ report a structured verdict. Absorb the noisy tool output, return the verdict.
 - When handed a change set (the executor's paths + line ranges), scope validation to those
   paths and pass the set through in your verdict so the reviewer receives it intact.
 - Report the exact command you ran, so the orchestrator can re-run or cite it.
+- Foreground commands move to the background after 2 minutes and die when your run ends.
+  Run anything that may take longer as `<cmd>; echo "VALIDATOR_EXIT=$?"`. If it moves, poll
+  the reported output file with Bash calls under 2 minutes each until the marker appears.
+  Never return a verdict while the command is still running.
 - Prefer the project-pinned tool (tfenv / mise / .terraform-version / asdf). If the
   expected tool is missing, report `BLOCKED: <tool> not found`. Do NOT silently fall
   back to a system binary that may differ in version.

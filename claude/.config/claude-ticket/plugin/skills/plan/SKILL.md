@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Plan the work in spec.md as plan.md plus one phase-N.md per detailed phase, detailing only the next phase to work on. Invoked by work when a phase ends, never to start a plan.
+description: Plan the work in spec.md as plan.md plus one phase-N.md per detailed phase, detailing only the next phase to work on. The operator starts the plan with /ticket:plan once the spec is reviewed, work invokes it for every later phase.
 ---
 
 Without `plan.md`, run only when the user typed `/ticket:plan`, that is the sign the spec is reviewed. Invoked any other way, stop and say so.

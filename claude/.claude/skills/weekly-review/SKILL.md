@@ -30,6 +30,7 @@ Friction signals, each with session id, project and a short quote:
 - Corrections: short negations, "no", "wrong", "I said", "why did you", repeated instructions, redone work.
 - Permission prompts and rejections, tool results saying the user did not want to proceed.
 - Tool errors, retries of the same command, interrupted requests.
+- Guard blocks: count one only when the tool result is the hook's own deny, not output that quotes a rule id. Replay each command against the installed guard from its logged cwd and report the ones that now pass as fixed upstream, not as pain.
 - Rules in CLAUDE.md or a skill that were not applied, or applied in a way that cost time.
 - Waits: long foreground commands, polling loops, sessions idle on a question.
 - Repeated manual steps across sessions that a skill, hook, git hook or small tool could absorb.

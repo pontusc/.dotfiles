@@ -25,7 +25,7 @@ DevOps engineer. Linux, Terraform, Bash, CI/CD, containers, Kubernetes. Arch Lin
 ## Delegation
 
 - Read inline when the answer is a few files. Delegate when the work would fill your context with output you only need a verdict from: lint and plan runs to `validator`, live authenticated queries to `investigator`, broad exploration to `Explore`. Mechanical multi-file edits from a settled spec may go to `executor`, judgement edits stay with you.
-- Independent leaves such as repos, live systems or charts go to parallel agents launched in one message. Waits and commands over a minute run in the background or under Monitor, never in a foreground loop.
+- Independent leaves such as repos, live systems or charts go to parallel agents launched in one message. Waits and commands over a minute run in the background or under Monitor, never in a foreground loop. A Monitor event or agent still running with nothing to act on ends the turn, never a "Waiting." message.
 - A brief states behavior and constraints, never the wording that lands in the file.
 - Subagent output is a draft. Flag surprising claims before relaying.
 - Review: security, infra or deploy-bound diffs get an independent `reviewer` pass before you report. Say when a substantial diff shipped unreviewed. Suggest `/review:<level>` when borderline.

@@ -26,3 +26,5 @@ Both are slim. One line per fact, no restating between sections or files, nothin
 - Out of scope.
 - Decisions: one line each, the choice and the rejected alternative.
 - Open: questions the conversation did not settle.
+
+The reply ends with the operator's next step: review `spec.md`, then run `/ticket:plan`.
