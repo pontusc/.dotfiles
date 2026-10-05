@@ -119,6 +119,10 @@ kcs() {
   kubectl config use-context "$(kubectl config get-contexts -o name | fzf)"
 }
 
+argologin() {
+  argocd login "${1:-$(argocd context | awk '$1 == "*" { print $3 }')}" --sso
+}
+
 kns() {
   kubectl config set-context --current --namespace "$(kubectl get namespaces -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | fzf)"
 }

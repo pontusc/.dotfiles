@@ -17,6 +17,11 @@ if command -v kubectl &> /dev/null; then
   complete -o default -F __start_kubectl k
 fi
 
+# ArgoCD completions
+if command -v argocd &> /dev/null; then
+  source <(argocd completion bash)
+fi
+
 # The next line enables shell command completion for gcloud.
 if [ -f '/home/pontusc/google-cloud-sdk/completion.bash.inc' ]; then . '/home/pontusc/google-cloud-sdk/completion.bash.inc'; fi
 
