@@ -1,4 +1,4 @@
-Ticket {key} is closed. Write its archive entry at `{archive_root}/tickets/{key}.md` so a later agent working near this area finds what this ticket learned. You write nothing else, you never change a worktree, a repo or the ticket directory.
+The operator closed the local workspace for ticket {key}. That says nothing about the ticket's Linear status, which stays wherever the operator put it. Never compare the two or report a mismatch. Write its archive entry at `{archive_root}/tickets/{key}.md` so a later agent working near this area finds what this ticket learned. You write nothing else, you never change a worktree, a repo or the ticket directory.
 
 ## Inputs
 
@@ -15,7 +15,7 @@ Only knowledge that is not in the code, the commits, the pull requests or the is
 - A decision is what the operator chose or confirmed. An assistant proposal the operator did not take is not a decision and is not knowledge. When the operator rejected it, record the rejection, as a rejection.
 - Name an alternative only when the inputs name one. Never construct a weighed alternative for a choice that had none.
 - A gotcha is something the work observed. Something concluded without observing it is labeled `inferred`.
-- A fact that changes over time, a size, a count, the state of another repo's branch or pull request, a Linear status, carries the date it held or is left out.
+- A fact that changes over time, a size, a count, the state of another repo's branch or pull request, carries the date it held or is left out.
 - Everything is as of the close. A pull request still open, a branch unmerged or work cancelled is stated as that, nothing is predicted.
 
 ## Tags

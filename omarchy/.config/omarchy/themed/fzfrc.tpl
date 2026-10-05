@@ -1,0 +1,5 @@
+--color=fg:{{ foreground }},bg:-1,hl:{{ accent }}
+--color=fg+:{{ bright_foreground }},bg+:{{ selection }},hl+:{{ accent }},gutter:-1
+--color=border:{{ muted }},separator:{{ muted }},scrollbar:{{ muted }},label:{{ foreground }}
+--color=prompt:{{ accent }},pointer:{{ orange }},marker:{{ yellow }},spinner:{{ accent }}
+--color=info:{{ muted }},header:{{ blue }},query:{{ foreground }}

@@ -59,7 +59,7 @@ export const register: Register = on => {
   on('tool.call', async ($, e, next) => {
     if (e.agentId === undefined && (e.tool === 'AskUserQuestion' || e.tool === 'ExitPlanMode')) await startAsking($, e.tool_use_id)
     const result = await next(e)
-    await stopAsking($, e.tool_use_id)
+    if (!next.signal.aborted) await stopAsking($, e.tool_use_id)
     return result
   })
 
@@ -70,6 +70,10 @@ export const register: Register = on => {
   })
 
   on('turn.complete', async ($, e, next) => {
+    if (e.agentId === undefined && askingToolUseIds.size > 0) {
+      askingToolUseIds.clear()
+      await clearFlag($)
+    }
     if (e.agentId === undefined && !e.isAborted && e.durationMs >= DONE_AFTER_MS) await raiseFlag($, 'done')
     return next(e)
   })

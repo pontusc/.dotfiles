@@ -85,6 +85,16 @@ describe('tmux-attention', () => {
     expect(flagWrites(calls)).toEqual([ASK, CLEAR])
   })
 
+  test('a main turn ending clears a pending ask', async ($, on) => {
+    mock.env(on, { TMUX_PANE: '%7' })
+    const calls = fakeTmux(on, UNWATCHED)
+    await permissionAsked($)
+    await turnEnded($, 1_000, 'a1')
+    expect(flagWrites(calls)).toEqual([ASK])
+    await turnEnded($, 1_000)
+    expect(flagWrites(calls)).toEqual([ASK, CLEAR])
+  })
+
   test('another tool finishing leaves a pending ask', async ($, on) => {
     mock.env(on, { TMUX_PANE: '%7' })
     const calls = fakeTmux(on, UNWATCHED)

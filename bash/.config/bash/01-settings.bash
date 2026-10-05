@@ -34,3 +34,11 @@ if [[ -f $omarchy_starship_config ]]; then
   export STARSHIP_CONFIG="$omarchy_starship_config"
 fi
 unset omarchy_starship_config
+
+# fzf
+# A missing path in FZF_DEFAULT_OPTS_FILE aborts fzf at startup.
+omarchy_fzf_config="$HOME/.local/state/omarchy/current/theme/fzfrc"
+if [[ -f $omarchy_fzf_config ]]; then
+  export FZF_DEFAULT_OPTS_FILE="$omarchy_fzf_config"
+fi
+unset omarchy_fzf_config
