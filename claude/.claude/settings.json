@@ -4,7 +4,8 @@
     "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
     "CLAUDE_CODE_NO_FLICKER": "1",
     "ENABLE_LSP_TOOL": "1",
-    "CLAUDE_CODE_SCROLL_SPEED": "3"
+    "CLAUDE_CODE_SCROLL_SPEED": "3",
+    "TG_LOG_FORMAT": "bare"
   },
   "attribution": {
     "commit": "",
@@ -141,7 +142,8 @@
   },
   "enabledPlugins": {
     "plan@plans": true,
-    "alchemy-infrastructure@alchemy": true
+    "alchemy-infrastructure@alchemy": true,
+    "cc-plugin-you-should-know@builtin": true
   },
   "extraKnownMarketplaces": {
     "plans": {
@@ -172,7 +174,7 @@
       "effortLevel": "medium"
     }
   },
-  "autoCompactWindow": 400000,
+  "autoCompactWindow": 200000,
   "promptSuggestionEnabled": false,
   "awaySummaryEnabled": false,
   "tui": "fullscreen",

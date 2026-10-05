@@ -2,7 +2,7 @@ Ticket {key} is closed. Write its archive entry at `{archive_root}/tickets/{key}
 
 ## Inputs
 
-- The ticket directory `{ticket_root}`: spec.md, spec-context.md, plan.md, phase files, progress.md, research.md and any loose notes. Phase Outcomes in plan.md, Rulings in progress.md and any section marked as a decision of the user or operator carry the most.
+- The ticket directory `{ticket_root}`: spec.md, spec-context.md, plan.md, phase files, research.md and any loose notes. Phase Outcomes in plan.md, Rulings in the phase files and any section marked as a decision of the user or operator carry the most.
 - `{inputs}/git/<n>-<repo>.md`: the commits the ticket branch added in each worktree, with pull requests and their state. The full patch sits beside it as `<n>-<repo>.patch`, read the hunk of a commit whose message leaves the change unclear, never the whole file. Commits by other authors or under another ticket key are context, never this ticket's work.
 - `{inputs}/transcripts/`: the conversations with the operator, reduced to text. Long. `## user` blocks are the operator, `## assistant` blocks are the assistant. Grep for `ruling`, `decided`, `instead`, `keep`, `skip`, `rejected`, `gotcha`, `turned out` and read the `## user` block after each hit, the operator's reply decides. Never read a whole file.
 - The Linear issue {key} and its comments, through the Linear tools, for the problem statement and anything the operator wrote there.
