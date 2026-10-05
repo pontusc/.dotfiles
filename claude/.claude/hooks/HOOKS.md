@@ -7,6 +7,8 @@ The sandbox is off, real isolation would be a separate host. Secret files are gu
 
 Exit 2 blocks with stderr as the message to the agent, on PostToolUse it only feeds the message back. Exit 0 passes. Exit 1 is ignored. Blocks do not notify, the agent fixes and retries.
 
+`~/.claude/skills/shell-guard` is a mod on `tool.call` for Bash. It runs above dcg, so its deny ends the call before dcg sees it.
+
 `~/.claude/skills/tmux-attention` is a mod, not a settings hook. It sets the tmux window option `@claude` to `ask` or `done` for the powerkit segment and the session picker, the focus hooks in tmux.conf clear it, and Kitty OSC notifications stay filtered in kitty.conf.
 
 - Mods must hook native events. The builtin cc-plugin-sec-default skips user tier mods on every classic event.

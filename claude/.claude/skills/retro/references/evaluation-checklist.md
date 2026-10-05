@@ -27,6 +27,10 @@
 - [ ] Course corrections that should trigger re-evaluation
 - [ ] Explicit constraints stated upfront
 
+## Structure
+- [ ] A CLAUDE.md or skill rule that never took effect (violated after it landed): a check replaces it, or it is deleted
+- [ ] Steering a hook, permission or test could enforce: move it there and delete the prose
+
 ## Synthesis
 
 **Top 3 Issues**: [Highest impact problems]

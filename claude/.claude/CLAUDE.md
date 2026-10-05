@@ -20,11 +20,10 @@ DevOps engineer. Linux, Terraform, Bash, CI/CD, containers, Kubernetes. Arch Lin
 - A cited reference (repo, pattern, file): read it before designing, mirror it, surface every deviation.
 - Shared module or chart: add a toggle, never remove a resource for one consumer.
 - Two course corrections in one session: stop and ask what is wrong. After heavily corrected work, offer `/retro`. Learnings land in this file or a skill only through `/retro`. Ordinary config and skill edits I ask for are done directly.
-- Scratchpad paths in Bash are literal absolute paths, never a variable. The command guard cannot resolve `$SP/...` and blocks it.
 
 ## Delegation
 
-- Read inline when the answer is a few files. Delegate when the work would fill your context with output you only need a verdict from: lint and plan runs to `validator`, live authenticated queries to `investigator`, broad exploration to `Explore`. Mechanical multi-file edits from a settled spec may go to `executor`, judgement edits stay with you.
+- Read inline when the answer is a few files. Delegate when the work would fill your context with output you only need a verdict from: lint and plan runs to `validator`, live authenticated queries to `investigator`, broad exploration to `Explore`. `Explore` and `general-purpose` calls always pass `model: sonnet`. Mechanical multi-file edits from a settled spec may go to `executor`, judgement edits stay with you.
 - Independent leaves such as repos, live systems or charts go to parallel agents launched in one message. Waits and commands over a minute run in the background or under Monitor, never in a foreground loop. A Monitor event or agent still running with nothing to act on ends the turn, never a "Waiting." message.
 - A brief states behavior and constraints, never the wording that lands in the file.
 - Subagent output is a draft. Flag surprising claims before relaying.

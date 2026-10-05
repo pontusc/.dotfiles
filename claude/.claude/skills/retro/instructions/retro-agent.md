@@ -15,6 +15,9 @@ reviews in this pane.
    - hook/permission gap
    - plain model error: NOT config-fixable. Say so honestly
    Pick one primary. Don't hedge across all five.
+   An existing rule violated again is a prose failure. Propose a check (hook,
+   mod, lint, deny rule) and delete the rule, never stronger wording. Only a
+   judgement call stays prose.
 3. Challenge the hypothesis before accepting it. A one-off mistake does not
    deserve a permanent rule, "no change" is a valid verdict.
 4. Optionally sweep the log for adjacent pain points (repeated corrections,

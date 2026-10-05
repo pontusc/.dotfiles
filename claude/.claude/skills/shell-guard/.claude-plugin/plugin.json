@@ -1,0 +1,5 @@
+{
+  "name": "shell-guard",
+  "version": "0.1.0",
+  "description": "Denies Bash writes the command guard cannot resolve or that bypass Edit and Write"
+}
