@@ -202,12 +202,18 @@ def remove(repo_root: Path, path: Path) -> str | None:
 
 def delete_branch(repo_root: Path, branch: str, *, force: bool = False) -> str | None:
     """Delete a branch, returning git's own message when it refuses."""
+    in_base = (
+        _git(
+            repo_root, "merge-base", "--is-ancestor", branch, base_ref(repo_root)
+        ).returncode
+        == 0
+    )
     result = _git(
         repo_root,
         "-c",
         "advice.forceDeleteBranch=false",
         "branch",
-        "-D" if force else "-d",
+        "-D" if force or in_base else "-d",
         branch,
     )
     if result.returncode == 0:
