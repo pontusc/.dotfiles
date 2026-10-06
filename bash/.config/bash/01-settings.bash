@@ -9,6 +9,9 @@ export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
 # ArgoCD CLI
 export ARGOCD_OPTS="--grpc-web"
 
+# Claude Code
+export CLAUDE_CODE_TMPDIR=/var/tmp
+
 # gh-enhance, a bubbletint palette id, no custom colors and no omarchy follow
 export ENHANCE_THEME="monokai_pro_filter_ristretto"
 
