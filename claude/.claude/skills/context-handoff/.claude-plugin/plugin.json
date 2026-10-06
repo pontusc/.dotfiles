@@ -1,0 +1,5 @@
+{
+  "name": "context-handoff",
+  "version": "0.1.0",
+  "description": "Tells the agent to write a handoff once context nears the auto-compact threshold"
+}
