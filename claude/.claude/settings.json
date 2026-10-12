@@ -1,6 +1,5 @@
 {
   "env": {
-    "CLAUDE_CODE_DISABLE_1M_CONTEXT": "1",
     "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
     "CLAUDE_CODE_NO_FLICKER": "1",
     "ENABLE_LSP_TOOL": "1",
@@ -174,7 +173,7 @@
       "effortLevel": "medium"
     }
   },
-  "autoCompactWindow": 200000,
+  "autoCompactWindow": 400000,
   "promptSuggestionEnabled": false,
   "awaySummaryEnabled": false,
   "tui": "fullscreen",
