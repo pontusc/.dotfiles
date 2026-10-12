@@ -22,6 +22,7 @@ the log shows edits).
 
 Path: `~/dotfiles/retros/YYYY-MM-DD-<slug>.md` (slug: 2-4 words naming the
 failure, not the task: lowercase, hyphen-joined). Create the dir if missing.
+Write it with the Write tool. A heredoc or cp into home is denied by the guard.
 
 ```markdown
 # Retro: <slug>

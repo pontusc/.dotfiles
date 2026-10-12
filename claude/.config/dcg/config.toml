@@ -30,7 +30,7 @@ enabled = [
 
 # Only statically literal targets are exempted, variable paths still deny.
 [rules."core.filesystem:redirect-truncate-root-home"]
-exempt_target_globs = ["~/.claude/jobs/*/tmp/**"]
+exempt_target_globs = ["~/.claude/jobs/*/tmp/**", "/var/tmp/claude-1000/**"]
 
 [rules."core.filesystem:rm-rf-root-home"]
 exempt_target_globs = [

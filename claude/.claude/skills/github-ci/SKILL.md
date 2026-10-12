@@ -19,6 +19,7 @@ paths:
 - `set -euo pipefail` in every multi-line `run:` block, GitHub defaults to `set -e` only. `run:` blocks are bash, load the `bash` skill before writing one.
 - Under a job `working-directory`, a script outside that dir resolves as `$GITHUB_WORKSPACE/tools/scripts/my-script.sh`. Never `./`, and never quoted, which is a YAML syntax error.
 - `vars.FOO` passes to a reusable workflow through `with:` as an `inputs:` string, `secrets.FOO` through `secrets:`. They are separate channels and mixing them fails silently, so moving a value between them means changing caller and callee together.
+- A run the user reports as started, rerun or pushed is waited on with `gh run watch <id> --exit-status` as background Bash, then the turn ends. Report when the task notification lands, never ask the user for the result.
 
 ## Before reporting
 
