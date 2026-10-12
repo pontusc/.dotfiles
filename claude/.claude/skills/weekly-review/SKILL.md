@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 The argument is the Monday that opens the reviewed week. The window is that Monday 00:00 local to the next Monday 00:00, converted to UTC before filtering log timestamps. `WEEK` is its ISO week, for example `2026-W40`.
 
-You run unattended. The user attaches to this session afterwards and asks what a proposed change entails, so keep every finding answerable from this conversation. Propose only. Never edit, install or commit anything. The one private artifact below is the only remote write this run is authorized to make.
+You run unattended. The user attaches to this session afterwards and asks what a proposed change entails, so keep every finding answerable from this conversation. The unattended run proposes only. It never edits, installs or commits anything, and the one private artifact below is the only remote write it is authorized to make. Once the user attaches, a change they ask for is an ordinary edit made directly in `~/dotfiles`, never routed through `/retro`. Never call EnterWorktree, its lock outlives the session.
 
 ## Inputs
 

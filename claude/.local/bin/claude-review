@@ -23,7 +23,7 @@ mkdir -p "$OUT_DIR"
 cd "$DOTFILES"
 # The prompt goes first, the tool list flags are variadic and would swallow it.
 START_OUTPUT="$(claude --bg "/weekly-review ${LAST_MONDAY}" --model fable --effort high \
-  --allowedTools Artifact --disallowedTools "Edit(/${DOTFILES}/**)" 2>&1)" \
+  --allowedTools Artifact 2>&1)" \
   || fail "claude --bg exited non-zero: ${START_OUTPUT}"
 shopt -s extglob
 START_OUTPUT="${START_OUTPUT//$'\e'\[*([0-9;])m/}"
@@ -49,7 +49,7 @@ while (( SECONDS < DEADLINE )); do
   sleep "$POLL_SECONDS"
 done
 
-ATTACH="claude attach ${JOB_ID}"
+ATTACH="claude attach ${JOB_ID}; claude stop ${JOB_ID}"
 tmux new-session -d -s reviews -n "$WINDOW" -c "$DOTFILES" "$ATTACH" 2>/dev/null \
   || tmux new-window -t reviews: -n "$WINDOW" -c "$DOTFILES" "$ATTACH" \
   || fail "tmux window not created"
