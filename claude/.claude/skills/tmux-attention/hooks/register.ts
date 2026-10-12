@@ -5,6 +5,7 @@ const BUSY_AGENT_STATUSES: ReadonlySet<AgentStatus> = new Set(['pending', 'runni
 
 let isFlagRaised = false
 let promptedAt: number | undefined
+let isWakeUp = false
 const askingToolUseIds = new Set<string>()
 
 function tmux($: EngineInterface, args: readonly string[]): Promise<ProcessRunResult> {
@@ -56,17 +57,20 @@ async function stopAsking($: EngineInterface, toolUseId: string): Promise<void> 
 
 export const register: Register = on => {
   on('prompt.submit', async ($, e, next) => {
-    if (e.origin.kind === 'composer' || e.origin.kind === 'bridge') {
+    const isFromUser = e.origin.kind === 'composer' || e.origin.kind === 'bridge'
+    const startsTurn = e.turnId === undefined
+    if (startsTurn) isWakeUp = e.origin.kind === 'task-notification'
+    if (isFromUser || (startsTurn && !isWakeUp)) promptedAt = await $.clock.now()
+    if (isFromUser) {
       askingToolUseIds.clear()
-      promptedAt = await $.clock.now()
       await clearFlag($)
     }
     return next(e)
   })
 
   on('tool.call', async ($, e, next) => {
-    if (e.agentId === undefined && (e.tool === 'AskUserQuestion' || e.tool === 'ExitPlanMode')) await startAsking($, e.tool_use_id)
     try {
+      if (e.agentId === undefined && (e.tool === 'AskUserQuestion' || e.tool === 'ExitPlanMode')) await startAsking($, e.tool_use_id)
       return await next(e)
     } finally {
       await stopAsking($, e.tool_use_id)
@@ -74,9 +78,13 @@ export const register: Register = on => {
   })
 
   on('turn.complete', async ($, e, next) => {
-    if (e.agentId === undefined && !e.isAborted && promptedAt !== undefined) {
-      const isLong = (await $.clock.now()) - promptedAt >= DONE_AFTER_MS
-      if (isLong && !(await isAgentBusy($))) await raiseFlag($, 'done')
+    if (e.agentId === undefined) {
+      const wasWakeUp = isWakeUp
+      isWakeUp = false
+      if (!e.isAborted) {
+        const elapsedMs = wasWakeUp && promptedAt !== undefined ? (await $.clock.now()) - promptedAt : e.durationMs
+        if (elapsedMs >= DONE_AFTER_MS && !(await isAgentBusy($))) await raiseFlag($, 'done')
+      }
     }
     return next(e)
   })
