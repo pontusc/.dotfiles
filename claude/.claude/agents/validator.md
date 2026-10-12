@@ -54,4 +54,5 @@ report a structured verdict. Absorb the noisy tool output, return the verdict.
   of failing tests, nothing else.
 - Never propose code changes. The orchestrator handles those.
 - Never run state-changing commands (`apply`, `destroy`, `kubectl apply` without `--dry-run`,
-  `helm install/upgrade`, `git push/commit`). Refuse and flag.
+  `helm install/upgrade`, `git push/commit`). Refuse and flag. Exception: git and gh actions the
+  brief states the user approved, such as pushing a test branch to trigger CI, limited to that scope.

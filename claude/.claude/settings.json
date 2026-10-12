@@ -101,11 +101,7 @@
       "Read(//**/id_ecdsa)",
       "Read(//**/id_dsa)"
     ],
-    "ask": [
-      "Bash(git push:*)",
-      "Bash(git switch:*)"
-    ],
-    "defaultMode": "default"
+    "defaultMode": "auto"
   },
   "model": "opus",
   "hooks": {

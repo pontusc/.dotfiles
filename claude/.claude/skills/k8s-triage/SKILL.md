@@ -1,6 +1,6 @@
 ---
 name: k8s-triage
-description: Triage a Kubernetes or ArgoCD symptom against the live cluster and return the cause with evidence. Use when the user pastes kubectl, argocd, or pod log output, or reports a pod, sync, PVC, or CNPG problem.
+description: Triage a Kubernetes or ArgoCD symptom with kubectl and argocd against a kubeconfig context and return the cause with evidence. Use when the user pastes kubectl or argocd output, or reports a pod, sync, PVC, or CNPG problem on a cluster reachable from the kubeconfig. Not for searching a log backend such as Loki or Grafana. Pass context, namespace and symptom as arguments.
 context: fork
 agent: investigator
 argument-hint: <kube-context> <namespace> <symptom>
@@ -12,7 +12,7 @@ Read-only. Never apply, patch, delete, scale, restart, or sync. Report the cause
 
 ## Target
 
-- Take the context from the argument, else read `kubectl config current-context`. Name it in the report.
+- Take the context from the argument. Without one, match a cluster named in the symptom against `kubectl config get-contexts -o name`. No argument and no match: stop and return the context list, never fall back to `current-context`. Name the context used in the report.
 - Every context is a read, production included. Run it without asking.
 - Pass `-n <namespace>` on every command. Never rely on the context's default namespace.
 
