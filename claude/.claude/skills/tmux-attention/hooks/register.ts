@@ -1,8 +1,10 @@
-import type { EngineInterface, ProcessRunResult, Register } from 'claude-code'
+import type { AgentStatus, EngineInterface, ProcessRunResult, Register } from 'claude-code'
 
 const DONE_AFTER_MS = 20_000
+const BUSY_AGENT_STATUSES: ReadonlySet<AgentStatus> = new Set(['pending', 'running', 'waiting'])
 
 let isFlagRaised = false
+let promptedAt: number | undefined
 const askingToolUseIds = new Set<string>()
 
 function tmux($: EngineInterface, args: readonly string[]): Promise<ProcessRunResult> {
@@ -36,6 +38,11 @@ async function raiseFlag($: EngineInterface, flag: 'ask' | 'done'): Promise<void
   await tmux($, ['set-option', '-w', '-t', pane, '@claude', flag])
 }
 
+async function isAgentBusy($: EngineInterface): Promise<boolean> {
+  const agents = await $.agent.list()
+  return agents.some(agent => BUSY_AGENT_STATUSES.has(agent.status))
+}
+
 async function startAsking($: EngineInterface, toolUseId: string): Promise<void> {
   if (askingToolUseIds.has(toolUseId)) return
   askingToolUseIds.add(toolUseId)
@@ -51,6 +58,7 @@ export const register: Register = on => {
   on('prompt.submit', async ($, e, next) => {
     if (e.origin.kind === 'composer' || e.origin.kind === 'bridge') {
       askingToolUseIds.clear()
+      promptedAt = await $.clock.now()
       await clearFlag($)
     }
     return next(e)
@@ -58,23 +66,18 @@ export const register: Register = on => {
 
   on('tool.call', async ($, e, next) => {
     if (e.agentId === undefined && (e.tool === 'AskUserQuestion' || e.tool === 'ExitPlanMode')) await startAsking($, e.tool_use_id)
-    const result = await next(e)
-    if (!next.signal.aborted) await stopAsking($, e.tool_use_id)
-    return result
-  })
-
-  on('tool.check', async ($, e, next) => {
-    const verdict = await next(e)
-    if (verdict.decision === 'ask' && e.tool_use_id !== undefined) await startAsking($, e.tool_use_id)
-    return verdict
+    try {
+      return await next(e)
+    } finally {
+      await stopAsking($, e.tool_use_id)
+    }
   })
 
   on('turn.complete', async ($, e, next) => {
-    if (e.agentId === undefined && askingToolUseIds.size > 0) {
-      askingToolUseIds.clear()
-      await clearFlag($)
+    if (e.agentId === undefined && !e.isAborted && promptedAt !== undefined) {
+      const isLong = (await $.clock.now()) - promptedAt >= DONE_AFTER_MS
+      if (isLong && !(await isAgentBusy($))) await raiseFlag($, 'done')
     }
-    if (e.agentId === undefined && !e.isAborted && e.durationMs >= DONE_AFTER_MS) await raiseFlag($, 'done')
     return next(e)
   })
 }

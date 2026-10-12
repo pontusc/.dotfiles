@@ -12,6 +12,6 @@ Exit 2 blocks with stderr as the message to the agent, on PostToolUse it only fe
 `~/.claude/skills/tmux-attention` is a mod, not a settings hook. It sets the tmux window option `@claude` to `ask` or `done` for the powerkit segment and the session picker, the focus hooks in tmux.conf clear it, and Kitty OSC notifications stay filtered in kitty.conf.
 
 - Mods must hook native events. The builtin cc-plugin-sec-default skips user tier mods on every classic event.
-- A permission ask flags before the mode settles it, so in auto mode a call the classifier approves shows `ask` until the tool finishes.
+- Permission dialogs never flag. In auto mode nearly every Bash and Agent call reaches `tool.check` as `ask` for the classifier, and no native event marks a dialog the person must answer.
 - A session that started with the mods rollout switch served off loads no mod and sets no flags.
 - The editor types come from `.claude-plugin/types`, which a session writes when it loads the mod. On a fresh clone start one session before opening the mod in an editor.
