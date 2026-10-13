@@ -85,7 +85,7 @@ def _delete_branch(repo_root: Path, branch: str) -> str:
 def _remove_ticket_root(ticket_root: Path) -> str:
     """Delete the ticket root once nothing but the tool's link and loose files remain.
 
-    A directory is never deleted here, it may be a worktree whose window is
+    A checkout is never deleted here, it may be a worktree whose window is
     already gone.
     """
     leftovers = [
@@ -94,7 +94,7 @@ def _remove_ticket_root(ticket_root: Path) -> str:
         if entry.name != layout.AGENT_CONFIG_LINK
     ]
     names = ", ".join(sorted(entry.name for entry in leftovers))
-    if any(entry.is_dir() for entry in leftovers):
+    if any(worktree.is_checkout(entry) for entry in leftovers):
         return f"{ticket_root.name}: kept, {names} still present"
     if leftovers and not ui.confirm(f"{ticket_root.name}: delete {names}?"):
         return f"{ticket_root.name}: kept {names}"
@@ -143,9 +143,9 @@ def _start_archive(
     ]
     if not planned and not leftovers:
         return None
-    directories = sorted(entry.name for entry in leftovers if entry.is_dir())
-    if directories:
-        return f"{key}: {', '.join(directories)} is not a live worktree window, nothing removed"
+    checkouts = sorted(entry.name for entry in leftovers if worktree.is_checkout(entry))
+    if checkouts:
+        return f"{key}: {', '.join(checkouts)} is not a live worktree window, nothing removed"
     if not leftovers and not any(
         worktree.has_work(Path(entry.repo_root), Path(entry.path), entry.branch)
         for entry in planned

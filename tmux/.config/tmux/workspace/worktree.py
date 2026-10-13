@@ -49,6 +49,10 @@ def ticket_dir(work_root: Path, session: str) -> Path:
     return work_root / TICKETS_DIR / session
 
 
+def is_checkout(path: Path) -> bool:
+    return (path / ".git").exists()
+
+
 def path_for(work_root: Path, session: str, repo_name: str) -> Path:
     return ticket_dir(work_root, session) / repo_name
 
