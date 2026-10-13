@@ -51,7 +51,7 @@ The Outcome stays `None yet.` until the phase verdict is VERIFIED. Then it holds
 
 ### Test
 
-<Where this phase gets exercised: the environment, branch, PR or deployment used to try it, and how it is exercised there.>
+<Where this phase gets exercised: the environment, PR or deployment used to try it, and how it is exercised there.>
 
 ### Exit criteria
 
@@ -75,6 +75,8 @@ None yet.
 ```
 
 A box is checked only with its evidence on the same line, appended after the text as ` Evidence: <file path, commit SHA, or command and its result>.` A box without evidence stays unchecked. A box checked for the operator's word cites it, ` Evidence: operator confirmed.`
+
+Tasks never commit or push. A phase leaves its changes uncommitted for the operator to review, and a commit comes only from the operator or from their explicit approval.
 
 The phase being worked on has Goal, Notes and Outcome in `plan.md` and its own phase file. Every later phase has Goal, Notes and an Outcome of `None yet.`, and gains its phase file when its turn comes.
 
