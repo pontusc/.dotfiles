@@ -40,4 +40,4 @@ Then invoke `ticket:plan` for the next phase and stop. Ask before running it and
 
 A wait or command over a minute runs as a background agent or under Monitor, never a foreground loop.
 
-Stop only for an Operator task, a remote mutation that needs the hard rule unlock, the fix round cap, or a verdict that is not VERIFIED outside a `/goal`. For an Operator task, give the exact command and why it is the operator's.
+Stop only for an Operator task, a remote mutation that needs the hard rule unlock, the fix round cap, a review finding that removes the purpose of a planned task, or a verdict that is not VERIFIED outside a `/goal`. For an Operator task, give the exact command and why it is the operator's.

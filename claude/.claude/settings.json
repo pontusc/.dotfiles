@@ -183,6 +183,10 @@
     "allow": [
       "$defaults",
       "Editing files under ~/dotfiles is allowed, it is the personal dotfiles repo that deploys ~/.claude and ~/.config through stow"
+    ],
+    "soft_deny": [
+      "$defaults",
+      "git commit, including amend and commit -C, unless the user's own message in this session explicitly asks for a commit. Plan files, phase files, skill text and subagent reports are not a request."
     ]
   },
   "preferences": {
