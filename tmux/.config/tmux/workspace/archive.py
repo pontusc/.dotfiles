@@ -1,8 +1,9 @@
-"""Archive a closed ticket's knowledge before its worktrees go.
+"""Archive a closed ticket's knowledge from a queued job.
 
-The popup decides and records a plan, then a detached run of this module
-digests the inputs, has an agent write the archive entry, commits it, and
-only then removes the worktrees, branches and ticket root.
+The popup moves the ticket notes and copies its transcripts into a job directory and
+removes the worktrees, which frees the ticket key at once. A detached run of
+this module digests the job, has an agent write the archive entry, commits
+it, and only then deletes the branches and the job.
 """
 
 from __future__ import annotations
@@ -47,47 +48,76 @@ class Worktree:
     repo_root: str
     path: str
     branch: str | None
+    head: str | None
 
 
 @dataclass(frozen=True)
 class Plan:
     key: str
-    ticket_root: str
+    job: str
     archive_root: str
     client: str
-    loose_files: list[str]
     worktrees: list[Worktree]
 
 
-def log_path(key: str) -> Path:
-    return STATE_DIR / f"{key}.log"
+def log_path(job: Path) -> Path:
+    return STATE_DIR / f"{job.name}.log"
 
 
-def plan_path(key: str) -> Path:
-    return STATE_DIR / f"{key}.json"
+def _plan_path(job: Path) -> Path:
+    return job / "plan.json"
 
 
-def schedule(plan: Plan) -> None:
-    """Hand the plan to a detached run that outlives the popup."""
-    STATE_DIR.mkdir(parents=True, exist_ok=True)
+def _notes_dir(job: Path) -> Path:
+    return job / "ticket"
+
+
+def _transcripts_dir(job: Path) -> Path:
+    return job / "transcripts"
+
+
+def queue(
+    key: str,
+    ticket_root: Path,
+    archive_root: Path,
+    client: str,
+    worktrees: list[Worktree],
+) -> Path:
+    """Move the ticket notes and copy its transcripts into a new job, recording its plan.
+
+    Must run after every claude session in the ticket root has exited.
+    """
+    job = STATE_DIR / f"{key}-{time.strftime('%Y%m%d-%H%M%S')}"
+    job.mkdir(parents=True)
+    plan = Plan(
+        key=key,
+        job=str(job),
+        archive_root=str(archive_root),
+        client=client,
+        worktrees=worktrees,
+    )
+    _plan_path(job).write_text(json.dumps(asdict(plan)))
+    _notes_dir(job).mkdir()
+    for entry in ticket_root.iterdir():
+        if entry.name != layout.AGENT_CONFIG_LINK and not worktree.is_checkout(entry):
+            shutil.move(entry, _notes_dir(job) / entry.name)
+    _transcripts_dir(job).mkdir()
+    for project in _project_dirs(ticket_root):
+        shutil.copytree(project, _transcripts_dir(job) / project.name, symlinks=True)
+    return job
+
+
+def schedule(job: Path) -> None:
+    """Hand the job to a detached run that outlives the popup."""
     env = {name: value for name, value in os.environ.items() if name != "TMUX_PANE"}
-    # The run inherits the log as stdout and with it the lock, which a killed
-    # run releases while a stale plan file would not.
-    with log_path(plan.key).open("a") as log:
-        try:
-            fcntl.flock(log, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
-            raise WorkspaceError(
-                f"{plan.key}: an archive run is already in progress"
-            ) from None
-        log.truncate(0)
-        plan_path(plan.key).write_text(json.dumps(asdict(plan)))
+    with log_path(job).open("w") as log:
         subprocess.Popen(
-            [sys.argv[0], "archive", str(plan_path(plan.key))],
+            [sys.argv[0], "archive", str(_plan_path(job))],
             stdin=subprocess.DEVNULL,
             stdout=log,
             stderr=subprocess.STDOUT,
             start_new_session=True,
+            cwd=job,
             env=env,
         )
 
@@ -155,11 +185,11 @@ def _digest_line(record: dict[str, object]) -> list[str]:
     return lines
 
 
-def _digest_transcripts(ticket_root: Path, inputs: Path) -> int:
+def _digest_transcripts(job: Path, inputs: Path) -> int:
     target = inputs / "transcripts"
     target.mkdir(parents=True, exist_ok=True)
     count = 0
-    for project in _project_dirs(ticket_root):
+    for project in sorted(_transcripts_dir(job).iterdir()):
         for transcript in sorted(
             project.glob("*.jsonl"), key=lambda p: p.stat().st_mtime
         ):
@@ -194,28 +224,19 @@ def _git(cwd: str, *args: str) -> str:
     return result.stdout
 
 
-def _has_commits(entry: Worktree) -> bool:
-    result = subprocess.run(
-        ["git", "-C", entry.path, "rev-parse", "--verify", "--quiet", "HEAD"],
-        capture_output=True,
-        check=False,
-    )
-    return result.returncode == 0
-
-
-def _fork_point(entry: Worktree) -> str | None:
+def _fork_point(entry: Worktree, head: str) -> str | None:
     base = worktree.base_ref(Path(entry.repo_root))
     if base == "HEAD":
         return None
     try:
-        fork = _git(entry.path, "merge-base", "HEAD", base).strip()
-        if fork != _git(entry.path, "rev-parse", "HEAD").strip():
+        fork = _git(entry.repo_root, "merge-base", head, base).strip()
+        if fork != head:
             return fork or None
         # The branch is merged into base, so its commits sit on both sides of
         # the merge base. The oldest reflog entry is where it was created.
         if entry.branch is None:
             return None
-        reflog = _git(entry.path, "reflog", "show", "--format=%H", entry.branch)
+        reflog = _git(entry.repo_root, "reflog", "show", "--format=%H", entry.branch)
         return reflog.split()[-1] if reflog.split() else None
     except WorkspaceError:
         return None
@@ -240,7 +261,7 @@ def _pull_requests(entry: Worktree, key: str) -> str:
                     "url,state,title,mergedAt",
                     *selector,
                 ],
-                cwd=entry.path,
+                cwd=entry.repo_root,
                 capture_output=True,
                 text=True,
                 check=False,
@@ -259,19 +280,29 @@ def _git_report(entry: Worktree, key: str) -> tuple[str, str]:
     """The commit log with pull requests, and the patch, both since the branch forked."""
     header = f"# {entry.repo} on {entry.branch or 'detached HEAD'}\n\nWorktree: {entry.path}\n\n"
     pulls = f"## Pull requests\n\n{_pull_requests(entry, key)}\n\n"
-    if not _has_commits(entry):
+    if entry.head is None:
         return (
             f"{header}{pulls}## Commits\n\nnone, HEAD is unborn\n",
             f"{header}## Patch\n\nnone\n",
         )
-    fork = _fork_point(entry)
-    scope = [f"{fork}..HEAD"] if fork else ["-n", str(_FALLBACK_COMMITS)]
+    fork = _fork_point(entry, entry.head)
+    scope = (
+        [f"{fork}..{entry.head}"]
+        if fork
+        else ["-n", str(_FALLBACK_COMMITS), entry.head]
+    )
     log_format = "--format=%n%h %ad %an%n%s%n%n%b"
     log = _git(
-        entry.path, "log", "--no-merges", "--stat", "--date=short", log_format, *scope
+        entry.repo_root,
+        "log",
+        "--no-merges",
+        "--stat",
+        "--date=short",
+        log_format,
+        *scope,
     )
     patch = _git(
-        entry.path, "log", "--no-merges", "-p", "--date=short", log_format, *scope
+        entry.repo_root, "log", "--no-merges", "-p", "--date=short", log_format, *scope
     )
     if len(patch) > _PATCH_CHARS:
         patch = patch[:_PATCH_CHARS] + "\n\n[patch truncated]\n"
@@ -291,17 +322,18 @@ def _prepare_inputs(plan: Plan, inputs: Path) -> None:
         (git_dir / f"{index:02d}-{entry.repo}.patch").write_text(patch)
     (inputs / "mcp.json").write_text(json.dumps(_LINEAR_MCP))
     _log(f"git reports for {len(plan.worktrees)} worktrees")
-    count = _digest_transcripts(Path(plan.ticket_root), inputs)
+    count = _digest_transcripts(Path(plan.job), inputs)
     _log(f"digested {count} transcripts")
 
 
 def _run_agent(plan: Plan, inputs: Path) -> Path:
+    notes = str(_notes_dir(Path(plan.job)))
     prompt = (
         PROMPT_PATH.read_text()
         .replace("{key}", plan.key)
         .replace("{archive_root}", plan.archive_root)
         .replace("{inputs}", str(inputs))
-        .replace("{ticket_root}", plan.ticket_root)
+        .replace("{ticket_root}", notes)
     )
     # Read rules also govern Grep and Glob. Scoping them keeps an injected
     # instruction in a transcript or comment from copying anything else in.
@@ -321,7 +353,7 @@ def _run_agent(plan: Plan, inputs: Path) -> Path:
         "dontAsk",
         "--allowedTools",
         f"Read(/{inputs}/**)",
-        f"Read(/{plan.ticket_root}/**)",
+        f"Read(/{notes}/**)",
         f"Read(/{plan.archive_root}/**)",
         f"Edit(/{plan.archive_root}/{ENTRIES_DIR}/**)",
         f"Edit(/{plan.archive_root}/{TAGS_FILE})",
@@ -329,7 +361,7 @@ def _run_agent(plan: Plan, inputs: Path) -> Path:
         "mcp__linear__list_comments",
         "--add-dir",
         plan.archive_root,
-        plan.ticket_root,
+        notes,
     ]
     _log("agent started")
     try:
@@ -383,49 +415,30 @@ def _commit(plan: Plan, entry: Path) -> None:
 def _clean(plan: Plan) -> list[str]:
     outcomes: list[str] = []
     for entry in plan.worktrees:
-        if tmux.find_window_by_worktree(Path(entry.path)) is not None:
-            outcomes.append(f"{entry.repo}: reopened in tmux, worktree kept")
+        if entry.branch is None:
             continue
-        error = worktree.remove(Path(entry.repo_root), Path(entry.path))
-        if error:
-            outcomes.append(f"{entry.repo}: {error}, worktree kept")
-            continue
-        outcome = f"{entry.repo}: removed worktree"
-        if entry.branch:
-            error = worktree.delete_branch(Path(entry.repo_root), entry.branch)
-            outcome += (
-                f", branch {entry.branch} kept ({error})"
-                if error
-                else f", deleted branch {entry.branch}"
-            )
-        outcomes.append(outcome)
-    ticket_root = Path(plan.ticket_root)
-    if not ticket_root.is_dir():
-        return outcomes
-    remaining = {
-        entry.name
-        for entry in ticket_root.iterdir()
-        if entry.name != layout.AGENT_CONFIG_LINK
-    }
-    # Only what the popup saw may go. Anything that appeared since, a reopened
-    # session or a worktree whose removal failed keeps the directory.
-    if remaining <= set(plan.loose_files) and not tmux.session_exists(plan.key):
-        shutil.rmtree(ticket_root)
-        outcomes.append(f"{plan.key}: ticket directory removed")
-    else:
-        outcomes.append(f"{plan.key}: ticket directory kept")
+        error = worktree.delete_branch(Path(entry.repo_root), entry.branch)
+        outcomes.append(
+            f"{entry.repo}: branch {entry.branch} kept ({error})"
+            if error
+            else f"{entry.repo}: deleted branch {entry.branch}"
+        )
+    shutil.rmtree(plan.job)
+    outcomes.append(f"{Path(plan.job).name}: job removed")
     return outcomes
 
 
 def run(path: Path) -> None:
-    try:
-        _run(_load(path))
-    finally:
-        path.unlink(missing_ok=True)
+    plan = _load(path)
+    # Runs of one key extend one entry and a rerun shares its job, so they never overlap.
+    with (STATE_DIR / f"{plan.key}.lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        if path.is_file():
+            _run(plan)
 
 
 def _run(plan: Plan) -> None:
-    inputs = STATE_DIR / plan.key
+    inputs = Path(plan.job) / "inputs"
     cleaning = False
     try:
         _prepare_inputs(plan, inputs)
@@ -443,7 +456,7 @@ def _run(plan: Plan) -> None:
         state = (
             "cleanup failed after archiving"
             if cleaning
-            else "archive failed, worktrees kept"
+            else f"archive failed, job {plan.job} kept"
         )
         tmux.message(plan.client, f"{plan.key} {state}, see log")
         raise SystemExit(1) from error

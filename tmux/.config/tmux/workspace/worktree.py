@@ -166,6 +166,14 @@ def branch_at(path: Path) -> str | None:
     return result.stdout.strip() or None
 
 
+def head_at(path: Path) -> str | None:
+    """The commit checked out at path, or None when HEAD is unborn."""
+    result = _git(path, "rev-parse", "--verify", "--quiet", "HEAD")
+    if result.returncode != 0:
+        return None
+    return result.stdout.strip() or None
+
+
 def status(path: Path) -> Status | None:
     """What removing the worktree would lose, or None if git status failed."""
     result = _git(path, "status", "--porcelain", "--ignored")

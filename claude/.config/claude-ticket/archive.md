@@ -1,4 +1,4 @@
-The operator closed the local workspace for ticket {key}. That says nothing about the ticket's Linear status, which stays wherever the operator put it. Never compare the two or report a mismatch. Write its archive entry at `{archive_root}/tickets/{key}.md` so a later agent working near this area finds what this ticket learned. You write nothing else, you never change a worktree, a repo or the ticket directory.
+The operator closed the local workspace for ticket {key}. That says nothing about the ticket's Linear status, which stays wherever the operator put it. Never compare the two or report a mismatch. Write its archive entry at `{archive_root}/tickets/{key}.md` so a later agent working near this area finds what this ticket learned. An entry already there is from an earlier close of the same ticket, so extend it in place: keep what it holds, add what this close learned, and update `closed` and State at close. You write nothing else, you never change a worktree, a repo or the ticket directory.
 
 ## Inputs
 

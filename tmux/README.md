@@ -40,18 +40,21 @@ folded symlink.
   With `archive_root` set, a ticket session in `agent = "session"` mode closes as a unit
   instead: every worktree must be clean or nothing is removed. A ticket with no commits
   past the base, no branch on origin and no notes closes without archiving. Otherwise the
-  windows close, the
-  worktrees stay, and a detached opus `claude -p` writes `<archive_root>/tickets/<KEY>.md`
-  from the ticket files, the branch commits and patches, the pull requests, the digested
-  Claude transcripts and the Linear issue, tagged from `<archive_root>/tags.md`. The entry
-  is committed locally in the archive repo, then the worktrees, their branches and the
-  ticket directory with its notes go. A branch git refuses to delete is kept without
-  asking. A directory in the ticket root that is not a
-  live worktree window stops the close with nothing removed. Reopening the ticket with
-  leader+T while the run is in flight keeps its worktrees and directory. On failure
-  everything stays on disk and a tmux message says so: fix the cause in
-  `~/.local/state/tmux-workspace/archive/<KEY>.log`, reopen the ticket with leader+T and
-  close it again. The `/ticket:recall` skill searches the archive.
+  worktrees and windows go at once, the ticket notes move and its Claude transcripts are
+  copied into a job under `~/.local/state/tmux-workspace/archive/<KEY>-<timestamp>/`, and the ticket can
+  be reopened right away, on any slug. Ignored files go with the worktree. A detached opus
+  `claude -p` writes `<archive_root>/tickets/<KEY>.md` from the job's notes, the branch
+  commits and patches, the pull requests, the digested transcripts and the Linear issue,
+  tagged from `<archive_root>/tags.md`, extending the entry a previous close of the same
+  key wrote. The entry is committed locally in the archive repo, then the branches and
+  the job go. The original transcripts stay in `~/.claude/projects`, so a later close of
+  the same key digests them again. A branch git refuses to delete is kept without asking.
+  A directory in the ticket root that is not a live worktree window stops the close with
+  nothing removed. A worktree git refuses to remove keeps its window, the rest still
+  archives. On failure the job and branches stay and a tmux message says so: fix
+  the cause in `<job>.log` beside the job, then rerun it with
+  `~/.config/tmux/workspace/main.py archive <job>/plan.json`. The `/ticket:recall` skill
+  searches the archive.
 - **leader+s** picks another session: digits jump straight to a slot, letters fuzzy-find.
   Slots stick to a session for its lifetime and free up when it dies.
 - `list` prints the discovered repos and the materialized sessions.

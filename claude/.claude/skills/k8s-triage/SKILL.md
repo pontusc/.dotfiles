@@ -1,6 +1,6 @@
 ---
 name: k8s-triage
-description: Triage a Kubernetes or ArgoCD symptom with kubectl and argocd against a kubeconfig context and return the cause with evidence. Use when the user pastes kubectl or argocd output, or reports a pod, sync, PVC, or CNPG problem on a cluster reachable from the kubeconfig. Not for searching a log backend such as Loki or Grafana. Pass context, namespace and symptom as arguments.
+description: Triage a Kubernetes or ArgoCD symptom with Grafana (Loki, Mimir) through the grafana-mcp tools, then kubectl and argocd against a kubeconfig context, and return the cause with evidence. Use when the user asks about recent events, errors or logs in a namespace, pastes kubectl or argocd output, or reports a pod, sync, PVC, or CNPG problem on a cluster reachable from the kubeconfig. Pass context, namespace and symptom as arguments.
 context: fork
 agent: investigator
 argument-hint: <kube-context> <namespace> <symptom>
@@ -20,6 +20,7 @@ Read-only. Never apply, patch, delete, scale, restart, or sync. Report the cause
 
 Cheapest signal first. Stop once the cause is proven.
 
+0. Grafana, when the `mcp__grafana-mcp__*` tools are present. `list_datasources` for the Loki and Mimir UIDs, then `list_loki_label_names` and `list_loki_label_values` to find the label holding the cluster and namespace before any LogQL. Survey with `query_loki_patterns` or a `query_loki_logs` filter on error levels over the symptom's window, and `query_prometheus` for restarts, OOM kills and unavailable replicas. Tools absent or a datasource unhealthy: say so in the report and continue with kubectl. Live object state (pod phase, conditions, PVC binding, sync) always comes from kubectl.
 1. `kubectl get pods -o wide` and `kubectl get events --sort-by=.lastTimestamp | tail -30`.
 2. `kubectl describe` on the failing object. Read `State`, `Last State`, `Reason`, `Exit Code`, and the conditions.
 3. `kubectl logs <pod> -c <container> --tail=100`, then `--previous` when the container restarted.

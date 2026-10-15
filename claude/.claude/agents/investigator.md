@@ -4,7 +4,7 @@ description: "Runs live, authenticated queries against services (curl with token
 model: opus
 effort: medium
 color: magenta
-tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
+tools: Read, Grep, Glob, Bash, WebFetch, WebSearch, mcp__grafana-mcp
 ---
 
 You run live, authenticated investigations and hand back clean findings. Get the answer from

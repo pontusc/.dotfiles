@@ -151,20 +151,22 @@ def _start_archive(
         for entry in planned
     ):
         return _close_without_archive(session, key, ticket_root, planned, windows)
-    archive.schedule(
-        archive.Plan(
-            key=key,
-            ticket_root=str(ticket_root),
-            archive_root=str(archive_root),
-            client=tmux.current_client(),
-            loose_files=sorted(entry.name for entry in leftovers),
-            worktrees=planned,
-        )
-    )
-    for window_id in windows:
-        tmux.kill_window(window_id)
     _close_agent_window(session)
-    return f"{key}: archiving in the background"
+    job = archive.queue(key, ticket_root, archive_root, tmux.current_client(), planned)
+    lines: list[str] = []
+    for entry, window_id in zip(planned, windows, strict=True):
+        error = worktree.remove(Path(entry.repo_root), Path(entry.path))
+        if error:
+            lines.append(f"{entry.repo}: {error}, worktree kept")
+            continue
+        tmux.kill_window(window_id)
+    archive.schedule(job)
+    if not any(
+        entry.name != layout.AGENT_CONFIG_LINK for entry in ticket_root.iterdir()
+    ):
+        shutil.rmtree(ticket_root)
+    lines.insert(0, f"{key}: archiving {job.name} in the background")
+    return "\n".join(lines)
 
 
 def _close_agent_window(session: str) -> str | None:
@@ -277,6 +279,7 @@ def cleanup_session() -> None:
                     repo_root=str(work_root / owner),
                     path=str(window.path),
                     branch=None if branch == "HEAD" else branch,
+                    head=worktree.head_at(window.path),
                 )
             )
             planned_windows.append(window.window_id)
