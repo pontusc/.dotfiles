@@ -12,7 +12,8 @@ INPUT="$(cat)"
 CWD="$(echo "$INPUT" | jq -r '.workspace.current_dir // .cwd // ""')"
 MODEL_NAME="$(echo "$INPUT" | jq -r '.model.display_name // ""')"
 AGENT_NAME="$(echo "$INPUT" | jq -r '.agent.name // empty')"
-USED_PCT="$(echo "$INPUT" | jq -r '.context_window.used_percentage // empty')"
+CONTEXT_TOKENS="$(echo "$INPUT" | jq -r '.context_window | select(.used_percentage != null) | .total_input_tokens // empty')"
+CONTEXT_WINDOW="$(echo "$INPUT" | jq -r '.context_window.context_window_size // empty')"
 EFFORT_LEVEL="$(echo "$INPUT" | jq -r '.effort.level // empty')"
 FIVE_HOUR_PCT="$(echo "$INPUT" | jq -r '.rate_limits.five_hour.used_percentage // empty')"
 FIVE_HOUR_RESET="$(echo "$INPUT" | jq -r '.rate_limits.five_hour.resets_at // empty')"
@@ -110,9 +111,20 @@ if [[ -n "$EFFORT_LEVEL" ]]; then
   EFFORT_SEG="${SUBTLE}${EFFORT_LEVEL}${RESET}"
 fi
 
+# The payload's used_percentage is measured against the model window, never the autocompact window.
+# /autocompact saves a per-model window under modelSettings, keyed without the [1m] suffix.
+MODEL_ID="$(echo "$INPUT" | jq -r '.model.id // empty')"
+AUTO_COMPACT_WINDOW="${CLAUDE_CODE_AUTO_COMPACT_WINDOW:-$(jq -r --arg model "${MODEL_ID%\[1m\]}" \
+  '(.modelSettings[$model].autoCompactWindow | numbers) // .autoCompactWindow // empty' \
+  "$HOME/.claude/settings.json" 2> /dev/null)}"
+readonly MODEL_ID AUTO_COMPACT_WINDOW
+
 CTX_SEG=""
-if [[ -n "$USED_PCT" ]]; then
-  CTX_SEG="$(colorize_pct "${USED_PCT%.*}")"
+if [[ "$CONTEXT_TOKENS" =~ ^[0-9]+$ && "$CONTEXT_WINDOW" =~ ^[1-9][0-9]*$ ]]; then
+  if [[ "$AUTO_COMPACT_WINDOW" =~ ^[1-9][0-9]*$ && "$AUTO_COMPACT_WINDOW" -lt "$CONTEXT_WINDOW" ]]; then
+    CONTEXT_WINDOW="$AUTO_COMPACT_WINDOW"
+  fi
+  CTX_SEG="$(colorize_pct "$((CONTEXT_TOKENS * 100 / CONTEXT_WINDOW))")"
 fi
 
 SEC2=""
