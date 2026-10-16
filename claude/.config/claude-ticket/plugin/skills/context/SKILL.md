@@ -7,7 +7,7 @@ The Linear issue key is the name of the current directory. You read the issue, i
 
 ## Refresh, at the start
 
-Before reading the issue, start one background Bash command running `git -C <checkout> fetch origin` for every git checkout directly under the work root, the parent of the tickets directory. Spell out each path, dcg blocks a git command built from a shell variable. Never pull or merge, agents read the origin refs. Never discard stderr.
+Before reading the issue, start one background Bash command running `git -C <worktree> fetch origin` for every git worktree in the ticket directory. A checkout outside the ticket that an answer depends on fetches only its target, `git -C <checkout> fetch origin <target branch>`. Never pull or merge, agents read the origin refs. Never discard stderr.
 
 A checkout's target is the output of `git symbolic-ref refs/remotes/origin/HEAD` in it, never an assumed `main`.
 
@@ -29,7 +29,7 @@ Before wave 1, invoke `ticket:recall` with the repos in the ticket and the nouns
 One message launches every agent. A brief holds the questions, the path or system to answer them from, and the demand for file:line references or command output. Never the ticket, the issue text or the intent.
 
 - One Explore, very thorough, per worktree with `code` questions. Over about five questions, split them by topic across several agents.
-- One Explore for `code all`, running `git grep` at each checkout's origin/HEAD target, after the fetch has finished.
+- One Explore for `code all`, running `git grep` at each checkout's origin/HEAD target as last fetched, never fetching.
 - One investigator per live system, all of that system's questions in one brief.
 - One Explore per upstream, reading the source at the pinned version from a temporary directory outside the ticket.
 
