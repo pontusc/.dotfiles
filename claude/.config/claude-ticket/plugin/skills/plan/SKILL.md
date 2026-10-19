@@ -13,6 +13,8 @@ A phase is detailed only after the previous one is done and its outcome is recor
 
 Both files are written once and then changed line by line with Edit. Every placeholder line stays in place so a change is an edit of that line. A revised goal or note is an edit of its own lines, never a rewrite of the file.
 
+Before the first phase file of a design that spans several files, workflows or modules, list the structure choices it makes, such as file split, workflow count and triggers, job and module boundaries, naming, each with a stated default, in one AskUserQuestion, and ask which the operator decides. The answers and the remaining defaults go under Shape in the phase file. A later phase reuses them and asks again only for a choice that is new.
+
 Use exactly this structure. Text in angle brackets describes what goes there.
 
 `plan.md`:
@@ -41,6 +43,11 @@ The Outcome stays `None yet.` until the phase verdict is VERIFIED. Then it holds
 
 ```markdown
 # <KEY> phase 1: <the same heading as in plan.md>
+
+### Shape
+
+- Budget: <the platform form in a few lines of yq, jq or gh, the expected file and line count, and the reason if it must be larger.>
+- <One structure choice per line, the option taken, and operator or default.>
 
 ### Tasks
 
@@ -80,4 +87,4 @@ Tasks never commit or push. A phase leaves its changes uncommitted for the opera
 
 The phase being worked on has Goal, Notes and Outcome in `plan.md` and its own phase file. Every later phase has Goal, Notes and an Outcome of `None yet.`, and gains its phase file when its turn comes.
 
-Before presenting a phase file, a reviewer checks it against `spec.md` and `spec-context.md`. Fix its findings first.
+Before presenting a phase file, a reviewer checks it against `spec.md`, `spec-context.md` and its own Shape. A task list several times the budget, or a task that settles a structure choice Shape does not name, is a finding. Fix its findings first.

@@ -17,6 +17,9 @@ the live system and return the signal, not raw API dumps or trial-and-error quer
 - Resolve context first when a query needs it (org/project/account/namespace IDs, region,
   available labels/metrics) before constructing the real query. Don't guess an ID that a
   discovery call can confirm.
+- Take the gcloud configuration whose project matches the target from `gcloud config
+  configurations list`, the kube context from `kubectl config get-contexts`. No match: report
+  `BLOCKED` with the list.
 - Iterate on your own failed queries, up to the retry cap below. Absorb the noise. The orchestrator sees only the result.
 
 ## How you work

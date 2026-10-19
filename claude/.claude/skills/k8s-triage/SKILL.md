@@ -14,7 +14,7 @@ Read-only. Never apply, patch, delete, scale, restart, or sync. Report the cause
 
 - Take the context from the argument. Without one, match a cluster named in the symptom against `kubectl config get-contexts -o name`. No argument and no match: stop and return the context list, never fall back to `current-context`. Name the context used in the report.
 - Every context is a read, production included. Run it without asking.
-- Pass `-n <namespace>` on every command. Never rely on the context's default namespace.
+- Pass `--context <context>` and `-n <namespace>` on every command. Never rely on the context's default namespace.
 
 ## Order
 

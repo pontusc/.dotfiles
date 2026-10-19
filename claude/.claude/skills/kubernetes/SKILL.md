@@ -20,7 +20,7 @@ paths:
 - `LimitRange` and `ResourceQuota` at namespace level as guardrails.
 - Liveness, readiness, and startup probes all present.
 - NetworkPolicy with explicit ingress and egress rules, default-deny preferred.
-- An unlocked apply or sync runs as background Bash followed by `kubectl wait` or `argocd app wait`, never a foreground poll loop. A sync the user reports as running is waited on the same way with `argocd app wait <app> --sync --health`. Report when the task notification lands, never ask the user for the result.
+- An unlocked apply or sync runs as background Bash followed by `kubectl wait` or `argocd app wait`, never a foreground poll loop. A sync the user reports as running is waited on the same way with `argocd app wait <app> --sync --health`. Report when the task notification lands, never ask the user for the result. Before a Monitor is armed on a field, print one sample of that field with the command the condition reads. An empty sample is the wrong path, not a slow sync.
 
 ## Before reporting
 
