@@ -1,7 +1,5 @@
 """Interactive prompts, the fzf picker, and the popup-safe failure path."""
 
-from __future__ import annotations
-
 import codecs
 import os
 import select

@@ -2,8 +2,8 @@
 
 One tmux session shows everything a ticket touches, one window per repo worktree. Repos
 are discovered under the work root and composed into a session by hotkey. The tool is the
-Python CLI in `workspace/` (a uv script, stdlib only), deployed by the stow package as one
-folded symlink.
+Python CLI in `workspace/` (system python3, stdlib only), deployed by the stow package as
+one folded symlink.
 
 ## Use
 
@@ -57,6 +57,8 @@ folded symlink.
   searches the archive.
 - **leader+s** picks another session: digits jump straight to a slot, letters fuzzy-find.
   Slots stick to a session for its lifetime and free up when it dies.
+- After a reboot, `resume` in a ticket root or one of its worktrees continues that
+  directory's claude with the flags it was started with.
 - `list` prints the discovered repos and the materialized sessions.
 - Cancelling any prompt (fzf abort, escape, ctrl-d) exits silently. Re-running the flow
   for an existing ticket attaches and fills in only what is missing.
@@ -118,8 +120,8 @@ worktree is not touched, and a missing source only warns.
 - The leader+T binding must stay `run-shell -b` into `flow`: a `display-popup` opened from
   inside another popup modifies the popup that is already up, so the picker and prompt
   popups have to be opened server-side, one after the other.
-- Nothing checks the versions, so keep them in mind: uv, tmux 3.2 or newer for
-  `display-popup`, and an fzf recent enough for the `enter:select+accept` bind.
+- Nothing checks the versions, so keep them in mind: Python 3.14 or newer, tmux 3.2 or
+  newer for `display-popup`, and an fzf recent enough for the `enter:select+accept` bind.
 - The archive agent runs without the user settings, with only the file tools and the
   read only Linear MCP server, and may write only under `tickets/` and `tags.md` in the
   archive repo. Every input it needs is a file the tool prepares. The Linear server and

@@ -1,7 +1,5 @@
 """Load and validate the workspace catalogue from workspaces.toml."""
 
-from __future__ import annotations
-
 import re
 import tomllib
 from dataclasses import dataclass

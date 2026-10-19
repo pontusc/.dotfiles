@@ -41,6 +41,7 @@ To stop syncing, remove the `omarchy-theme.js` script tag from `/opt/vivaldi/res
 - zoxide
 - eza
 - uv
+- python 3.14 or newer
 - stylua
 - dcg, from github.com/Dicklesworthstone/destructive_command_guard, and jq
 - shellcheck and lua-language-server, installed by nvim through Mason

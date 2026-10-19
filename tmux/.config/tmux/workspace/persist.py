@@ -6,8 +6,6 @@ state file on each resurrect save and reapplied by session and window name
 after a restore.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import tempfile
@@ -32,32 +30,28 @@ class SessionState(TypedDict, total=False):
     worktrees: StoredWorktrees
 
 
-def _session_state(session: str) -> SessionState:
+def _session_state(
+    info: tmux.SessionInfo, windows: list[tmux.SessionWindow]
+) -> SessionState:
     entry: SessionState = {}
-    slot = tmux.session_option(session, "@slot")
-    if slot:
-        entry["slot"] = int(slot)
-    key = tmux.session_option(session, "@ticket_key")
-    if key:
-        entry["ticket_key"] = key
-    slug = tmux.session_option(session, "@ticket_slug")
-    if slug:
-        entry["ticket_slug"] = slug
-    worktrees = [
-        (window.name, str(window.path))
-        for window in tmux.session_windows(session)
-        if window.tagged
-    ]
+    if info.slot is not None:
+        entry["slot"] = info.slot
+    if info.ticket_key:
+        entry["ticket_key"] = info.ticket_key
+    if info.ticket_slug:
+        entry["ticket_slug"] = info.ticket_slug
+    worktrees = [(window.name, str(window.path)) for window in windows if window.tagged]
     if worktrees:
         entry["worktrees"] = worktrees
     return entry
 
 
 def save_state() -> None:
+    snapshot = tmux.snapshot()
     state = {
         info.name: entry
-        for info in tmux.list_sessions()
-        if (entry := _session_state(info.name))
+        for info in snapshot.sessions
+        if (entry := _session_state(info, snapshot.windows[info.name]))
     }
     _STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
     handle, temp_name = tempfile.mkstemp(dir=_STATE_PATH.parent, prefix="state-")
@@ -94,10 +88,13 @@ def _worktree_pairs(stored: StoredWorktrees) -> list[tuple[str, str]]:
     return [(name, path) for name, path in stored]
 
 
-def _restore_worktrees(session: str, stored: StoredWorktrees) -> None:
+def _worktree_updates(
+    windows: list[tmux.SessionWindow], stored: StoredWorktrees
+) -> list[tmux.WindowOptionUpdate]:
     """Reapply @worktree by window name, spending each saved path once."""
     pairs = _worktree_pairs(stored)
-    for window in tmux.session_windows(session):
+    updates: list[tmux.WindowOptionUpdate] = []
+    for window in windows:
         match = next(
             (index for index, pair in enumerate(pairs) if pair[0] == window.name), None
         )
@@ -105,32 +102,31 @@ def _restore_worktrees(session: str, stored: StoredWorktrees) -> None:
             continue
         path = pairs.pop(match)[1]
         if not window.tagged:
-            tmux.set_window_option(window.window_id, "@worktree", path)
+            updates.append(tmux.WindowOptionUpdate(window.window_id, "@worktree", path))
+    return updates
 
 
 def restore_state() -> None:
     """Reapply saved tags to live sessions, never overwriting a live tag."""
     state = _load_state()
-    live = tmux.list_sessions()
-    taken = {
-        int(raw) for info in live if (raw := tmux.session_option(info.name, "@slot"))
-    }
-    for info in live:
+    snapshot = tmux.snapshot()
+    taken = {info.slot for info in snapshot.sessions if info.slot is not None}
+    updates: list[tmux.SessionOptionUpdate | tmux.WindowOptionUpdate] = []
+    for info in snapshot.sessions:
         entry = state.get(info.name)
         if entry is None:
             continue
         slot = entry.get("slot")
-        if (
-            slot is not None
-            and slot not in taken
-            and not tmux.session_option(info.name, "@slot")
-        ):
+        if slot is not None and slot not in taken and info.slot is None:
             taken.add(slot)
-            tmux.set_session_option(info.name, "@slot", str(slot))
+            updates.append(tmux.SessionOptionUpdate(info.name, "@slot", str(slot)))
         key = entry.get("ticket_key")
-        if key and not tmux.session_option(info.name, "@ticket_key"):
-            tmux.set_session_option(info.name, "@ticket_key", key)
+        if key and not info.ticket_key:
+            updates.append(tmux.SessionOptionUpdate(info.name, "@ticket_key", key))
         slug = entry.get("ticket_slug")
-        if slug and not tmux.session_option(info.name, "@ticket_slug"):
-            tmux.set_session_option(info.name, "@ticket_slug", slug)
-        _restore_worktrees(info.name, entry.get("worktrees", []))
+        if slug and not info.ticket_slug:
+            updates.append(tmux.SessionOptionUpdate(info.name, "@ticket_slug", slug))
+        updates += _worktree_updates(
+            snapshot.windows[info.name], entry.get("worktrees", [])
+        )
+    tmux.set_options(updates)

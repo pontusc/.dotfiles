@@ -1,7 +1,5 @@
 """Read-only views of the catalogue and the sessions the tool has materialized."""
 
-from __future__ import annotations
-
 import compose
 import config
 import repo

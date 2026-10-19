@@ -1,7 +1,5 @@
 """Grow and prune the session the user is currently in."""
 
-from __future__ import annotations
-
 import re
 import shutil
 from concurrent.futures import ThreadPoolExecutor

@@ -1,8 +1,7 @@
 """tmux session, window and pane plumbing."""
 
-from __future__ import annotations
-
 import subprocess
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Literal, NamedTuple
 
@@ -19,6 +18,17 @@ _PANE_FLAGS: dict[PaneDirection, str] = {
 
 _FORBIDDEN_NAME_CHARS = (".", ":")
 
+_BATCH_SEPARATOR = "\x1f"
+
+# The free-text field goes last, it may hold anything but a tab.
+_SESSION_FORMAT = (
+    "#{session_id}\t#{session_created}\t#{@slot}\t#{@ticket_key}\t#{@ticket_slug}"
+    "\t#{session_name}"
+)
+_WINDOW_FORMAT = (
+    "#{window_id}\t#{@claude}\t#{@worktree}\t#{pane_current_path}\t#{window_name}"
+)
+
 
 class WindowRef(NamedTuple):
     window_id: str
@@ -30,11 +40,34 @@ class SessionWindow(NamedTuple):
     name: str
     path: Path
     tagged: bool
+    claude_flag: str
 
 
 class SessionInfo(NamedTuple):
+    session_id: str
     name: str
     created: int
+    slot: int | None
+    ticket_key: str
+    ticket_slug: str
+
+
+class Snapshot(NamedTuple):
+    current: str
+    sessions: list[SessionInfo]
+    windows: dict[str, list[SessionWindow]]
+
+
+class SessionOptionUpdate(NamedTuple):
+    session: str
+    option: str
+    value: str
+
+
+class WindowOptionUpdate(NamedTuple):
+    window_id: str
+    option: str
+    value: str
 
 
 class CurrentWindow(NamedTuple):
@@ -97,6 +130,53 @@ def _run_checked(*args: str) -> None:
         raise _failure(args[0], result)
 
 
+def _batch(*commands: Sequence[str]) -> list[list[str]]:
+    """Run the commands over one tmux connection, returning each one's output lines.
+
+    tmux stops at the first failing command, so any failure fails the batch.
+    """
+    if not commands:
+        raise ValueError("tmux batch needs at least one command")
+    args: list[str] = []
+    for command in commands:
+        if args:
+            args += [";", "display-message", "-p", _BATCH_SEPARATOR, ";"]
+        args += command
+    result = _run(*args)
+    if result.returncode != 0:
+        raise _failure("/".join(command[0] for command in commands), result)
+    outputs: list[list[str]] = [[]]
+    for line in result.stdout.splitlines():
+        if line == _BATCH_SEPARATOR:
+            outputs.append([])
+        else:
+            outputs[-1].append(line)
+    return outputs
+
+
+def _parse_session(line: str) -> SessionInfo:
+    session_id, created, slot, ticket_key, ticket_slug, name = line.split("\t", 5)
+    return SessionInfo(
+        session_id=session_id,
+        name=name,
+        created=int(created),
+        slot=int(slot) if slot else None,
+        ticket_key=ticket_key,
+        ticket_slug=ticket_slug,
+    )
+
+
+def _parse_window(line: str) -> SessionWindow:
+    window_id, claude_flag, tagged, pane_path, name = line.split("\t", 4)
+    return SessionWindow(
+        window_id=window_id,
+        name=name,
+        path=Path(tagged or pane_path),
+        tagged=bool(tagged),
+        claude_flag=claude_flag,
+    )
+
+
 def _client_size_args() -> list[str]:
     # A detached session defaults to 80x24, so panes split now would rescale
     # badly on attach. Size it to the client that is about to switch to it.
@@ -128,19 +208,22 @@ def list_session_names() -> list[str]:
     return [line for line in _lines("list-sessions", "-F", "#{session_name}") if line]
 
 
-def list_sessions() -> list[SessionInfo]:
-    # session_created is always numeric; session_name may hold anything but a
-    # tab, so it goes last.
-    output = _lines_checked(
-        "list-sessions", "-F", "#{session_created}\t#{session_name}"
+def snapshot() -> Snapshot:
+    """Current session, every session and every window, read in one tmux call."""
+    current, session_lines, window_lines = _batch(
+        ["display-message", "-p", "#S"],
+        ["list-sessions", "-F", _SESSION_FORMAT],
+        ["list-windows", "-a", "-F", f"#{{session_id}}\t{_WINDOW_FORMAT}"],
     )
-    sessions: list[SessionInfo] = []
-    for line in output:
-        if not line:
-            continue
-        created, name = line.split("\t", 1)
-        sessions.append(SessionInfo(name=name, created=int(created)))
-    return sessions
+    sessions = [_parse_session(line) for line in session_lines if line]
+    names = {session.session_id: session.name for session in sessions}
+    windows: dict[str, list[SessionWindow]] = {session.name: [] for session in sessions}
+    for line in window_lines:
+        session_id, window = line.split("\t", 1)
+        windows[names[session_id]].append(_parse_window(window))
+    return Snapshot(
+        current=current[0] if current else "", sessions=sessions, windows=windows
+    )
 
 
 def session_worktrees(session: str) -> list[Path]:
@@ -249,42 +332,28 @@ def set_window_option(window_id: str, option: str, value: str) -> None:
     _run_checked("set-option", "-w", "-t", window_id, option, value)
 
 
-def flagged_sessions() -> dict[str, str]:
-    """Session name to @claude flag ("ask" or "done"); "ask" outranks "done" for a session with both."""
-    output = _lines("list-windows", "-a", "-F", "#{session_name}\t#{@claude}")
-    flags: dict[str, str] = {}
-    for line in output:
-        if "\t" not in line:
-            continue
-        session, flag = line.split("\t", 1)
-        if not flag:
-            continue
-        if flag == "ask" or session not in flags:
-            flags[session] = flag
-    return flags
+def set_options(updates: Sequence[SessionOptionUpdate | WindowOptionUpdate]) -> None:
+    commands = [
+        ["set-option", "-w", "-t", update.window_id, update.option, update.value]
+        if isinstance(update, WindowOptionUpdate)
+        else [
+            "set-option",
+            "-t",
+            _session_target(update.session),
+            update.option,
+            update.value,
+        ]
+        for update in updates
+    ]
+    if commands:
+        _batch(*commands)
 
 
 def session_windows(session: str) -> list[SessionWindow]:
-    # window_name is renameable and may contain tabs, so it goes last.
     output = _lines(
-        "list-windows",
-        "-t",
-        _session_target(session),
-        "-F",
-        "#{window_id}\t#{@worktree}\t#{pane_current_path}\t#{window_name}",
+        "list-windows", "-t", _session_target(session), "-F", _WINDOW_FORMAT
     )
-    windows: list[SessionWindow] = []
-    for line in output:
-        window_id, tagged, pane_path, name = line.split("\t", 3)
-        windows.append(
-            SessionWindow(
-                window_id=window_id,
-                name=name,
-                path=Path(tagged or pane_path),
-                tagged=bool(tagged),
-            )
-        )
-    return windows
+    return [_parse_window(line) for line in output]
 
 
 def find_window_by_name(session: str, name: str) -> SessionWindow | None:

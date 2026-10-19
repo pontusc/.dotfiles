@@ -1,7 +1,5 @@
 """The ticket a workspace can be materialized under."""
 
-from __future__ import annotations
-
 import re
 from dataclasses import dataclass
 

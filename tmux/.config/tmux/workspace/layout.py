@@ -1,7 +1,5 @@
 """The window layouts the tool works in and the programs it starts there."""
 
-from __future__ import annotations
-
 import shlex
 from collections.abc import Sequence
 from pathlib import Path
@@ -22,10 +20,21 @@ def link_agent_config(ticket_root: Path) -> None:
         link.symlink_to(AGENT_CONFIG_DIR)
 
 
+def is_ticket_root(path: Path) -> bool:
+    link = path / AGENT_CONFIG_LINK
+    return link.is_symlink() and link.resolve() == AGENT_CONFIG_DIR.resolve()
+
+
 def claude_command(
-    session_name: str, extra_dir: Path | None = None, *, ticket_plugin: bool = False
+    session_name: str,
+    extra_dir: Path | None = None,
+    *,
+    ticket_plugin: bool = False,
+    resume: bool = False,
 ) -> list[str]:
     args = ["claude", "--model", "opus"]
+    if resume:
+        args.append("--continue")
     if ticket_plugin:
         args += ["--plugin-dir", str(AGENT_CONFIG_DIR / "plugin")]
     args += ["-n", session_name]

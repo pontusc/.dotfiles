@@ -6,8 +6,6 @@ this module digests the job, has an agent write the archive entry, commits
 it, and only then deletes the branches and the job.
 """
 
-from __future__ import annotations
-
 import fcntl
 import json
 import os

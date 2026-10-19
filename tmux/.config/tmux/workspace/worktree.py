@@ -1,7 +1,5 @@
 """Git worktree layout and lifecycle for a repo checkout."""
 
-from __future__ import annotations
-
 import contextlib
 import shutil
 import subprocess

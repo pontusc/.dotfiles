@@ -1,7 +1,5 @@
 """Pick another session by number or fuzzy name."""
 
-from __future__ import annotations
-
 from collections.abc import Sequence
 from typing import NamedTuple
 
@@ -11,22 +9,19 @@ import ui
 
 _SLOT_OPTION = "@slot"
 _MAX_BOUND_DIGIT = 9
+# Key order is precedence: a session with both flags shows "ask".
 _FLAG_MARKERS = {"ask": "?", "done": "✓"}
 _LABEL_WIDTH = 20
-
-
-class SessionRecord(NamedTuple):
-    name: str
-    created: int
-    slot: int | None
 
 
 class SlottedSession(NamedTuple):
     slot: int
     name: str
+    ticket_slug: str
+    claude_flag: str
 
 
-def assign_slots(sessions: Sequence[SessionRecord]) -> dict[str, int]:
+def assign_slots(sessions: Sequence[tmux.SessionInfo]) -> dict[str, int]:
     """Existing slots kept as-is; unslotted sessions get the lowest free slot, oldest first."""
     taken = {record.slot for record in sessions if record.slot is not None}
     slots = {record.name: record.slot for record in sessions if record.slot is not None}
@@ -43,18 +38,9 @@ def assign_slots(sessions: Sequence[SessionRecord]) -> dict[str, int]:
     return slots
 
 
-def _current_records() -> list[SessionRecord]:
-    records: list[SessionRecord] = []
-    for session in tmux.list_sessions():
-        raw_slot = tmux.session_option(session.name, _SLOT_OPTION)
-        records.append(
-            SessionRecord(
-                name=session.name,
-                created=session.created,
-                slot=int(raw_slot) if raw_slot else None,
-            )
-        )
-    return records
+def _claude_flag(windows: Sequence[tmux.SessionWindow]) -> str:
+    flags = {window.claude_flag for window in windows}
+    return next((flag for flag in _FLAG_MARKERS if flag in flags), "")
 
 
 def _digit_binds(rows: Sequence[SlottedSession]) -> list[str]:
@@ -73,9 +59,9 @@ def _digit_binds(rows: Sequence[SlottedSession]) -> list[str]:
     return binds
 
 
-def _label(name: str) -> str:
-    slug = tmux.session_option(name, "@ticket_slug")
-    if not slug or slug == name:
+def _label(row: SlottedSession) -> str:
+    slug = row.ticket_slug
+    if not slug or slug == row.name:
         return ""
     if len(slug) > _LABEL_WIDTH:
         return f"{slug[: _LABEL_WIDTH - 1]}…"
@@ -83,29 +69,36 @@ def _label(name: str) -> str:
 
 
 def switch_session() -> None:
-    current = tmux.current_session()
-    records = _current_records()
-    slots = assign_slots(records)
-    unslotted = [record for record in records if record.slot is None]
-    for record in unslotted:
-        tmux.set_session_option(record.name, _SLOT_OPTION, str(slots[record.name]))
+    snapshot = tmux.snapshot()
+    slots = assign_slots(snapshot.sessions)
+    unslotted = [info for info in snapshot.sessions if info.slot is None]
     if unslotted:
+        tmux.set_options(
+            [
+                tmux.SessionOptionUpdate(info.name, _SLOT_OPTION, str(slots[info.name]))
+                for info in unslotted
+            ]
+        )
         persist.save_state()
     rows = sorted(
         (
-            SlottedSession(slot=slots[record.name], name=record.name)
-            for record in records
+            SlottedSession(
+                slot=slots[info.name],
+                name=info.name,
+                ticket_slug=info.ticket_slug,
+                claude_flag=_claude_flag(snapshot.windows[info.name]),
+            )
+            for info in snapshot.sessions
         ),
         key=lambda row: row.slot,
     )
-    flags = tmux.flagged_sessions()
     name_width = max(len(row.name) for row in rows)
     lines = [
         (
             f"{row.name}\t{row.slot:>2}  {row.name:<{name_width}}"
-            f" {'*' if row.name == current else ' '}"
-            f"{_FLAG_MARKERS.get(flags.get(row.name), ' ')}"
-            f"  {_label(row.name)}"
+            f" {'*' if row.name == snapshot.current else ' '}"
+            f"{_FLAG_MARKERS.get(row.claude_flag, ' ')}"
+            f"  {_label(row)}"
         ).rstrip()
         for row in rows
     ]

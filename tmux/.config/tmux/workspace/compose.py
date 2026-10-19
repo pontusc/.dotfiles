@@ -1,7 +1,5 @@
 """Compose a tmux session out of picked repos."""
 
-from __future__ import annotations
-
 import json
 import os
 import re
