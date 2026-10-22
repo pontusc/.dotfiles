@@ -50,17 +50,10 @@ Consequence:
 
 - **A new template or hook does not deploy itself.** After adding one under
   `omarchy/.config/omarchy/themed/` or `omarchy/.config/omarchy/hooks/theme-set.d/`, run
-  `stow -R omarchy` or link it manually. Everything currently in the repo is linked.
+  `stow -R omarchy` or link it manually.
 
 ## The git package (partially folded)
 
 `~/.config/gh/` is a real directory because `hosts.yml` holds the OAuth token, so `config.yml` is a per-entry symlink. Never add `hosts.yml` to the package.
 
 gh-dash includes the rendered omarchy theme file and a missing include is a hard error, so on a fresh machine apply a theme once before running `gh dash`.
-
-## Key files
-
-- `claude/.claude/CLAUDE.md` — global user instructions (orchestration/delegation rules)
-- `claude/.claude/settings.json` — permissions, deny list, hook registration
-- `claude/.claude/hooks/HOOKS.md` — hook architecture and design rules
-- `claude/.config/dcg/config.toml` — destructive-command-guard packs (PreToolUse Bash hook)

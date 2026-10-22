@@ -13,7 +13,7 @@ A checkout's target is the output of `git symbolic-ref refs/remotes/origin/HEAD`
 
 ## Questions
 
-Write neutral questions to `research.md`. A question names what to find, never the intent or the ticket. Tag each one:
+Write neutral questions to `research-<date>.md`. A question names what to find, never the intent or the ticket. Tag each one:
 
 - `code <repo>`: answered from that worktree.
 - `code all`: identifiers the ticket depends on, searched across every checkout under the work root, including repos outside the ticket.
@@ -22,7 +22,7 @@ Write neutral questions to `research.md`. A question names what to find, never t
 
 ## Prior work
 
-Before wave 1, invoke `ticket:recall` with the repos in the ticket and the nouns of the issue. Its hits go under `### Prior work` in `research.md`, one line per item that applies, prefixed with the ticket key and its closed date. A gotcha that bears on a question sharpens that question's brief.
+Before wave 1, invoke `ticket:recall` with the repos in the ticket and the nouns of the issue. Its hits go under `### Prior work` in `research-<date>.md`, one line per item that applies, prefixed with the ticket key and its closed date. A gotcha that bears on a question sharpens that question's brief.
 
 ## Wave 1
 
@@ -37,7 +37,7 @@ One message launches every agent. A brief holds the questions, the path or syste
 
 Questions that wave 1 answers raise go out in one more message, once. A question still unanswered after it goes under Open, never a guess or a placeholder.
 
-## research.md
+## research-<date>.md
 
 ```markdown
 # <KEY> research
@@ -56,8 +56,12 @@ Questions that wave 1 answers raise go out in one more message, once. A question
 - <Question no answer resolved.>
 ```
 
-A rerun appends a new dated section with its own table. Earlier sections stay.
+A rerun writes a new file. A rerun on the same day names it `research-<date>-<n>.md`, n counting from 2. Earlier files stay.
+
+## research.md
+
+An index, one line per question, `- <question> <tag>: research-<date>.md`, naming the dated file that answers it. An open question is indexed as `- <question> <tag>: open, research-<date>.md`. A rerun adds its questions and repoints a question it answers again.
 
 ## Reply
 
-From `research.md`, in this order: what the issue asks, what the user's prompt adds or changes, the current state per repo, constraints found, and the open questions. Facts only, no proposals, no next steps.
+From `research-<date>.md`, in this order: what the issue asks, what the user's prompt adds or changes, the current state per repo, constraints found, and the open questions. Facts only, no proposals, no next steps.

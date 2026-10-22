@@ -5,7 +5,8 @@
     "ENABLE_LSP_TOOL": "1",
     "BASH_MAX_TIMEOUT_MS": "120000",
     "CLAUDE_CODE_SCROLL_SPEED": "3",
-    "TG_LOG_FORMAT": "bare"
+    "TG_LOG_FORMAT": "bare",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   },
   "attribution": {
     "commit": "",
@@ -15,32 +16,38 @@
   "permissions": {
     "allow": [
       "Read(*)",
-      "Glob(*)",
+      "Glob",
       "Grep(*)",
       "Bash(*)",
       "WebFetch(*)",
       "WebSearch(*)",
       "Agent(*)",
       "Edit(*)",
-      "Write(*)",
+      "Write",
       "Skill(*)",
       "mcp__playwright",
       "mcp__linear",
-      "mcp__claude_ai_Slack__slack_read_canvas",
-      "mcp__claude_ai_Slack__slack_read_channel",
-      "mcp__claude_ai_Slack__slack_read_thread",
-      "mcp__claude_ai_Slack__slack_read_user_profile",
-      "mcp__claude_ai_Slack__slack_search_channels",
-      "mcp__claude_ai_Slack__slack_search_public",
-      "mcp__claude_ai_Slack__slack_search_public_and_private",
-      "mcp__claude_ai_Slack__slack_search_users",
-      "Monitor"
+      "mcp__slack-alchemy__slack_read_canvas",
+      "mcp__slack-alchemy__slack_read_channel",
+      "mcp__slack-alchemy__slack_read_thread",
+      "mcp__slack-alchemy__slack_read_user_profile",
+      "mcp__slack-alchemy__slack_search_channels",
+      "mcp__slack-alchemy__slack_search_public",
+      "mcp__slack-alchemy__slack_search_public_and_private",
+      "mcp__slack-alchemy__slack_search_users",
+      "mcp__slack-grevgatan__slack_read_canvas",
+      "mcp__slack-grevgatan__slack_read_channel",
+      "mcp__slack-grevgatan__slack_read_thread",
+      "mcp__slack-grevgatan__slack_read_user_profile",
+      "mcp__slack-grevgatan__slack_search_channels",
+      "mcp__slack-grevgatan__slack_search_public",
+      "mcp__slack-grevgatan__slack_search_public_and_private",
+      "mcp__slack-grevgatan__slack_search_users"
     ],
     "deny": [
       "mcp__claude_ai_Linear",
       "Bash(sudo:*)",
       "Bash(git pull:*)",
-      "Bash(git merge:*)",
       "Bash(git clean:*)",
       "Bash(git stash)",
       "Bash(git stash -*)",
@@ -117,7 +124,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/pontusc/.local/bin/dcg"
+            "command": "/home/pontusc/.local/bin/dcg",
+            "onFailure": "block"
           }
         ]
       }
@@ -155,7 +163,7 @@
     "enabled": false
   },
   "feedbackDrafts": "off",
-  "syntaxHighlightingDisabled": false,
+  "syncClaudeAiSkills": false,
   "modelSettings": {
     "claude-fable-5-1": {
       "effortLevel": "high"
@@ -179,7 +187,7 @@
       "$defaults",
       "Edits to files under ~/dotfiles, or to a ~/.claude or ~/.config path that is a stow symlink into it, are local operations, not scope escalation. This does not exempt an edit whose target is agent config (permissions, hooks, sandbox, CLAUDE.md instruction content), a shell profile, a persistence unit or a credential file. Those are still judged by Self-Modification, Instruction Poisoning, Unauthorized Persistence and Credential Leakage",
       "Read-only git in any checkout under ~ is a read: status, log, reflog, branch --list, diff, show, rev-parse, git fetch from a configured remote without --prune, and read-tree only with GIT_INDEX_FILE set to a scratch path in the same command. Not covered: -c or --config-env overrides, --output, --ext-diff",
-      "git rebase --autostash origin/HEAD with no other flags is the expected catch-up step in a session whose working directory is under ~/Work/tickets/, or when -C or cd points there. It is not a force push and clears no push or commit rule",
+      "git rebase --autostash origin/HEAD and git merge --ff-only origin/HEAD, each with no other flags, are the expected catch-up steps in a session whose working directory is under ~/Work/tickets/, or when -C or cd points there. They are not a force push and clear no push or commit rule",
       "Rewriting a tracked file in place inside the session repo or ticket worktree with sed s/// or d expressions, the Edit tool, or an inline python -c whose only I/O is that file is a local change, including .tf files, workflow YAML and renovate.json. The written content is still judged by the content rules, and again when committed or pushed",
       "gh issue view, gh pr view, gh run view, and gh api with method GET only and none of -f, -F, --raw-field or --input are reads, still subject to Production Reads, Credential Materialization and PII Data Handling"
     ],

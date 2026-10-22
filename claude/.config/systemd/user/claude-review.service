@@ -7,4 +7,5 @@ TimeoutStartSec=2h30m
 # claude --bg and tmux start a daemon and a server on a cold boot, they must outlive the run.
 KillMode=process
 Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin
+ExecStartPre=%h/.local/bin/claude auth status
 ExecStart=%h/.local/bin/claude-review

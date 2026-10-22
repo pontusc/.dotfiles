@@ -5,4 +5,5 @@ Description=Weekly Claude Code session summary
 Type=oneshot
 TimeoutStartSec=1h
 Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin
+ExecStartPre=%h/.local/bin/claude auth status
 ExecStart=%h/.local/bin/claude-weekly

@@ -1,6 +1,6 @@
 ---
 name: grill
-description: Grill the user relentlessly about a plan, decision, or idea until nothing is left assumed. Use when the user wants their thinking stress-tested or says grill.
+description: Grill the user relentlessly about a plan, decision, or idea until nothing is left assumed. Use when the user wants their thinking stress-tested or says grill. Every question goes through AskUserQuestion.
 ---
 
 Interview the user until you share one understanding. Treat it as a design tree, every decision branches into the decisions that hang off it.

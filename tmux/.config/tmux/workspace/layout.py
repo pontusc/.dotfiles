@@ -26,32 +26,19 @@ def is_ticket_root(path: Path) -> bool:
 
 
 def claude_command(
-    session_name: str,
-    extra_dir: Path | None = None,
-    *,
-    ticket_plugin: bool = False,
-    resume: bool = False,
+    session_name: str, *, ticket_plugin: bool = False, resume: bool = False
 ) -> list[str]:
-    args = ["claude", "--model", "opus"]
+    args = ["claude"]
     if resume:
         args.append("--continue")
     if ticket_plugin:
         args += ["--plugin-dir", str(AGENT_CONFIG_DIR / "plugin")]
     args += ["-n", session_name]
-    if extra_dir is not None:
-        # --add-dir is variadic in the claude CLI, so it must stay last.
-        args += ["--add-dir", str(extra_dir)]
     return args
 
 
-def arrange(window_id: str, cwd: Path, agent: Sequence[str] | None) -> None:
-    """Three panes: nvim top-left, a terminal below it, the agent on the right.
-
-    Without an agent the window is the two-pane side layout with nvim on the left.
-    """
-    if agent is None:
-        arrange_side(window_id, cwd, "nvim")
-        return
+def arrange(window_id: str, cwd: Path, agent: Sequence[str]) -> None:
+    """Three panes: nvim top-left, a terminal below it, the agent on the right."""
     tmux.split_window(window_id, cwd, horizontal=True, size="34%")
     tmux.select_pane(window_id, "left")
     tmux.split_window(window_id, cwd, horizontal=False, size="30%")

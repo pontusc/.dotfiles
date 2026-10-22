@@ -6,7 +6,7 @@ description: Help the user understand the current topic visually by building one
 Help the user understand the current topic of conversation visually. The terminal prints markdown as plain text, so nothing renders there: no Mermaid, no styled blocks, no images. Build the answer as one focused HTML file and open it:
 
 ```
-Bash(open path/to/show-me-{description}.html)
+Bash(xdg-open path/to/show-me-{description}.html)
 ```
 
 Everything goes in the page. Skip the preamble, keep prose brief, and pick the smallest view that makes the key point clear. In the terminal, say what you built and where it is, nothing more.

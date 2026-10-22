@@ -1,6 +1,6 @@
 import type { Register } from 'claude-code'
 
-const WARN_AT_SHARE_OF_THRESHOLD = 0.9
+const WARN_AT_SHARE_OF_THRESHOLD = 0.8
 
 let hasWarned = false
 
@@ -23,6 +23,7 @@ export const register: Register = on => {
         const isPastWarnLevel = tokens >= threshold * WARN_AT_SHARE_OF_THRESHOLD
         if (isPastWarnLevel && !hasWarned) {
           await $.session.append({ message: { type: 'user', content: [{ type: 'text', text: handoffNote(tokens, threshold) }] } })
+          $.ui.toast('Context near auto-compact, handoff requested')
         }
         hasWarned = isPastWarnLevel
       }

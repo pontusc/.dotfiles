@@ -1,8 +1,9 @@
 import type { On } from 'claude-code'
 import type { Engine } from 'claude-code/testing'
-import { describe, expect, test } from 'claude-code/testing'
+import { describe, expect, mock, test } from 'claude-code/testing'
 
 function engineRuns(on: On): string[] {
+  mock.env(on, { CLAUDE_CODE_TMPDIR: '/var/tmp', HOME: '/home/pontusc' })
   const ran: string[] = []
   on('tool.call', ($, e) => {
     if (e.tool === 'Bash') ran.push(e.command)
@@ -16,26 +17,21 @@ async function bash($: Engine, command: string): Promise<void> {
 }
 
 const DENIED = [
-  'SP=/tmp/claude-1000/x/scratchpad; rm -rf "$SP/$NAME"',
-  'rm -r $OUT',
-  'rm -r -f "$f"',
-  'rm --recursive --force "$f"',
-  'ls > "$SP/out.txt"',
-  'ls > /tmp/x/$f',
-  'make 2> ${LOG}',
-  'make &> "$LOG"',
-  'ls >| "$f"',
+  "cat > ~/.claude/jobs/abc/notes.md <<'EOF'\nx\nEOF",
+  "cat > /var/lib/x/notes.md <<'EOF'\nx\nEOF",
+  "cat > /var/tmp/../home/pontusc/repo/a.md <<'EOF'\nx\nEOF",
+  "cat > ~/.claude/jobs/a/tmp/../../../settings.json <<'EOF'\nx\nEOF",
+  "cat > ~/.claude/jobs/../tmp/x.md <<'EOF'\nx\nEOF",
+  "cd /var/tmp/x && cd ../../home/pontusc/repo && cat > a.md <<'EOF'\nx\nEOF",
+  "cat > /var/tmpx/a.md <<'EOF'\nx\nEOF",
+  "cat > ~/.claude/jobs/abc/tmpx/a.md <<'EOF'\nx\nEOF",
   "cd /home/pontusc/repo && python3 - <<'EOF'\nfrom pathlib import Path\nPath('order-db.yml').write_text(data)\nEOF",
   "python3 - <<'EOF'\nwith open('plan.md', 'w') as f:\n    f.write(text)\nEOF",
   "cat > progress.md <<'EOF'\n# Progress\nEOF",
   "cat <<EOF >> /home/pontusc/notes.md\nline\nEOF",
-  'for d in */; do rm -rf "$d"; done',
-  'if true; then\n  sudo rm -R "$d"\nfi',
   "python3 - <<'EOF'\nimport os\nopen(os.path.join(d, 'f'), 'wt').write(x)\nEOF",
   "cat > /tmp/a <<'EOT'\nx\nEOT\ncat > notes.md <<'EOT'\ny\nEOT",
   'cat <<EOT 2>/dev/null > out.md\nline\nEOT',
-  `for c in a b; do kubectl get x "$c" -o json | jq '.a["b"]' > /tmp/s/dev-$c.json; done`,
-  'for f in a b; do python3 "$D/s.py" "$D/$f.html" > "/tmp/s/$f.txt"; done',
   "cd /tmp/s && cd /home/pontusc/repo && cat > a.sh <<'EOF'\nx\nEOF",
   "D=/home/pontusc/repo; cd $D && cat > a.sh <<'EOF'\nx\nEOF",
   "M=/home/pontusc/repo; cat > $M/a.sh <<'EOF'\nx\nEOF",
@@ -44,24 +40,24 @@ const DENIED = [
   "cat > \"my notes.md\" <<'EOF'\nx\nEOF",
   "cat > dev/notes.md <<'EOF'\nx\nEOF",
   "python3 - <<'EOF' 2>/dev/null\nopen('a.md', 'w').write(s)\nEOF",
-  'S=/tmp/x; for c in a b; do ls > $S/$c; done',
-  'for r in a b; do rm -rf src-$r; done',
   "cat > notes.md <<'END-X'\nx\nEND-X",
-  'cat <<END-X > /tmp/x/a\nx\nEND-X\nrm -rf $q',
   "cat <<'EOF' &> notes.md\nx\nEOF",
   "cat <<'EOF' &>> notes.md\nx\nEOF",
   "cat <<'EOF' 1>> notes.md\nx\nEOF",
-  'echo $((1<<bits))\nrm -rf $q',
   "cd /tmp/s && pushd /home/pontusc/repo && cat > a.md <<'EOF'\nx\nEOF",
   "cd /tmp/s && python3 - <<'EOF'\np = '/home/pontusc/repo/a.yml'\nopen(p, 'w').write(open(p).read())\nEOF",
   "pushd /home/pontusc/repo && popd && cat > a.md <<'EOF'\nx\nEOF",
   "((cd /home/x && make) | tail)\ncat > notes.md <<'EOF'\nx\nEOF",
-  'x=$(( (1+(2)) <<3 ))\nrm -rf $q',
   "cat <<'EOF' >| notes.md\nx\nEOF",
   "cd /tmp/s && python3 - <<'EOF'\nopen('/home/pontusc/repo/a.yml', 'r+').write(x)\nEOF",
 ]
 
 const PASSED = [
+  "cat > /var/tmp/claude-1000/x/scratchpad/a.md <<'EOF'\nx\nEOF",
+  "cat > ~/.claude/jobs/abc/tmp/a.md <<'EOF'\nx\nEOF",
+  "cat > /home/pontusc/.claude/jobs/abc/tmp/a.md <<'EOF'\nx\nEOF",
+  'rm -r $OUT',
+  'ls > "$SP/out.txt"',
   'rm -rf /tmp/claude-1000/x/scratchpad/plans',
   'SP=/tmp/claude-1000/x/scratchpad; rm -rf "$SP/plans"',
   'export D=/tmp/x && ls > "$D/out"',

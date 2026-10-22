@@ -10,19 +10,16 @@ allowed-tools: Read, Glob, Grep, Write, Bash
 Wires the Claude Code `LSP` tool into the current project via a project-local skills-dir
 plugin. LSP servers are **always defined per project, never globally**.
 
-## Why per-project (don't relitigate)
+## Constraints
 
-- A globally installed LSP plugin roots its server at the launch directory and cannot
-  re-root to subfolders, broken in multi-service monorepos.
-- Disabling a marketplace plugin per-project (`"…@marketplace": false`) corrupts the global
-  install registry, it re-scopes the plugin to that project on every restart and breaks it
-  in other repos. Globals are never installed rather than disabled.
-- The global prerequisite `ENABLE_LSP_TOOL=1` is already set in `~/.claude/settings.json`.
-  The variable is undocumented (accurate as of 2026-07, CC 2.1.19x). Re-verify if LSP
-  stops appearing after an update.
-- The LSP tool is **main-thread-only**: as of 2026-07 (CC 2.1.196, no fix in changelog) it
-  never reaches subagents. Agent `tools:` frontmatter does not fix that (proven futile,
-  see cc-lsp/subagent-lsp-inheritance).
+- A global LSP plugin roots its server at the launch directory and cannot re-root to a
+  subfolder, so no LSP plugin is installed globally.
+- Never disable a marketplace plugin per project (`"…@marketplace": false`), it re-scopes
+  the global install to that project and breaks it in other repos.
+- LSP needs the undocumented `ENABLE_LSP_TOOL=1` in `~/.claude/settings.json`. When LSP
+  stops appearing after an update, check it first.
+- The LSP tool reaches only the main thread, never subagents, whatever an agent's `tools:`
+  frontmatter says.
 
 ## Loading conditions
 

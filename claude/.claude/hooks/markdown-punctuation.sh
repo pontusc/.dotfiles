@@ -9,6 +9,9 @@ TOOL="$(jq -r '.tool_name // empty' <<<"$INPUT")"
 FILE="$(jq -r '.tool_input.file_path // empty' <<<"$INPUT")"
 
 [[ "$FILE" == *.md && -f "$FILE" ]] || exit 0
+case "$FILE" in
+  /tmp/* | "${CLAUDE_CODE_TMPDIR:-/tmp}"/* | "$HOME"/.claude/jobs/*) exit 0 ;;
+esac
 
 readarray -t hits < <(
   awk '

@@ -267,10 +267,6 @@ def start_session(name: str, window_name: str, cwd: Path) -> str:
     )
 
 
-def start_empty_session(name: str) -> None:
-    _run_checked("new-session", "-d", *_client_size_args(), "-s", name)
-
-
 def new_window(session: str, name: str, cwd: Path) -> str:
     """Add a window to an existing session, returning its window id."""
     return _output_checked(

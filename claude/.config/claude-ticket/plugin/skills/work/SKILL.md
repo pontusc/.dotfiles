@@ -1,11 +1,14 @@
 ---
 name: work
-description: Run the next phase of the ticket plan to its exit criteria. Use in a ticket workspace when the user says go, next phase, go next phase, run phase N or similar.
+description: Run the next phase of the ticket plan or the phase the operator names, to its exit criteria.
+disable-model-invocation: true
 ---
 
 Without `plan.md`, stop. The operator reviews the spec and runs `/ticket:plan`.
 
 Read `plan.md` and the phase file to run: phase N when the user names it, otherwise the phase whose Outcome in `plan.md` is `None yet.` When that phase has no file yet, invoke `ticket:plan` first.
+
+A `HANDOFF.md` in the ticket root is read at the start, then deleted.
 
 ## Ledger
 
@@ -20,24 +23,26 @@ Tasks joined by a Waits for edge form one group, run in order. Groups with no ed
 
 A brief holds the group's tasks verbatim with their inline shapes, the worktree path, and the convention skills to invoke for the files it touches. Operator tasks are never briefed.
 
+Before an executor creates a new file, script, workflow or dashboard whose shape the phase file's Shape section does not fix, state the shape in at most five lines and stop for the operator.
+
 ## After each group
 
-One message launches a validator on the touched files and two reviewers. One checks spec compliance and quotes the phase line each finding concerns, one checks quality. Findings go to a fresh executor. After three fix rounds, stop and report each remaining finding as Expected, Found, Why this matters.
+One message launches a validator on the touched files and one reviewer. Its brief covers spec compliance, quoting the phase line each finding concerns, and quality. Every Agent call passes `effort`, `medium` for a small group. Findings go to a fresh executor. After three fix rounds, stop and report each remaining finding as Expected, Found, Why this matters.
 
 ## Phase end
 
-- A reviewer on the phase's full diff in each worktree.
+- A reviewer on the phase's full diff in each worktree, only when the phase spans more than one group or touches an infrastructure apply.
 - Each repo's pre-push hook and Makefile validation targets, run for real through a validator.
 - Every Automated exit criterion checked, the command and its result as evidence.
 - The Verdict line replaced with `VERIFIED`, `NOT VERIFIED` or `INCONCLUSIVE`, then the evidence or the gap. VERIFIED only when every box is checked except Operator tasks and Manual criteria, which the Outcome lists as open. INCONCLUSIVE is not a pass.
-- On VERIFIED, the Outcome in `plan.md`.
+- On VERIFIED, the full Outcome in the phase file and its one line Outcome in `plan.md`.
 
 A phase that is not VERIFIED does not end. Report the verdict and the unchecked boxes and stop. When a `/goal` is active, work the gap instead.
 
 Then invoke `ticket:plan` for the next phase and stop. Ask before running it and list the Manual exit criteria and the Review gate for the operator to confirm. When a `/goal` is active, run the next phase without asking until the goal's exit criteria are met, whatever the Review gate says.
 
-## Waits and stops
+## Stops
 
-A wait or command over a minute runs as a background agent or under Monitor, never a foreground loop.
+Stop only for an Operator task, a remote mutation that needs the hard rule unlock, a new shape Shape does not fix, the fix round cap, a review finding that removes the purpose of a planned task, or a verdict that is not VERIFIED outside a `/goal`. For an Operator task, give the exact command and why it is the operator's.
 
-Stop only for an Operator task, a remote mutation that needs the hard rule unlock, the fix round cap, a review finding that removes the purpose of a planned task, or a verdict that is not VERIFIED outside a `/goal`. For an Operator task, give the exact command and why it is the operator's.
+A stop with work in progress writes `HANDOFF.md` in the ticket root, holding only what the ledger cannot, such as in-flight shell or background state and pending operator items.

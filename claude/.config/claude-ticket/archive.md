@@ -2,11 +2,13 @@ The operator closed the local workspace for ticket {key}. That says nothing abou
 
 ## Inputs
 
-- The ticket directory `{ticket_root}`: spec.md, spec-context.md, plan.md, phase files, research.md and any loose notes. Phase Outcomes in plan.md, Rulings in the phase files and any section marked as a decision of the user or operator carry the most.
-- `{inputs}/git/<n>-<repo>.md`: the commits the ticket branch added in each worktree, with pull requests and their state. The full patch sits beside it as `<n>-<repo>.patch`, read the hunk of a commit whose message leaves the change unclear, never the whole file. Commits by other authors or under another ticket key are context, never this ticket's work.
-- `{inputs}/transcripts/`: the conversations with the operator, reduced to text. Long. `## user` blocks are the operator, `## assistant` blocks are the assistant. Grep for `ruling`, `decided`, `instead`, `keep`, `skip`, `rejected`, `gotcha`, `turned out` and read the `## user` block after each hit, the operator's reply decides. Never read a whole file.
+Read `{inputs}/INDEX.md` first. It lists every input file by its full path. Read no other file except `{archive_root}/tags.md` and an existing entry for {key}.
+
+- The ticket directory `{ticket_root}`: spec.md, spec-context.md, plan.md, phase files, research.md with the dated research files it indexes, and any loose notes. The Outcome and Rulings sections of the phase files and any section marked as a decision of the user or operator carry the most.
+- The git reports under `{inputs}/git/`: the commits the ticket branch added in each worktree, with pull requests and their state. Each has a patch file beside it, read the hunk of a commit whose message leaves the change unclear, never the whole file. Commits by other authors or under another ticket key are context, never this ticket's work.
+- The transcripts under `{inputs}/transcripts/`: the conversations with the operator, reduced to text. Long. `## user` blocks are the operator, `## assistant` blocks are the assistant. Grep for `ruling`, `decided`, `instead`, `keep`, `skip`, `rejected`, `gotcha`, `turned out` and read the `## user` block after each hit, the operator's reply decides. Never read a whole file.
 - The Linear issue {key} and its comments, through the Linear tools, for the problem statement and anything the operator wrote there.
-- `{archive_root}/tags.md`: the tag vocabulary, one `- <tag>: <what it covers, and the other names it goes by>` line per tag. Read it first, or create it when missing.
+- `{archive_root}/tags.md`: the tag vocabulary, one `- <tag>: <what it covers, and the other names it goes by>` line per tag. Read it before tagging, or create it when missing.
 
 ## What goes in
 
@@ -24,7 +26,7 @@ Tag what the ticket changed or diagnosed, never everything it touched or read. C
 
 ## Entry
 
-Short sentences, commas, no semicolons, no dashes used as punctuation. `repos` are the `<repo>` names from the git input filenames.
+Short sentences, commas, no semicolons, no dashes used as punctuation. `repos` are the repo names that head the git reports.
 
 ```markdown
 ---

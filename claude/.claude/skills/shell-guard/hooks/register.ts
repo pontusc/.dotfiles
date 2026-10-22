@@ -1,16 +1,5 @@
 import type { Register } from 'claude-code'
 
-const COMMAND_START = String.raw`(?:^|[;&|(]|\b(?:do|then|else|sudo|xargs))\s*`
-const VARIABLE_PATH = String.raw`([^\s;&|<>]*\$\{?[A-Za-z_][^\s;&|<>]*)`
-const RECURSIVE_FLAG = String.raw`\s(?:-[a-zA-Z]*[rR][a-zA-Z]*|--recursive)\b`
-
-const REDIRECT_TARGET = new RegExp(String.raw`(?:^|[^<>&\d=-])[\d&]?>(?!>)\|?\s*${VARIABLE_PATH}`, 'gm')
-const RECURSIVE_REMOVE_TARGET = new RegExp(String.raw`${COMMAND_START}rm\b(?=[^;&|\n]*${RECURSIVE_FLAG})[^;&|\n]*\s${VARIABLE_PATH}`, 'gm')
-const VARIABLE_NAME = /\$\{?([A-Za-z_]\w*)/g
-const ASSIGNMENT = /(?:^|[;&|(\s])(?:(?:export|local|readonly)\s+)?([A-Za-z_]\w*)=/gm
-const LOOP = /\bfor\s+([A-Za-z_]\w*)\s+in\s+([^;\n]*)/g
-const TEST_EXPRESSION = /\[\[[^\]\n]*\]\]/g
-
 const HEREDOC_OPENER = /<<(-?)\s*(?:'([^'\n]+)'|"([^"\n]+)"|\\?([^\s;&|<>()'"]+))/y
 const QUOTED_SPECIAL = { "'": /[\s<>;&|$]/g, '"': /[\s<>;&|]/g } as const
 const FILE_REDIRECT_TARGET = /(?<![<>\d&])[1&]?>>?\|?\s*([^\s;&|<>(][^\s;&|<>]*)/g
@@ -48,8 +37,22 @@ type Scope = {
   cwd: string | null
 }
 
-function isScratch(path: string): boolean {
-  return path.startsWith('/tmp/') || path.startsWith('/dev/')
+type ScratchRoots = {
+  prefixes: readonly string[]
+  home: string | undefined
+}
+
+function scratchRoots(tmpdir: string | undefined, home: string | undefined): ScratchRoots {
+  const tmpdirPrefix = tmpdir?.startsWith('/') ? `${tmpdir.replace(/\/+$/, '')}/` : '/'
+  return { prefixes: ['/tmp/', '/dev/', ...(tmpdirPrefix === '/' ? [] : [tmpdirPrefix])], home }
+}
+
+function isScratch(path: string, roots: ScratchRoots): boolean {
+  if (path.split('/').includes('..')) return false
+  const absolute = roots.home !== undefined && path.startsWith('~/') ? `${roots.home}${path.slice(1)}` : path
+  if (roots.prefixes.some(prefix => absolute.startsWith(prefix))) return true
+  const jobs = roots.home === undefined ? null : `${roots.home}/.claude/jobs/`
+  return jobs !== null && absolute.startsWith(jobs) && /^[^/]+\/tmp\//.test(absolute.slice(jobs.length))
 }
 
 function sanitize(text: string, quote: Quote): string {
@@ -194,26 +197,6 @@ function parseScript(command: string): Script {
   return { shell, heredocs }
 }
 
-function hasUnresolvedTarget(shell: string): boolean {
-  const statements = shell.replace(TEST_EXPRESSION, '_')
-  const assigned = new Set([...statements.matchAll(ASSIGNMENT)].map(match => match[1] ?? ''))
-  const literalLoopNames = new Set(
-    [...statements.matchAll(LOOP)].filter(match => !/[*?$`(\[]/.test(match[2] ?? '')).map(match => match[1] ?? ''),
-  )
-  const isRelative = (target: string): boolean => {
-    const leading = /^\$\{?([A-Za-z_]\w*)/.exec(target)?.[1]
-    return !target.startsWith('/') && (leading === undefined || !assigned.has(leading))
-  }
-  const unresolved = (target: string, loopResolves: boolean): boolean =>
-    [...target.matchAll(VARIABLE_NAME)].some(([, name = '']) =>
-      !assigned.has(name) && !(loopResolves && literalLoopNames.has(name) && isRelative(target)),
-    )
-  return (
-    [...statements.matchAll(REDIRECT_TARGET)].some(([, target = '']) => unresolved(target, true)) ||
-    [...statements.matchAll(RECURSIVE_REMOVE_TARGET)].some(([, target = '']) => unresolved(target, false))
-  )
-}
-
 function expand(word: string, values: ReadonlyMap<string, string>): string {
   return word.replace(VARIABLE_REFERENCE, (reference, name: string) => values.get(name) ?? reference)
 }
@@ -247,7 +230,7 @@ function scopeOf(text: string): Scope {
   return { values, cwd }
 }
 
-function writesOutsideScratch(heredoc: Heredoc): boolean {
+function writesOutsideScratch(heredoc: Heredoc, roots: ScratchRoots): boolean {
   const segment = heredoc.line.split(/&&|\|\||;/).find(part => part.includes(heredoc.opener)) ?? ''
   const pipeline = segment.split(/(?<!>)\|/)
   const producerIndex = pipeline.findIndex(part => part.includes(heredoc.opener))
@@ -256,7 +239,7 @@ function writesOutsideScratch(heredoc: Heredoc): boolean {
   if (PYTHON_INTERPRETER.test(producer)) {
     const touchesScratch = /\/(?:tmp|dev)\//.test(heredoc.body) || expand(producer, values).includes('/tmp/')
     const namesOutsidePath = /['"](?:\/(?!tmp\/|dev\/)|~\/)/.test(heredoc.body.replace(PYTHON_LITERAL_READ, '_'))
-    const writesRelativeOutside = cwd !== null && !isScratch(`${cwd}/`)
+    const writesRelativeOutside = cwd !== null && !isScratch(`${cwd}/`, roots)
     return PYTHON_WRITE.test(heredoc.body) && !touchesScratch && (namesOutsidePath || writesRelativeOutside)
   }
   if (!/\b(?:cat|tee)\b/.test(producer)) return false
@@ -269,20 +252,19 @@ function writesOutsideScratch(heredoc: Heredoc): boolean {
   ].map(match => expand(match[1] ?? '', values))
   return targets.some(target => {
     if (target.includes('$')) return false
-    if (/^[/~]/.test(target)) return !isScratch(target)
-    return cwd !== null && !isScratch(`${cwd}/${target}`)
+    if (/^[/~]/.test(target)) return !isScratch(target, roots)
+    return cwd !== null && !isScratch(`${cwd}/${target}`, roots)
   })
 }
 
 export const register: Register = on => {
-  on('tool.call', { tool: 'Bash' }, ($, e, next) => {
+  on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
     const script = parseScript(e.command)
-    if (hasUnresolvedTarget(script.shell)) {
-      return { deny: `${$.plugin.name}: a truncating redirect or recursive rm target holds a shell variable this command never assigns, which dcg cannot resolve and blocks. Spell out the literal absolute path.` }
-    }
-    if (script.heredocs.some(writesOutsideScratch)) {
-      return { deny: `${$.plugin.name}: a heredoc writes a file outside /tmp. Use Edit or Write, they read before writing and run the PostToolUse checks.` }
+    if (script.heredocs.length === 0) return next(e)
+    const roots = scratchRoots(await $.env.get('CLAUDE_CODE_TMPDIR'), await $.env.get('HOME'))
+    if (script.heredocs.some(heredoc => writesOutsideScratch(heredoc, roots))) {
+      return { deny: `${$.plugin.name}: a heredoc writes a file outside scratch. Use Edit or Write, they read before writing and run the PostToolUse checks.` }
     }
     return next(e)
-  })
+  }).catch(($, e, next) => (next.called ? next(e) : { deny: `${$.plugin.name}: the heredoc check failed, the command was not run.` }))
 }

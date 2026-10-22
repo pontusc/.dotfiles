@@ -21,7 +21,7 @@ A README holds what an operator needs to know and the final state of the thing. 
 - Write about your own level only. A README covers its directory. Children document themselves.
 - Mechanics of a file belong in that file as a comment, not in the README.
 - Plan docs and CLAUDE.md record decisions, state, and route by design. They follow the form and punctuation rules only.
-- Terse over complete. Short sentences and commas. No semicolons, no em or en dashes, no hyphen standing in for one.
+- Terse over complete. Short sentences and commas.
 
 ## Form
 

@@ -1,0 +1,5 @@
+{
+  "name": "retro",
+  "version": "0.1.0",
+  "description": "Writes a retro handoff doc from this session and opens the review in a tmux claude session"
+}

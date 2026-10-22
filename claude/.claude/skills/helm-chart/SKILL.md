@@ -6,7 +6,6 @@ allowed-tools: Read, Glob, Grep, Bash
 paths:
   - "**/Chart.yaml"
   - "**/templates/**"
-  - "**/*.tpl"
   - "**/values.schema.json"
 ---
 

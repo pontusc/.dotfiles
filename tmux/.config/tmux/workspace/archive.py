@@ -28,6 +28,7 @@ PROJECTS_DIR = Path.home() / ".claude" / "projects"
 PROMPT_PATH = layout.AGENT_CONFIG_DIR / "archive.md"
 ENTRIES_DIR = "tickets"
 TAGS_FILE = "tags.md"
+INDEX_FILE = "INDEX.md"
 _AGENT_TIMEOUT_SECONDS = 1800
 _DIGEST_BLOCK_CHARS = 2000
 _FALLBACK_COMMITS = 50
@@ -322,6 +323,17 @@ def _prepare_inputs(plan: Plan, inputs: Path) -> None:
     _log(f"git reports for {len(plan.worktrees)} worktrees")
     count = _digest_transcripts(Path(plan.job), inputs)
     _log(f"digested {count} transcripts")
+    _write_index(inputs, _notes_dir(Path(plan.job)))
+
+
+def _write_index(inputs: Path, notes: Path) -> None:
+    files = sorted(
+        path
+        for root in (notes, inputs)
+        for path in root.rglob("*")
+        if path.is_file() and path != inputs / "mcp.json"
+    )
+    (inputs / INDEX_FILE).write_text("".join(f"{path}\n" for path in files))
 
 
 def _run_agent(plan: Plan, inputs: Path) -> Path:

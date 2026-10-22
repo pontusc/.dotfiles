@@ -5,7 +5,6 @@ never config.
 from pathlib import Path
 
 import worktree
-from worktree import WORKTREES_SUFFIX
 
 
 def discover(work_root: Path) -> list[str]:
@@ -14,9 +13,7 @@ def discover(work_root: Path) -> list[str]:
     return sorted(
         entry.name
         for entry in work_root.iterdir()
-        if not entry.name.endswith(WORKTREES_SUFFIX)
-        and entry.is_dir()
-        and (entry / ".git").exists()
+        if entry.is_dir() and (entry / ".git").exists()
     )
 
 

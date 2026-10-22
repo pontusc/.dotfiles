@@ -17,6 +17,8 @@ import ui
 import worktree
 from errors import WorkspaceError
 
+_CACHE_DIRS = ("__pycache__", ".ruff_cache")
+
 
 def _session_ticket(session: str, pattern: re.Pattern[str]) -> ticket.Ticket | None:
     key = tmux.session_option(session, "@ticket_key")
@@ -53,22 +55,17 @@ def add_repo() -> None:
     session_ticket = _session_ticket(session, workspace_config.settings.ticket_pattern)
     if session_ticket is None:
         raise WorkspaceError(f"session {session} has no branch to add a worktree on")
-    agent_dir = compose.agent_dir_for(
-        workspace_config.settings, session_ticket, session
-    )
     specs, failures, warnings = compose.prepare_windows(
-        [compose.row_name(choice)],
-        workspace_config,
-        session_ticket,
-        session,
-        per_window_agent=agent_dir is None,
+        [compose.row_name(choice)], workspace_config, session_ticket, session
     )
     if failures:
         raise WorkspaceError("\n".join(failures))
-    result = compose.ensure_windows(session, specs, agent_dir)
+    skipped = compose.ensure_windows(
+        session, specs, worktree.ticket_dir(work_root, session)
+    )
     persist.save_state()
-    if result.skipped or warnings:
-        ui.notice("\n".join(result.skipped + warnings))
+    if skipped or warnings:
+        ui.notice("\n".join(skipped + warnings))
 
 
 def _delete_branch(repo_root: Path, branch: str) -> str:
@@ -89,7 +86,7 @@ def _remove_ticket_root(ticket_root: Path) -> str:
     leftovers = [
         entry
         for entry in ticket_root.iterdir()
-        if entry.name != layout.AGENT_CONFIG_LINK
+        if entry.name not in (layout.AGENT_CONFIG_LINK, *_CACHE_DIRS)
     ]
     names = ", ".join(sorted(entry.name for entry in leftovers))
     if any(worktree.is_checkout(entry) for entry in leftovers):
@@ -102,7 +99,7 @@ def _remove_ticket_root(ticket_root: Path) -> str:
 
 def _archive_target(session: str, settings: config.Settings) -> tuple[str, Path] | None:
     """The ticket key and archive repo when this session's close is archived."""
-    if settings.archive_root is None or settings.agent != "session":
+    if settings.archive_root is None:
         return None
     key = tmux.session_option(session, "@ticket_key") or session
     if not settings.ticket_pattern.fullmatch(key):
@@ -137,13 +134,21 @@ def _start_archive(
     leftovers = [
         entry
         for entry in ticket_root.iterdir()
-        if entry.name != layout.AGENT_CONFIG_LINK and str(entry) not in planned_paths
+        if entry.name not in (layout.AGENT_CONFIG_LINK, *_CACHE_DIRS)
+        and str(entry) not in planned_paths
     ]
     if not planned and not leftovers:
         return None
     checkouts = sorted(entry.name for entry in leftovers if worktree.is_checkout(entry))
     if checkouts:
         return f"{key}: {', '.join(checkouts)} is not a live worktree window, nothing removed"
+    for name in _CACHE_DIRS:
+        cache = ticket_root / name
+        if cache.is_symlink():
+            cache.unlink()
+        elif cache.is_dir():
+            shutil.rmtree(cache)
+    moved = sorted(entry.name for entry in leftovers if entry.is_dir())
     if not leftovers and not any(
         worktree.has_work(Path(entry.repo_root), Path(entry.path), entry.branch)
         for entry in planned
@@ -163,6 +168,8 @@ def _start_archive(
         entry.name != layout.AGENT_CONFIG_LINK for entry in ticket_root.iterdir()
     ):
         shutil.rmtree(ticket_root)
+    if moved:
+        lines.insert(0, f"{key}: moved {', '.join(moved)} into the archive notes")
     lines.insert(0, f"{key}: archiving {job.name} in the background")
     return "\n".join(lines)
 
@@ -312,13 +319,11 @@ def cleanup_session() -> None:
     if outcome is None and not any(
         window.tagged for window in tmux.session_windows(session)
     ):
-        # The session's single agent window has nothing to lose and goes with
-        # the last worktree, whichever agent mode is configured now.
         closed = _close_agent_window(session)
         if closed is not None:
             removed.append(closed)
         ticket_root = worktree.ticket_dir(work_root, session)
-        if workspace_config.settings.agent == "session" and ticket_root.is_dir():
+        if ticket_root.is_dir():
             removed.append(_remove_ticket_root(ticket_root))
     persist.save_state()
     if removed or kept:

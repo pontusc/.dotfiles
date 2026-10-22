@@ -1,13 +1,11 @@
 """Git worktree layout and lifecycle for a repo checkout."""
 
-import contextlib
 import shutil
 import subprocess
 from collections.abc import Callable
 from pathlib import Path
 from typing import NamedTuple
 
-WORKTREES_SUFFIX = ".worktrees"
 TICKETS_DIR = "tickets"
 
 
@@ -205,8 +203,6 @@ def remove(repo_root: Path, path: Path) -> str | None:
         return (
             result.stderr.strip() or f"git worktree remove exited {result.returncode}"
         )
-    with contextlib.suppress(OSError):
-        path.parent.rmdir()
     return None
 
 
