@@ -1,5 +1,5 @@
 ---
-name: helm
+name: helm-values
 description: Consuming third-party Helm charts through values overrides and install or upgrade, not authoring charts.
 user-invocable: false
 allowed-tools: Read, Glob, Grep, Bash
