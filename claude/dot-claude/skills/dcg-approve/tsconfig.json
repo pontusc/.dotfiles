@@ -1,0 +1,3 @@
+{
+  "extends": "../tmux-attention/.claude-plugin/types/tsconfig.json"
+}
