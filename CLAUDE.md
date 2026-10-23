@@ -2,13 +2,16 @@
 
 Personal dotfiles for Arch Linux + Hyprland (omarchy), deployed with GNU Stow. Each
 top-level directory is a **stow package**. The path inside it mirrors the destination
-relative to `$HOME` (`claude/.claude/settings.json` → `~/.claude/settings.json`). Required
+relative to `$HOME` (`claude/dot-claude/settings.json` → `~/.claude/settings.json`). Required
 tools are listed in `readme.md`.
 
 ## Stow mechanics
 
 - Run from the repo root: `stow <package>` creates the symlinks, `stow -D <package>` removes
   them, `stow -R <package>` restows (picks up added/removed files).
+- `.stowrc` passes `--dotfiles`, so a `dot-` prefix deploys as `.`. Run stow from the repo
+  root or it is not read. Never put a literal `.claude` directory in a package, Claude Code
+  sessions in this repo load its skills a second time as `claude:<name>`.
 - **Tree folding**: stow links the highest directory it can own outright — a package whose
   target doesn't exist gets one symlink for the whole tree. When the target already exists as
   a real directory, stow *unfolds* and links each entry inside it individually.
@@ -26,9 +29,9 @@ own symlink**.
 
 Consequences:
 
-- **A new skill does not deploy itself.** After creating `claude/.claude/skills/<name>/`,
+- **A new skill does not deploy itself.** After creating `claude/dot-claude/skills/<name>/`,
   run `stow -R claude` or link manually:
-  `ln -s ../../dotfiles/claude/.claude/skills/<name> ~/.claude/skills/<name>`
+  `ln -s ../../dotfiles/claude/dot-claude/skills/<name> ~/.claude/skills/<name>`
 - **Drift hazard**: a real (non-symlink) directory inside `~/.claude/skills/` shadows the
   repo and silently diverges. If `ls -la ~/.claude/skills` shows a plain directory, replace
   it with a symlink.
