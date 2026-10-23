@@ -1,0 +1,5 @@
+{
+  "name": "dcg-approve",
+  "version": "0.1.0",
+  "description": "Suggests dcg allow-once for the last command dcg blocked in a turn"
+}
