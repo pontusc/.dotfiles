@@ -1,6 +1,6 @@
 # Hooks
 
-The sandbox is off, real isolation would be a separate host. Secret files are guarded by the `Read(...)` deny rules in `settings.json`, which cover the Read, Grep and Glob tools, the Edit and Write tools, and reader commands such as cat, sed and head inside Bash. Reads through an interpreter or a redirect are not gated, dcg does not cover them either. These hooks are the remaining guardrails. Registered in `settings.json`.
+The sandbox is off, real isolation would be a separate host. Secret files are guarded by the `Read(...)` deny rules in `settings.json`, which cover the Read, Grep and Glob tools, the Edit and Write tools, reader commands such as cat, sed and head inside Bash, and redirect targets. A read that never names the file, such as `grep -r` from a parent directory, or one done by an interpreter script, is not gated, and dcg does not cover it either. These hooks are the remaining guardrails. Registered in `settings.json`.
 
 - `dcg` (PreToolUse, Bash): blocks destructive shell commands. Config in `~/.config/dcg/config.toml`.
 - `markdown-punctuation.sh` (PostToolUse, Edit and Write): reports semicolons, em and en dashes and a spaced single or double hyphen in markdown lines outside fenced code, skipping scratch and job paths. On Edit only lines overlapping the new text are reported. The write has already landed, the agent fixes the reported lines.

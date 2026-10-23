@@ -1,4 +1,5 @@
 {
+  "syncClaudeAiSkills": false,
   "env": {
     "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
     "CLAUDE_CODE_NO_FLICKER": "1",
@@ -93,6 +94,7 @@
       "Read(//**/credentials)",
       "Read(//**/credentials.json)",
       "Read(//**/application_default_credentials.json)",
+      "Read(//**/.claude/.credentials.json)",
       "Read(//**/kubeconfig)",
       "Read(//**/*.kubeconfig)",
       "Read(//**/.npmrc)",
@@ -139,8 +141,6 @@
     "refreshInterval": 5
   },
   "enabledPlugins": {
-    "plan@plans": true,
-    "alchemy-infrastructure@alchemy": true,
     "cc-plugin-you-should-know@builtin": true
   },
   "extraKnownMarketplaces": {
@@ -163,7 +163,6 @@
     "enabled": false
   },
   "feedbackDrafts": "off",
-  "syncClaudeAiSkills": false,
   "modelSettings": {
     "claude-fable-5-1": {
       "effortLevel": "high"
@@ -185,7 +184,8 @@
   "autoMode": {
     "allow": [
       "$defaults",
-      "Edits to files under ~/dotfiles, or to a ~/.claude or ~/.config path that is a stow symlink into it, are local operations, not scope escalation. This does not exempt an edit whose target is agent config (permissions, hooks, sandbox, CLAUDE.md instruction content), a shell profile, a persistence unit or a credential file. Those are still judged by Self-Modification, Instruction Poisoning, Unauthorized Persistence and Credential Leakage",
+      "Edits to files under ~/dotfiles, or under these stow-deployed paths that resolve into it, are local operations, not scope escalation: ~/.claude/agents, ~/.claude/hooks, ~/.claude/skills/<name> except omarchy, ~/.claude/CLAUDE.md, ~/.claude/settings.json, ~/.claude/statusline-command.sh, ~/.config/dcg, ~/.config/claude-ticket, ~/.config/tmux except plugins, ~/.config/systemd/user/claude-*. This does not exempt an edit whose target is agent config (permissions, hooks, sandbox, CLAUDE.md instruction content), a shell profile, a persistence unit or a credential file. Those are still judged by Self-Modification, Instruction Poisoning, Unauthorized Persistence and Credential Leakage",
+      "Reading agent config is a read, not Self-Modification: cat, sed -n, head, tail, grep, rg, ls, jq and diff on ~/.claude/agents, ~/.claude/skills, ~/.claude/hooks, ~/.claude/CLAUDE.md, ~/.claude/settings.json, ~/.claude/statusline-command.sh or files under ~/dotfiles/claude, with no redirect or in-place flag. It never covers ~/.claude/.credentials.json, session transcripts or any other file under ~/.claude",
       "Read-only git in any checkout under ~ is a read: status, log, reflog, branch --list, diff, show, rev-parse, git fetch from a configured remote without --prune, and read-tree only with GIT_INDEX_FILE set to a scratch path in the same command. Not covered: -c or --config-env overrides, --output, --ext-diff",
       "git rebase --autostash origin/HEAD and git merge --ff-only origin/HEAD, each with no other flags, are the expected catch-up steps in a session whose working directory is under ~/Work/tickets/, or when -C or cd points there. They are not a force push and clear no push or commit rule",
       "Rewriting a tracked file in place inside the session repo or ticket worktree with sed s/// or d expressions, the Edit tool, or an inline python -c whose only I/O is that file is a local change, including .tf files, workflow YAML and renovate.json. The written content is still judged by the content rules, and again when committed or pushed",
