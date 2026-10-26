@@ -362,6 +362,8 @@ def _run_agent(plan: Plan, inputs: Path) -> Path:
         "--permission-mode",
         "dontAsk",
         "--allowedTools",
+        "Glob",
+        "Grep",
         f"Read(/{inputs}/**)",
         f"Read(/{notes}/**)",
         f"Read(/{plan.archive_root}/**)",
