@@ -3,9 +3,6 @@ name: github-ci
 description: GitHub Actions conventions, applied when writing or editing workflow YAML under .github/workflows.
 user-invocable: false
 allowed-tools: Read, Glob, Grep
-paths:
-  - "**/.github/workflows/*.yml"
-  - "**/.github/workflows/*.yaml"
 ---
 
 # GitHub Actions

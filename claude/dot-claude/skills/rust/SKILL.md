@@ -3,9 +3,6 @@ name: rust
 description: Rust project conventions, applied when writing or editing Rust projects (Cargo.toml, rust-toolchain.toml, src/) or .rs files.
 user-invocable: false
 allowed-tools: Read, Glob, Grep
-paths:
-  - "**/*.rs"
-  - "**/Cargo.toml"
 ---
 
 # Rust Project Conventions

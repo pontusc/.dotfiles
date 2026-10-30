@@ -3,9 +3,6 @@ name: python
 description: Python project conventions, applied when writing or editing Python projects (pyproject.toml, src/, tests/) or .py files.
 user-invocable: false
 allowed-tools: Read, Glob, Grep
-paths:
-  - "**/*.py"
-  - "**/pyproject.toml"
 ---
 
 # Python Project Conventions

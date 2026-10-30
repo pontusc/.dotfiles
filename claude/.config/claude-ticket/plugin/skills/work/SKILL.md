@@ -44,5 +44,3 @@ Then invoke `ticket:plan` for the next phase and stop. Ask before running it and
 ## Stops
 
 Stop only for an Operator task, a remote mutation that needs the hard rule unlock, a new shape Shape does not fix, the fix round cap, a review finding that removes the purpose of a planned task, or a verdict that is not VERIFIED outside a `/goal`. For an Operator task, give the exact command and why it is the operator's.
-
-A stop with work in progress writes `HANDOFF.md` in the ticket root, holding only what the ledger cannot, such as in-flight shell or background state and pending operator items.

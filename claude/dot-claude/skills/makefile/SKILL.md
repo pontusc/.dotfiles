@@ -3,11 +3,6 @@ name: makefile
 description: Makefile conventions, applied when writing or editing Makefiles and .mk includes.
 user-invocable: false
 allowed-tools: Read, Glob, Grep
-paths:
-  - "**/Makefile"
-  - "**/makefile"
-  - "**/GNUmakefile"
-  - "**/*.mk"
 ---
 
 # Makefile

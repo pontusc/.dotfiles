@@ -3,11 +3,6 @@ name: talos
 description: 'Talos Linux cluster operations, talosctl targeting safety, and machine config conventions. Apply when a file carries `machine:` and `cluster:` top-level keys, a top-level `kind: MachineConfig` or `version: v1alpha1`, or a Talos machine config patch, whatever the filename.'
 user-invocable: false
 allowed-tools: Read, Glob, Grep
-paths:
-  - "**/controlplane.yaml"
-  - "**/worker.yaml"
-  - "**/talconfig.yaml"
-  - "**/talos/**/*.yaml"
 ---
 
 # Talos Linux

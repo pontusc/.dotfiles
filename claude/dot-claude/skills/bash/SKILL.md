@@ -3,9 +3,6 @@ name: bash
 description: Shell scripting conventions, applied when writing or editing .sh/.bash files or inline shell scripts.
 user-invocable: false
 allowed-tools: Read, Glob, Grep, Bash
-paths:
-  - "**/*.sh"
-  - "**/*.bash"
 ---
 
 # Bash Conventions

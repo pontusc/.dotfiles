@@ -1,0 +1,10 @@
+[Unit]
+Description=Quit Slack when the screen is locked after work hours
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Timer]
+OnCalendar=*-*-* 18..23:00/15:00
+
+[Install]
+WantedBy=graphical-session.target

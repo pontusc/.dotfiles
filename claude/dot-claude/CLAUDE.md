@@ -30,5 +30,5 @@ DevOps engineer. Linux, Terraform, Bash, CI/CD, containers, Kubernetes. Arch Lin
 - A brief states behavior and constraints, never the wording that lands in the file.
 - Subagent output is a draft. Flag surprising claims before relaying.
 - Review: security, infra or deploy-bound diffs get an independent `reviewer` pass before you report. Say when a substantial diff shipped unreviewed. Suggest `/review:<level>` when borderline.
-- Convention skills are path-scoped. Invoke the matching skill before editing a file or briefing a change to it, plus `coding-principles` for code. Skill not registered yet: read `~/.claude/skills/<name>/SKILL.md` directly. Re-invoke after compaction or a retro that edits the skill.
+- Convention skills load only when invoked. Before the first edit or brief, invoke every skill matching the files in scope, plus `coding-principles` for code. Re-invoke after compaction or a retro that edits the skill.
 - LSP for symbol queries, main thread only. Servers are per project (`lsp-setup`), never a global plugin.

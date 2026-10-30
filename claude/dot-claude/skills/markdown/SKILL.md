@@ -3,8 +3,6 @@ name: markdown
 description: Markdown authoring rules for READMEs, docs, plan docs, and CLAUDE.md. Apply when writing or editing any .md file.
 user-invocable: false
 allowed-tools: Read, Glob, Grep
-paths:
-  - "**/*.md"
 ---
 
 # Markdown

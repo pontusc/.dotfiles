@@ -3,11 +3,6 @@ name: docker
 description: Container build conventions, applied when writing or editing Dockerfiles.
 user-invocable: false
 allowed-tools: Read, Glob, Grep
-paths:
-  - "**/Dockerfile"
-  - "**/Dockerfile.*"
-  - "**/*.dockerfile"
-  - "**/Containerfile"
 ---
 
 # Docker

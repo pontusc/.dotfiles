@@ -3,10 +3,6 @@ name: helm-chart
 description: Authoring Helm charts (Chart.yaml, templates, helpers, library charts, values.schema.json, OCI packaging), not consuming third-party charts.
 user-invocable: false
 allowed-tools: Read, Glob, Grep, Bash
-paths:
-  - "**/Chart.yaml"
-  - "**/templates/**"
-  - "**/values.schema.json"
 ---
 
 # Authoring Helm Charts

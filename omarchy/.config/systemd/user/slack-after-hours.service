@@ -1,0 +1,7 @@
+[Unit]
+Description=Quit Slack when the screen is locked
+
+[Service]
+Type=oneshot
+# Exit 1 or 2 (unlocked or undetermined) leaves Slack running.
+ExecStart=/bin/sh -c '/usr/share/omarchy/bin/omarchy-hyprland-session-locked && /usr/bin/pkill -x slack || true'
