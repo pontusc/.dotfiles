@@ -31,6 +31,11 @@ def base_ref(repo_root: Path) -> str:
     head = _git(
         repo_root, "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"
     )
+    if head.returncode != 0 or not head.stdout.strip():
+        _git(repo_root, "remote", "set-head", "origin", "--auto")
+        head = _git(
+            repo_root, "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"
+        )
     if head.returncode == 0 and head.stdout.strip():
         return head.stdout.strip()
     for branch in ("main", "master"):

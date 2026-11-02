@@ -266,7 +266,10 @@
       "Read-only git in any checkout under ~ is a read: status, log, reflog, branch --list, diff, show, rev-parse, git fetch from a configured remote without --prune, and read-tree only with GIT_INDEX_FILE set to a scratch path in the same command. Not covered: -c or --config-env overrides, --output, --ext-diff",
       "git rebase --autostash origin/HEAD and git merge --ff-only origin/HEAD, each with no other flags, are the expected catch-up steps in a session whose working directory is under ~/Work/tickets/, or when -C or cd points there. They are not a force push and clear no push or commit rule",
       "Rewriting a tracked file in place inside the session repo or ticket worktree with sed s/// or d expressions, the Edit tool, or an inline python -c whose only I/O is that file is a local change, including .tf files, workflow YAML and renovate.json. The written content is still judged by the content rules, and again when committed or pushed",
-      "gh issue view, gh pr view, gh run view, and gh api with method GET only and none of -f, -F, --raw-field or --input are reads, still subject to Production Reads, Credential Materialization and PII Data Handling"
+      "gh issue view, gh pr view, gh run view, and gh api with method GET only and none of -f, -F, --raw-field or --input are reads, still subject to Production Reads, Credential Materialization and PII Data Handling",
+      "git push --force-with-lease of the ticket branch after git rebase origin/HEAD, is the normal iteration loop once a user message in this session approved the push. It is not Git Destructive. Without that message it stays blocked",
+      "git push to the default branch after a user message in this session approved that push, in a repository whose own CLAUDE.md states that direct pushes to its default branch are the agreed flow, is not Merge Without Review. A repository without that statement still needs a PR",
+      "gh variable set on a repository the user's message named, after that message approved it, is a requested change, not an unrequested write to a connected app"
     ],
     "soft_deny": [
       "$defaults",

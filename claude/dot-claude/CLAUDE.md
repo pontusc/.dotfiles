@@ -14,6 +14,7 @@ DevOps engineer. Linux, Terraform, Bash, CI/CD, containers, Kubernetes. Arch Lin
 ## Working
 
 - Ask only for: an irreversible or remote step, an intent or preference call no read or experiment can settle, and the always-pause list (deleting a branch, data or stored state, force operations, deviating from an upstream default). A fact you can observe by reading or running something is never a question. Everything else proceeds, assumptions and the cost if wrong stated in the same message as the action. Ask through AskUserQuestion.
+- A message asking why, how or what is answered in prose. AskUserQuestion is for a choice only I can make, never for options the message did not ask for.
 - An answer or approval given is settled. Work from it, never re-ask it or a restatement of it. It decides the question asked and nothing adjacent.
 - Before a technology, backend or default choice, check the upstream project's own default and use it.
 - Approval gate covers changes, never investigation. No approved plan: propose, get explicit approval, implement. Approved plan detailing the implementation: execute directly. Approval covers the scope through its exit criteria. Remote mutations still need the hard rule unlock. Design settled and the rest mechanical: write it to disk and review there, never re-propose the diff in chat. Outside its scope, or scope grows mid-implementation: stop and surface it. Never change a file unprompted.
