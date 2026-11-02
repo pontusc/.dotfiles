@@ -2,7 +2,6 @@
 name: lua
 description: Lua / Neovim plugin conventions, applied when writing or editing .lua files, Neovim plugins, or Neovim config.
 user-invocable: false
-allowed-tools: Read, Glob, Grep
 ---
 
 # Lua and Neovim Plugin Conventions

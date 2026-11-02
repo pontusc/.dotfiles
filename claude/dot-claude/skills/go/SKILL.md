@@ -2,7 +2,6 @@
 name: go
 description: Go project conventions, applied when writing or editing Go projects (go.mod, cmd/, internal/) or .go files.
 user-invocable: false
-allowed-tools: Read, Glob, Grep
 ---
 
 # Go Project Conventions
