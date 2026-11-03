@@ -16,14 +16,14 @@
   },
   "permissions": {
     "allow": [
-      "Read(*)",
+      "Read",
       "Glob",
-      "Grep(*)",
+      "Grep",
       "Bash(*)",
       "WebFetch(*)",
       "WebSearch(*)",
       "Agent(*)",
-      "Edit(*)",
+      "Edit",
       "Write",
       "Skill(*)",
       "mcp__playwright",
