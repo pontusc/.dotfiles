@@ -17,7 +17,7 @@ o.bind("SUPER + B", "Browser", { omarchy = "browser" })
 hl.unbind("SUPER + SHIFT + B")
 o.bind("SUPER + SHIFT + B", "Browser (private)", { omarchy = "browser --private" })
 
-o.bind("SUPER + M", "Youtube", { webapp = "https://music.youtube.com", focus = true })
+o.rebind("SUPER + M", "Youtube", { webapp = "https://music.youtube.com", focus = true })
 
 hl.unbind("SUPER + SHIFT + A")
 o.bind("SUPER + SHIFT + A", "Claude", { webapp = "https://claude.com" })
@@ -78,7 +78,7 @@ o.bind(
   hl.dsp.window.resize({ x = -30, y = 0, relative = true }),
   { repeating = true }
 )
-o.bind(
+o.rebind(
   "SUPER + ALT + L",
   "Resize window right",
   hl.dsp.window.resize({ x = 30, y = 0, relative = true }),
