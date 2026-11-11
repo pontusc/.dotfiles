@@ -1,9 +1,24 @@
 ---
 name: context
-description: Gather the context for work in a ticket workspace. Use on the first prompt describing what to build or change, or when the user mentions the ticket or Linear.
+description: Gather the context for work in a ticket workspace, at the low, medium or high level the operator names. Use on the first prompt describing what to build or change, or when the user mentions the ticket or Linear.
 ---
 
-The Linear issue key is the name of the current directory. You read the issue, its comments and the prompt. Never read code or query a system yourself, agents answer everything else.
+The Linear issue key is the name of the current directory. You read the issue, its comments and the prompt. Never read code or query a system yourself, agents answer everything else, except where the level below says otherwise.
+
+## Level
+
+The operator sets the level, `low`, `medium` or `high`, in the prompt. A prompt that names none stops for one AskUserQuestion before anything else runs. Never infer it from the issue. A rerun asks again unless its prompt names one.
+
+| | low | medium | high |
+| --- | --- | --- | --- |
+| Prior work | Skipped | Run | Run |
+| `code <repo>` | You read the worktree yourself, no agent | One Explore, medium, per worktree, never split | One Explore, very thorough, per worktree, split by topic over about five questions |
+| `code all` | You run the `git grep` yourself | One Explore | One Explore |
+| `live` | One investigator for every system | One investigator per system | One investigator per system |
+| `upstream` | Goes under Open | One Explore per upstream | One Explore per upstream |
+| Wave 2 | Skipped | Skipped | Run |
+
+The sections below describe `high`. The table overrides them at the other levels.
 
 ## Refresh, at the start
 
