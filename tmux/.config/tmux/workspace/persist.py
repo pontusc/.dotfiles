@@ -1,7 +1,7 @@
 """Save and restore the workspace's tmux tags across server restarts.
 
 tmux-resurrect brings sessions and windows back but drops every user option,
-so the tags (@slot, @ticket_key, @ticket_slug, @worktree) are mirrored to a
+so the tags (@slot, @ticket_key, @ticket_slug, @scratch, @worktree) are mirrored to a
 state file on each resurrect save and reapplied by session and window name
 after a restore.
 """
@@ -27,6 +27,7 @@ class SessionState(TypedDict, total=False):
     slot: int
     ticket_key: str
     ticket_slug: str
+    scratch: bool
     worktrees: StoredWorktrees
 
 
@@ -40,6 +41,8 @@ def _session_state(
         entry["ticket_key"] = info.ticket_key
     if info.ticket_slug:
         entry["ticket_slug"] = info.ticket_slug
+    if info.scratch:
+        entry["scratch"] = True
     worktrees = [(window.name, str(window.path)) for window in windows if window.tagged]
     if worktrees:
         entry["worktrees"] = worktrees
@@ -126,6 +129,8 @@ def restore_state() -> None:
         slug = entry.get("ticket_slug")
         if slug and not info.ticket_slug:
             updates.append(tmux.SessionOptionUpdate(info.name, "@ticket_slug", slug))
+        if entry.get("scratch") and not info.scratch:
+            updates.append(tmux.SessionOptionUpdate(info.name, "@scratch", "1"))
         updates += _worktree_updates(
             snapshot.windows[info.name], entry.get("worktrees", [])
         )

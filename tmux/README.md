@@ -26,6 +26,9 @@ one folded symlink.
   whose session is already gone needs a manual `git worktree remove`.
 - Empty ticket: the branch picker lists every branch that is not a ticket branch,
   worktrees go on the bare branch, and the session is named by it.
+- **leader+S** is leader+T without the ticket prompt: repos, then the branch picker over
+  every branch that is not a ticket branch. The session is named by the branch and its
+  agent is a plain claude, no `.claude` link, no `ticket` plugin, never archived.
 - **leader+E** adds a repo to the current session: fzf over the repos not yet in it,
   worktree on the session's ticket branch, window and agent join in place.
 - **leader+X** closes every window in the current session that loses nothing (repo-root
@@ -102,19 +105,19 @@ worktree is not touched, and a missing source only warns.
 - Every window the tool creates is tagged `@worktree` with its path. The tags are the
   runtime truth: idempotent re-open and cleanup scope read them. Nothing else may kill or
   retag those windows. tmux-resurrect drops
-  all user options on restore, so the resurrect hooks mirror the tags plus `@slot` and
-  `@ticket_slug` to a state file and reapply them by session and window name. A session or
+  all user options on restore, so the resurrect hooks mirror the tags plus `@slot`,
+  `@ticket_slug` and `@scratch` to a state file and reapply them by session and window name. A session or
   window renamed after the last periodic save comes back untagged.
 - A new ticket branch is cut from the default branch after fetching it from origin. A
   session opened offline still gets its worktrees, cut from the last fetched state, and a
   notice says so.
-- The tool owns `tickets/<session>/.claude`, a symlink to `~/.config/claude-ticket` that
-  gives the agent its ticket instructions, and starts the agent with that directory's
+- Outside leader+S sessions the tool owns `tickets/<session>/.claude`, a symlink to
+  `~/.config/claude-ticket` that gives the agent its ticket instructions, and starts the agent with that directory's
   `plugin` as the `ticket` plugin. Loose files in a ticket root that is not archived are
   deleted by leader+X only after confirming, and a checkout that is not a live worktree
   window keeps the whole ticket root.
-- The leader+T binding must stay `run-shell -b` into `flow`: a `display-popup` opened from
-  inside another popup modifies the popup that is already up, so the picker and prompt
+- The leader+T and leader+S bindings must stay `run-shell -b` into `flow`: a
+  `display-popup` opened from inside another popup modifies the popup that is already up, so the picker and prompt
   popups have to be opened server-side, one after the other.
 - Nothing checks the versions, so keep them in mind: Python 3.14 or newer, tmux 3.2 or
   newer for `display-popup`, and an fzf recent enough for the `enter:select+accept` bind.

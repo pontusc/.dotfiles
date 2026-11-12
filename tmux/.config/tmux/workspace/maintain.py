@@ -20,14 +20,18 @@ from errors import WorkspaceError
 _CACHE_DIRS = ("__pycache__", ".ruff_cache")
 
 
-def _session_ticket(session: str, pattern: re.Pattern[str]) -> ticket.Ticket | None:
+def _session_ticket(
+    session: str, pattern: re.Pattern[str], *, scratch: bool
+) -> ticket.Ticket | None:
     key = tmux.session_option(session, "@ticket_key")
     slug = tmux.session_option(session, "@ticket_slug")
-    if not slug and pattern.fullmatch(session):
+    if not slug and not scratch and pattern.fullmatch(session):
         slug = ui.prompt_line(f"Slug for {session} ❯ ").strip()
         if slug:
             tmux.set_session_option(session, "@ticket_slug", slug)
-    return ticket.from_session(session, key or None, slug or None, pattern)
+    return ticket.from_session(
+        session, key or None, slug or None, pattern, scratch=scratch
+    )
 
 
 def add_repo() -> None:
@@ -52,7 +56,10 @@ def add_repo() -> None:
     )
     if choice is None:
         return
-    session_ticket = _session_ticket(session, workspace_config.settings.ticket_pattern)
+    scratch = tmux.is_scratch(session)
+    session_ticket = _session_ticket(
+        session, workspace_config.settings.ticket_pattern, scratch=scratch
+    )
     if session_ticket is None:
         raise WorkspaceError(f"session {session} has no branch to add a worktree on")
     specs, failures, warnings = compose.prepare_windows(
@@ -61,7 +68,10 @@ def add_repo() -> None:
     if failures:
         raise WorkspaceError("\n".join(failures))
     skipped = compose.ensure_windows(
-        session, specs, worktree.ticket_dir(work_root, session)
+        session,
+        specs,
+        worktree.ticket_dir(work_root, session),
+        ticket_config=not scratch,
     )
     persist.save_state()
     if skipped or warnings:
@@ -99,7 +109,7 @@ def _remove_ticket_root(ticket_root: Path) -> str:
 
 def _archive_target(session: str, settings: config.Settings) -> tuple[str, Path] | None:
     """The ticket key and archive repo when this session's close is archived."""
-    if settings.archive_root is None:
+    if settings.archive_root is None or tmux.is_scratch(session):
         return None
     key = tmux.session_option(session, "@ticket_key") or session
     if not settings.ticket_pattern.fullmatch(key):

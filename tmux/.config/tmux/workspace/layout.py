@@ -57,10 +57,12 @@ def arrange_side(window_id: str, cwd: Path, command: str) -> None:
     tmux.send_keys(window_id, command)
 
 
-def start_agent(window_id: str, session: str, cwd: Path) -> None:
+def start_agent(
+    window_id: str, session: str, cwd: Path, *, ticket_plugin: bool
+) -> None:
     """The session's single agent beside a terminal, in the ticket directory."""
     arrange_side(
-        window_id, cwd, shlex.join(claude_command(session, ticket_plugin=True))
+        window_id, cwd, shlex.join(claude_command(session, ticket_plugin=ticket_plugin))
     )
 
 

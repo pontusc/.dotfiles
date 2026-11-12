@@ -44,7 +44,12 @@ def _renamed(name: str, expected: str) -> WorkspaceError:
 
 
 def from_session(
-    name: str, key: str | None, slug: str | None, pattern: re.Pattern[str]
+    name: str,
+    key: str | None,
+    slug: str | None,
+    pattern: re.Pattern[str],
+    *,
+    scratch: bool,
 ) -> Ticket | None:
     """Read the ticket a live session stands for, given its resolved tags."""
     if key:
@@ -56,7 +61,7 @@ def from_session(
     if not slug:
         return None
     # Sessions materialized before @ticket_key existed carry the key in the name.
-    if pattern.fullmatch(name):
+    if not scratch and pattern.fullmatch(name):
         return Ticket(key=name, slug=slug)
     if name != slug:
         raise _renamed(name, slug)

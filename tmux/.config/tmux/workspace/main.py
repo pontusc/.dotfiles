@@ -19,8 +19,13 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    subparsers.add_parser(
+    flow = subparsers.add_parser(
         "flow", help="run the picker and prompt popups (tmux keybinding target)"
+    )
+    flow.add_argument(
+        "--scratch",
+        action="store_true",
+        help="no ticket prompt and no ticket agent config",
     )
 
     open_workspace = subparsers.add_parser(
@@ -34,6 +39,7 @@ def _build_parser() -> argparse.ArgumentParser:
     # help=SUPPRESS literally for a subparser.
     materialize = subparsers.add_parser("materialize")
     materialize.add_argument("--repo", action="append", default=[], dest="repos")
+    materialize.add_argument("--scratch", action="store_true")
 
     subparsers.add_parser("add", help="add a discovered repo to the current session")
 
@@ -70,7 +76,7 @@ def _dispatch(args: argparse.Namespace) -> None:
         case "flow":
             import compose
 
-            compose.flow_workspace()
+            compose.flow_workspace(scratch=args.scratch)
         case "open":
             import compose
 
@@ -78,7 +84,7 @@ def _dispatch(args: argparse.Namespace) -> None:
         case "materialize":
             import compose
 
-            compose.materialize_workspace(args.repos)
+            compose.materialize_workspace(args.repos, scratch=args.scratch)
         case "add":
             import maintain
 

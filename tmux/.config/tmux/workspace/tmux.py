@@ -23,7 +23,7 @@ _BATCH_SEPARATOR = "\x1f"
 # The free-text field goes last, it may hold anything but a tab.
 _SESSION_FORMAT = (
     "#{session_id}\t#{session_created}\t#{@slot}\t#{@ticket_key}\t#{@ticket_slug}"
-    "\t#{session_name}"
+    "\t#{@scratch}\t#{session_name}"
 )
 _WINDOW_FORMAT = (
     "#{window_id}\t#{@claude}\t#{@worktree}\t#{pane_current_path}\t#{window_name}"
@@ -50,6 +50,7 @@ class SessionInfo(NamedTuple):
     slot: int | None
     ticket_key: str
     ticket_slug: str
+    scratch: bool
 
 
 class Snapshot(NamedTuple):
@@ -155,7 +156,9 @@ def _batch(*commands: Sequence[str]) -> list[list[str]]:
 
 
 def _parse_session(line: str) -> SessionInfo:
-    session_id, created, slot, ticket_key, ticket_slug, name = line.split("\t", 5)
+    session_id, created, slot, ticket_key, ticket_slug, scratch, name = line.split(
+        "\t", 6
+    )
     return SessionInfo(
         session_id=session_id,
         name=name,
@@ -163,6 +166,7 @@ def _parse_session(line: str) -> SessionInfo:
         slot=int(slot) if slot else None,
         ticket_key=ticket_key,
         ticket_slug=ticket_slug,
+        scratch=bool(scratch),
     )
 
 
@@ -318,6 +322,10 @@ def current_window() -> CurrentWindow:
 
 def session_option(session: str, option: str) -> str:
     return _output("show-option", "-qv", "-t", _session_target(session), option)
+
+
+def is_scratch(session: str) -> bool:
+    return bool(session_option(session, "@scratch"))
 
 
 def set_session_option(session: str, option: str, value: str) -> None:

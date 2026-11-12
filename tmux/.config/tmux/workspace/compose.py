@@ -138,7 +138,9 @@ def _configure_window(window_id: str, spec: WindowSpec) -> None:
     layout.arrange_side(window_id, spec.path, "nvim")
 
 
-def ensure_windows(session: str, specs: list[WindowSpec], agent_dir: Path) -> list[str]:
+def ensure_windows(
+    session: str, specs: list[WindowSpec], agent_dir: Path, *, ticket_config: bool
+) -> list[str]:
     """Open a window per spec in session, returning the ones left alone.
 
     The session holds one agent window in agent_dir, created first so it keeps
@@ -146,7 +148,8 @@ def ensure_windows(session: str, specs: list[WindowSpec], agent_dir: Path) -> li
     """
     pending: list[WindowSpec] = []
     skipped: list[str] = []
-    layout.link_agent_config(agent_dir)
+    if ticket_config:
+        layout.link_agent_config(agent_dir)
     for spec in specs:
         existing = tmux.find_window_by_worktree(spec.path)
         if existing is None:
@@ -160,10 +163,14 @@ def ensure_windows(session: str, specs: list[WindowSpec], agent_dir: Path) -> li
             tmux.start_session(session, layout.AGENT_WINDOW, agent_dir),
             session,
             agent_dir,
+            ticket_plugin=ticket_config,
         )
     elif tmux.find_window_by_name(session, layout.AGENT_WINDOW) is None:
         layout.start_agent(
-            tmux.new_window(session, layout.AGENT_WINDOW, agent_dir), session, agent_dir
+            tmux.new_window(session, layout.AGENT_WINDOW, agent_dir),
+            session,
+            agent_dir,
+            ticket_plugin=ticket_config,
         )
     for spec in pending:
         _configure_window(tmux.new_window(session, spec.repo, spec.path), spec)
@@ -192,9 +199,9 @@ def _branch_rows(
 
 
 def _resolve_ticket(
-    repos: list[str], settings: config.Settings
+    repos: list[str], settings: config.Settings, *, scratch: bool
 ) -> ticket.Ticket | None:
-    raw = ui.prompt_line("Ticket ❯ ").strip()
+    raw = "" if scratch else ui.prompt_line("Ticket ❯ ").strip()
     key = None
     if raw:
         key = ticket.parse_key(raw, settings.ticket_pattern, settings.ticket_prefix)
@@ -205,7 +212,7 @@ def _resolve_ticket(
     return ticket.Ticket(key=key, slug=slug)
 
 
-def flow_workspace() -> None:
+def flow_workspace(*, scratch: bool) -> None:
     # A display-popup opened from inside another popup modifies the popup that
     # is already up and ignores every other option (tmux(1), display-popup), so
     # the keybinding runs this server-side: it opens the picker popup, and open
@@ -236,6 +243,8 @@ def flow_workspace() -> None:
         return
     selection = json.loads(handoff)
     argv = [sys.argv[0], "materialize"]
+    if scratch:
+        argv.append("--scratch")
     for repo_name in selection["repos"]:
         argv += ["--repo", repo_name]
     subprocess.run(
@@ -276,18 +285,30 @@ def open_workspace(chain_out: Path | None) -> None:
     if chain_out is not None:
         chain_out.write_text(json.dumps({"repos": repos}))
         return
-    materialize_workspace(repos)
+    materialize_workspace(repos, scratch=False)
 
 
-def materialize_workspace(repos: list[str]) -> None:
+def materialize_workspace(repos: list[str], *, scratch: bool) -> None:
     workspace_config = config.load()
-    session_ticket = _resolve_ticket(repos, workspace_config.settings)
+    session_ticket = _resolve_ticket(repos, workspace_config.settings, scratch=scratch)
     if session_ticket is None:
         return
     session = session_ticket.session_name
     # Checked before prepare_windows: a name tmux rejects would otherwise leave
     # the freshly created branches and worktrees behind.
     tmux.validate_session_name(session)
+    ticket_root = worktree.ticket_dir(workspace_config.settings.work_root, session)
+    if "/" in session:
+        raise WorkspaceError(
+            f"'{session}' has a '/', its directory would nest inside another session's"
+        )
+    if tmux.session_exists(session) and tmux.is_scratch(session) != scratch:
+        raise WorkspaceError(
+            f"session {session} is already open as a"
+            f" {'ticket' if scratch else 'scratch'} session"
+        )
+    if scratch and layout.is_ticket_root(ticket_root):
+        raise WorkspaceError(f"{ticket_root} is a ticket root, not a scratch one")
     specs, failures, warnings = prepare_windows(
         repos, workspace_config, session_ticket, session
     )
@@ -296,9 +317,12 @@ def materialize_workspace(repos: list[str]) -> None:
     skipped = ensure_windows(
         session,
         specs,
-        worktree.ticket_dir(workspace_config.settings.work_root, session),
+        ticket_root,
+        ticket_config=not scratch,
     )
     tmux.set_session_option(session, "@ticket_slug", session_ticket.slug)
+    if scratch:
+        tmux.set_session_option(session, "@scratch", "1")
     if session_ticket.key is not None:
         tmux.set_session_option(session, "@ticket_key", session_ticket.key)
     tmux.focus_session(session)
