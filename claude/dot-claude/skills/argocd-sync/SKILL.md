@@ -16,7 +16,7 @@ An auth error stops the run. The operator logs in with `argologin <server>`.
 ## Per app
 
 1. `argocd --argocd-context <server> app get <app> --refresh`.
-2. `argocd --argocd-context <server> app sync <app> --timeout <seconds>`, then `argocd --argocd-context <server> app wait <app> --sync --health --timeout <seconds>`, together as one background command.
+2. `argocd --argocd-context <server> app sync <app> --timeout <seconds>`, then `argocd --argocd-context <server> app wait <app> --sync --health --timeout <seconds>`, together as one background command. With more than one app, the sync and wait of every app run under one Monitor with one output line per finished app, each line relayed as a one line progress note.
 3. `argocd --argocd-context <server> app diff <app>`. Exit 0 is an empty diff, exit 1 is a diff.
 
 A non-empty diff after sync is reported with its output, never fixed.

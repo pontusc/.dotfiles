@@ -69,6 +69,7 @@ user-invocable: false
 ## Running
 
 - Playbooks run through a wrapper that requires the environment with no default and installs pinned collections. It exposes generic converge, check and ops entry points, never one target per playbook.
+- A playbook run over more than one host runs under Monitor with one output line per finished host, each line relayed as a one line progress note. A single host run is background Bash.
 - Lint at the strictest profile in CI. No suppressions, fix what the linter flags.
 
 ## Before reporting
