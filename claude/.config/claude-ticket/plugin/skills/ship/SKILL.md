@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Commit, push and open the PR for the ticket branch in each ticket worktree with changes, or in the repo the operator names.
+description: Commit, push and open the PR for the ticket branch in each ticket worktree with changes, or in the repo the operator names, and rebase merge it when the operator asks.
 disable-model-invocation: true
 ---
 
@@ -13,11 +13,10 @@ The ticket branch is the output of `git -C <worktree> branch --show-current`. Th
 1. `git -C <worktree> fetch origin`, then `git -C <worktree> rebase --autostash origin/HEAD`.
 2. Read `git -C <worktree> log -20 --format=%B origin/HEAD` and commit the worktree changes in that style. Published-text rules apply. Never commit ticket files.
 3. `git -C <worktree> push origin <ticket branch>`. A push rejected as non fast forward stops and asks through AskUserQuestion before `git -C <worktree> push --force-with-lease origin <ticket branch>`.
-4. `gh pr create --base <target> --head <ticket branch> --title <title> --body <body>` from the worktree. The title names the change in the style of `gh pr list --state merged --limit 10 --json title`, the body is terse, taken from the current phase file. Published-text rules apply to both. When `gh pr view <ticket branch>` shows an open PR, the push already updated it, skip the create.
+4. `gh pr create --base <target> --head <ticket branch> --title <title> --body-file <body file>` from the worktree, with `--draft` only when the operator asks for a draft. The title names the change in the style of `gh pr list --state merged --limit 10 --json title`, the body fills the repo's PR template from the current phase file, terse, in a scratch file. Published-text rules apply to both. When `gh pr view <ticket branch>` shows an open PR, the push already updated it, skip the create.
 5. `gh pr checks <ticket branch> --watch` from the worktree, as a background command.
-
-Never merge a PR.
+6. Only when the operator asked for a merge and the checks passed: `gh pr merge <ticket branch> --rebase` from the worktree. Never `--admin` or `--delete-branch`, later phases reuse the branch.
 
 ## Reply
 
-Per repo: the commit SHA, the PR URL, and the checks result once the watch ends.
+Per repo: the commit SHA, the PR URL, the checks result once the watch ends, and the merge result when merged.
