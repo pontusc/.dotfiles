@@ -114,7 +114,6 @@
       "Read(//**/.env.*)",
       "Read(//**/.ssh/**)",
       "Read(//**/.aws/**)",
-      "Read(//**/.kube/**)",
       "Read(//**/.gnupg/**)",
       "Read(//**/.talos/**)",
       "Read(//**/.secret/**)",
@@ -169,7 +168,9 @@
       "mcp__linear__share_issue",
       "mcp__linear__submit_diff_review",
       "mcp__linear__unshare_issue",
-      "mcp__linear__update_diff"
+      "mcp__linear__update_diff",
+      "Read(//**/.kube/**)",
+      "Edit(//**/.kube/**)"
     ],
     "defaultMode": "auto"
   },
