@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Completion backend for the cnpg kubectl plugin.
+# kubectl runs it by name with the words typed after "kubectl cnpg".
+
+exec kubectl-cnpg __complete "$@"
