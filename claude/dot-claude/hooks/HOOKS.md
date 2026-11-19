@@ -4,6 +4,7 @@ The sandbox is off, real isolation would be a separate host. Secret files are gu
 
 - `dcg` (PreToolUse, Bash): blocks destructive shell commands. Config in `~/.config/dcg/config.toml`.
 - `markdown-punctuation.sh` (PostToolUse, Edit and Write): reports semicolons, em and en dashes and a spaced single or double hyphen in markdown lines outside fenced code, skipping scratch and job paths. On Edit only lines overlapping the new text are reported. The write has already landed, the agent fixes the reported lines.
+- SessionStart puts `~/.claude/bin` first on the Bash PATH. Its `gh` wrapper refuses `gh pr merge` without `--rebase`, and `gh pr create` or a body-setting `gh pr edit` when the repo's default branch has a PR template, unless `--body-file` carries every heading of one template. gh by absolute path, `gh api` on the pulls endpoints and user gh aliases skip it, and OpenCode does not load it.
 - `permission-attention.sh` (PermissionRequest): sets `@claude ask` on an unwatched tmux window while a permission dialog waits. The tmux.conf focus hooks clear it.
 
 Exit 2 blocks with stderr as the message to the agent, on PostToolUse it only feeds the message back. Exit 0 passes. Exit 1 is ignored. Blocks do not notify, the agent fixes and retries.

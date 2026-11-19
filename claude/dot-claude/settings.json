@@ -207,6 +207,16 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'export PATH=\"$HOME/.claude/bin:$PATH\"' >> \"$CLAUDE_ENV_FILE\""
+          }
+        ]
+      }
     ]
   },
   "disableWorkflows": true,
@@ -240,10 +250,10 @@
   },
   "feedbackDrafts": "off",
   "modelSettings": {
-    "claude-fable-5-1": {
-      "effortLevel": "high"
-    },
     "claude-opus-5-5": {
+      "effortLevel": "medium"
+    },
+    "claude-fable-5-2": {
       "effortLevel": "medium"
     }
   },

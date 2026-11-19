@@ -1,0 +1,298 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.12"
+# ///
+import json
+import os
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+TEMPLATE_DIRS = ("", ".github", "docs")
+TEMPLATE_NAME = re.compile(r"pull[-_]request[-_]template", re.IGNORECASE)
+HEADING = re.compile(r"^#{1,6}[ \t]+\S.*$", re.MULTILINE)
+COMMENT_OR_FENCE = re.compile(r"<!--.*?-->|^(```|~~~).*?^\1", re.DOTALL | re.MULTILINE)
+GH_TIMEOUT_SECONDS = 20
+
+SHORT_FLAGS = {
+    "create": {
+        "a": "assignee",
+        "B": "base",
+        "b": "body",
+        "F": "body-file",
+        "d": "draft",
+        "e": "editor",
+        "f": "fill",
+        "H": "head",
+        "l": "label",
+        "m": "milestone",
+        "p": "project",
+        "r": "reviewer",
+        "T": "template",
+        "t": "title",
+        "w": "web",
+    },
+    "edit": {
+        "B": "base",
+        "b": "body",
+        "F": "body-file",
+        "m": "milestone",
+        "t": "title",
+    },
+    "merge": {
+        "A": "author-email",
+        "b": "body",
+        "F": "body-file",
+        "d": "delete-branch",
+        "m": "merge",
+        "r": "rebase",
+        "s": "squash",
+        "t": "subject",
+    },
+}
+VALUE_FLAGS = {
+    "create": {
+        "assignee",
+        "attach",
+        "base",
+        "body",
+        "body-file",
+        "head",
+        "label",
+        "milestone",
+        "project",
+        "recover",
+        "reviewer",
+        "template",
+        "title",
+    },
+    "edit": {
+        "add-assignee",
+        "add-label",
+        "add-project",
+        "add-reviewer",
+        "attach",
+        "base",
+        "body",
+        "body-file",
+        "milestone",
+        "remove-assignee",
+        "remove-label",
+        "remove-project",
+        "remove-reviewer",
+        "title",
+    },
+    "merge": {"author-email", "body", "body-file", "match-head-commit", "subject"},
+}
+SHORT_FLAGS["new"], VALUE_FLAGS["new"] = SHORT_FLAGS["create"], VALUE_FLAGS["create"]
+
+
+class TemplateCheckError(Exception):
+    pass
+
+
+def real_gh() -> str:
+    own_file = Path(__file__).resolve()
+    for directory in os.environ.get("PATH", "").split(os.pathsep):
+        candidate = Path(directory or ".", "gh")
+        if (
+            candidate.is_file()
+            and os.access(candidate, os.X_OK)
+            and candidate.resolve() != own_file
+        ):
+            return str(candidate)
+    sys.exit("gh wrapper: no gh found on PATH")
+
+
+def pr_subcommand(args: list[str]) -> tuple[str, list[str]] | None:
+    positionals: list[str] = []
+    flags: list[str] = []
+    index = 0
+    while index < len(args) and len(positionals) < 2:
+        arg = args[index]
+        index += 1
+        if arg in ("-R", "--repo"):
+            flags += args[index - 1 : index + 1]
+            index += 1
+        elif arg.startswith("-"):
+            flags.append(arg)
+        else:
+            positionals.append(arg)
+    if (
+        len(positionals) == 2
+        and positionals[0] == "pr"
+        and positionals[1] in SHORT_FLAGS
+    ):
+        return positionals[1], flags + args[index:]
+    return None
+
+
+def parse_flags(args: list[str], subcommand: str) -> dict[str, str]:
+    shorts = SHORT_FLAGS[subcommand] | {"R": "repo", "h": "help"}
+    values = VALUE_FLAGS[subcommand] | {"repo"}
+    options: dict[str, str] = {}
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        index += 1
+        if arg == "--":
+            break
+        if arg.startswith("--"):
+            name, has_value, value = arg[2:].partition("=")
+            if name in values and not has_value:
+                value = args[index] if index < len(args) else ""
+                index += 1
+            options[name] = value if has_value or name in values else "true"
+        elif arg.startswith("-") and len(arg) > 1:
+            for position, char in enumerate(arg[1:], start=2):
+                name = shorts.get(char, char)
+                if name not in values:
+                    options[name] = "true"
+                    continue
+                value = arg[position:].removeprefix("=")
+                if not value:
+                    value = args[index] if index < len(args) else ""
+                    index += 1
+                options[name] = value
+                break
+    return options
+
+
+def run_gh(gh: str, args: list[str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [gh, *args],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=GH_TIMEOUT_SECONDS,
+    )
+
+
+def resolve_repo(gh: str, options: dict[str, str]) -> list[str] | None:
+    repo = options.get("repo") or os.environ.get("GH_REPO")
+    if not repo:
+        view = run_gh(
+            gh, ["repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"]
+        )
+        return [view.stdout.strip()] if view.returncode == 0 else None
+    parts = re.sub(r"^\w+://", "", repo).removesuffix(".git").strip("/").split("/")
+    hostname = ["--hostname", parts[-3]] if len(parts) > 2 else []
+    return [*hostname, "/".join(parts[-2:])]
+
+
+def api(
+    gh: str, repo: list[str], path: str, *extra: str
+) -> subprocess.CompletedProcess[str]:
+    *hostname, name = repo
+    return run_gh(
+        gh, ["api", *hostname, *extra, f"repos/{name}/contents/{path}".rstrip("/")]
+    )
+
+
+def list_dir(gh: str, repo: list[str], directory: str) -> list[dict[str, str]]:
+    listing = api(gh, repo, directory)
+    if listing.returncode != 0:
+        if "HTTP 404" in listing.stderr:
+            return []
+        raise TemplateCheckError(listing.stderr.strip())
+    entries = json.loads(listing.stdout)
+    return entries if isinstance(entries, list) else []
+
+
+def templates(gh: str, repo: list[str]) -> dict[str, list[str]]:
+    paths: list[str] = []
+    for directory in TEMPLATE_DIRS:
+        for entry in list_dir(gh, repo, directory):
+            if not TEMPLATE_NAME.match(entry["name"]):
+                continue
+            if entry["type"] == "file":
+                paths.append(entry["path"])
+            elif entry["type"] == "dir":
+                paths += [
+                    nested["path"]
+                    for nested in list_dir(gh, repo, entry["path"])
+                    if nested["type"] == "file"
+                ]
+
+    found: dict[str, list[str]] = {}
+    for path in paths:
+        raw = api(gh, repo, path, "-H", "Accept: application/vnd.github.raw")
+        if raw.returncode != 0:
+            raise TemplateCheckError(raw.stderr.strip())
+        headings = [
+            heading.strip()
+            for heading in HEADING.findall(COMMENT_OR_FENCE.sub("", raw.stdout))
+        ]
+        if headings:
+            found[path] = headings
+    return found
+
+
+def violation(gh: str, args: list[str]) -> str | None:
+    command = pr_subcommand(args)
+    if command is None:
+        return None
+    subcommand, rest = command
+    options = parse_flags(rest, subcommand)
+    if "help" in options:
+        return None
+    if subcommand == "merge":
+        rebase = options.get("rebase", "false") != "false"
+        return (
+            None
+            if rebase or "disable-auto" in options
+            else "PRs merge with --rebase only."
+        )
+    if "web" in options:
+        return None
+    body_file = options.get("body-file")
+    if subcommand == "edit" and body_file is None and "body" not in options:
+        return None
+
+    repo = resolve_repo(gh, options)
+    if repo is None:
+        return None
+    try:
+        found = templates(gh, repo)
+    except (TemplateCheckError, subprocess.TimeoutExpired) as error:
+        return f"could not check {repo[-1]} for a PR template, retry: {error}"
+    if not found:
+        return None
+
+    usage = f"{repo[-1]} has a PR template ({', '.join(found)}). Write the body to a file that keeps every heading of it and pass it with --body-file."
+    if body_file is None or body_file == "-" or not Path(body_file).is_file():
+        return usage
+    body_lines = {
+        line.strip()
+        for line in Path(body_file).read_text(errors="replace").splitlines()
+    }
+    missing = {
+        path: [heading for heading in headings if heading not in body_lines]
+        for path, headings in found.items()
+    }
+    if any(not headings for headings in missing.values()):
+        return None
+    return "\n".join(
+        [
+            usage,
+            *(
+                f"{path} missing: {', '.join(headings)}"
+                for path, headings in missing.items()
+            ),
+        ]
+    )
+
+
+def main() -> None:
+    gh = real_gh()
+    args = sys.argv[1:]
+    message = violation(gh, args)
+    if message:
+        print(f"gh wrapper: {message}", file=sys.stderr)
+        sys.exit(1)
+    os.execv(gh, [gh, *args])
+
+
+if __name__ == "__main__":
+    main()
